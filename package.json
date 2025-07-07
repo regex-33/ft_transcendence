@@ -1,0 +1,31 @@
+{
+  "name": "transcendence",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --env-file=.env index.js",
+    "dev": "nodemon --env-file=.env index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/regex-33/transcendence.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/regex-33/transcendence/issues"
+  },
+  "homepage": "https://github.com/regex-33/transcendence#readme",
+  "dependencies": {
+    "@fastify/express": "^4.0.2",
+    "@fastify/middie": "^9.0.3",
+    "bcrypt": "^6.0.0",
+    "fastify": "^5.4.0",
+    "fastify-express": "^0.4.0",
+    "fastify-postgres": "^3.7.0",
+    "jsonwebtoken": "^9.0.2",
+    "sequelize": "^6.37.7"
+  }
+}
