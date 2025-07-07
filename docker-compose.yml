@@ -1,0 +1,282 @@
+# docker-compose.yml
+version: '3.8'
+
+networks:
+  frontend-network:
+    driver: bridge
+  backend-network:
+    driver: bridge
+  database-network:
+    driver: bridge
+  monitoring-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  elasticsearch_data:
+  prometheus_data:
+  grafana_data:
+
+services:
+  # Frontend Service
+  frontend:
+    build: ./services/frontend
+    ports:
+      - "3000:80"
+    networks:
+      - frontend-network
+    environment:
+      - API_GATEWAY_URL=http://api-gateway:3001
+    depends_on:
+      - api-gateway
+
+  # API Gateway
+  api-gateway:
+    build: ./services/api-gateway
+    ports:
+      - "3001:3001"
+    networks:
+      - frontend-network
+      - backend-network
+    environment:
+      - AUTH_SERVICE_URL=http://auth-service:3002
+      - USER_SERVICE_URL=http://user-service:3003
+      - GAME_SERVICE_URL=http://game-service:3004
+      - CHAT_SERVICE_URL=http://chat-service:3005
+    depends_on:
+      - auth-service
+      - user-service
+      - game-service
+      - chat-service
+
+  # Microservices
+  auth-service:
+    build: ./services/auth-service
+    networks:
+      - backend-network
+      - database-network
+    environment:
+      - DATABASE_URL=postgresql://auth_user:password@postgres:5432/auth_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+
+  user-service:
+    build: ./services/user-service
+    networks:
+      - backend-network
+      - database-network
+    environment:
+      - DATABASE_URL=postgresql://user_user:password@postgres:5432/user_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+
+  game-service:
+    build: ./services/game-service
+    networks:
+      - backend-network
+      - database-network
+    environment:
+      - DATABASE_URL=postgresql://game_user:password@postgres:5432/game_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+
+  chat-service:
+    build: ./services/chat-service
+    networks:
+      - backend-network
+      - database-network
+    environment:
+      - DATABASE_URL=postgresql://chat_user:password@postgres:5432/chat_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+
+  tournament-service:
+    build: ./services/tournament-service
+    networks:
+      - backend-network
+      - database-network
+    environment:
+      - DATABASE_URL=postgresql://tournament_user:password@postgres:5432/tournament_db
+    depends_on:
+      - postgres
+
+  match-service:
+    build: ./services/match-service
+    networks:
+      - backend-network
+      - database-network
+    environment:
+      - DATABASE_URL=postgresql://match_user:password@postgres:5432/match_db
+    depends_on:
+      - postgres
+
+  notification-service:
+    build: ./services/notification-service
+    networks:
+      - backend-network
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      - redis
+      - rabbitmq
+
+  file-service:
+    build: ./services/file-service
+    networks:
+      - backend-network
+      - database-network
+    environment:
+      - DATABASE_URL=postgresql://file_user:password@postgres:5432/file_db
+    depends_on:
+      - postgres
+
+  stats-service:
+    build: ./services/stats-service
+    networks:
+      - backend-network
+      - database-network
+    environment:
+      - DATABASE_URL=postgresql://stats_user:password@postgres:5432/stats_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+
+  # Infrastructure Services
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=transcendence
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./services/devops/databases/postgresql/init:/docker-entrypoint-initdb.d
+    networks:
+      - database-network
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend-network
+      - database-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=password
+    ports:
+      - "15672:15672"
+    networks:
+      - backend-network
+
+  # Load Balancer
+  nginx:
+    build: ./services/devops/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - frontend-network
+      - monitoring-network
+    depends_on:
+      - frontend
+      - api-gateway
+
+  # Monitoring Stack
+  prometheus:
+    build: ./services/devops/monitoring/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+    networks:
+      - monitoring-network
+      - backend-network
+
+  grafana:
+    build: ./services/devops/monitoring/grafana
+    ports:
+      - "3003:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - monitoring-network
+    depends_on:
+      - prometheus
+
+  # Logging Stack
+  elasticsearch:
+    build: ./services/devops/logging/elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - monitoring-network
+
+  logstash:
+    build: ./services/devops/logging/logstash
+    networks:
+      - monitoring-network
+      - backend-network
+    depends_on:
+      - elasticsearch
+
+kibana:
+    build: ./services/devops/logging/kibana
+    ports:
+      - "5601:5601"
+    networks:
+      - monitoring-network
+    depends_on:
+      - elasticsearch
+
+# Go Monitoring Agents
+service-discovery:
+  build: ./services/devops/agents/cmd/service-discovery
+  networks:
+    - backend-network
+    - monitoring-network
+  environment:
+    - CONSUL_URL=http://consul:8500
+  depends_on:
+    - consul
+
+health-monitor:
+  build: ./services/devops/agents/cmd/health-monitor
+  networks:
+    - backend-network
+    - monitoring-network
+  environment:
+    - PROMETHEUS_URL=http://prometheus:9090
+
+metrics-aggregator:
+  build: ./services/devops/agents/cmd/metrics-aggregator
+  networks:
+    - backend-network
+    - monitoring-network
+
+# Service Discovery
+consul:
+  image: consul:latest
+  command: consul agent -dev -ui -client=0.0.0.0
+  ports:
+    - "8500:8500"
+  networks:
+    - backend-network
+    - monitoring-network

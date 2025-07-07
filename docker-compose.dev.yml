@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./services/frontend/src:/app/src
+      - ./services/frontend/public:/app/public
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+
+  api-gateway:
+    volumes:
+      - ./services/api-gateway/src:/app/src
+    environment:
+      - NODE_ENV=development
+      - DEBUG=api-gateway:*
+
+  auth-service:
+    volumes:
+      - ./services/auth-service/src:/app/src
+    environment:
+      - NODE_ENV=development
+      - DEBUG=auth-service:*
+
+  user-service:
+    volumes:
+      - ./services/user-service/src:/app/src
+    environment:
+      - NODE_ENV=development
+      - DEBUG=user-service:*
+
+  game-service:
+    volumes:
+      - ./services/game-service/src:/app/src
+    environment:
+      - NODE_ENV=development
+      - DEBUG=game-service:*
+
+  chat-service:
+    volumes:
+      - ./services/chat-service/src:/app/src
+    environment:
+      - NODE_ENV=development
+      - DEBUG=chat-service:*
+
+  tournament-service:
+    volumes:
+      - ./services/tournament-service/src:/app/src
+    environment:
+      - NODE_ENV=development
+      - DEBUG=tournament-service:*
+
+  match-service:
+    volumes:
+      - ./services/match-service/src:/app/src
+    environment:
+      - NODE_ENV=development
+      - DEBUG=match-service:*
+
+  notification-service:
+    volumes:
+      - ./services/notification-service/src:/app/src
+    environment:
+      - NODE_ENV=development
+      - DEBUG=notification-service:*
+
+  file-service:
+    volumes:
+      - ./services/file-service/src:/app/src
+    environment:
+      - NODE_ENV=development
+      - DEBUG=file-service:*
+
+  stats-service:
+    volumes:
+      - ./services/stats-service/src:/app/src
+    environment:
+      - NODE_ENV=development
+      - DEBUG=stats-service:*
+
+  # Development tools
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - backend-network
+
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    networks:
+      - database-network
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres

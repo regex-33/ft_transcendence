@@ -1,0 +1,214 @@
+# ===== azure/docker-compose.azure.yml =====
+version: '3.8'
+
+services:
+  # Frontend Service
+  frontend:
+    build:
+      context: ../services/frontend
+      dockerfile: Dockerfile.prod
+    image: ${ACR_LOGIN_SERVER}/ft-transcendence/frontend:latest
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+      - API_URL=http://${API_GATEWAY_URL}:3000
+      - WEBSOCKET_URL=ws://${API_GATEWAY_URL}:3000
+    depends_on:
+      - api-gateway
+    restart: unless-stopped
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ../services/api-gateway
+      dockerfile: Dockerfile
+    image: ${ACR_LOGIN_SERVER}/ft-transcendence/api-gateway:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - USER_SERVICE_URL=http://user-service:3002
+      - GAME_SERVICE_URL=http://game-service:3003
+      - MATCH_SERVICE_URL=http://match-service:3004
+      - TOURNAMENT_SERVICE_URL=http://tournament-service:3005
+      - CHAT_SERVICE_URL=http://chat-service:3006
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3007
+      - FILE_SERVICE_URL=http://file-service:3008
+      - STATS_SERVICE_URL=http://stats-service:3009
+      - REDIS_URL=${REDIS_URL}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - auth-service
+      - user-service
+      - game-service
+      - match-service
+      - tournament-service
+      - chat-service
+      - notification-service
+      - file-service
+      - stats-service
+    restart: unless-stopped
+
+  # Authentication Service
+  auth-service:
+    build:
+      context: ../services/auth-service
+      dockerfile: Dockerfile
+    image: ${ACR_LOGIN_SERVER}/ft-transcendence/auth-service:latest
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=${POSTGRES_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=7d
+      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+      - OAUTH_42_CLIENT_ID=${OAUTH_42_CLIENT_ID}
+      - OAUTH_42_CLIENT_SECRET=${OAUTH_42_CLIENT_SECRET}
+      - OAUTH_42_CALLBACK_URL=${OAUTH_42_CALLBACK_URL}
+      - REDIS_URL=${REDIS_URL}
+    restart: unless-stopped
+
+  # User Service
+  user-service:
+    build:
+      context: ../services/user-service
+      dockerfile: Dockerfile
+    image: ${ACR_LOGIN_SERVER}/ft-transcendence/user-service:latest
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - DATABASE_URL=${POSTGRES_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=${REDIS_URL}
+      - FILE_SERVICE_URL=http://file-service:3008
+    restart: unless-stopped
+
+  # Game Service
+  game-service:
+    build:
+      context: ../services/game-service
+      dockerfile: Dockerfile
+    image: ${ACR_LOGIN_SERVER}/ft-transcendence/game-service:latest
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - DATABASE_URL=${POSTGRES_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=${REDIS_URL}
+      - MATCH_SERVICE_URL=http://match-service:3004
+      - STATS_SERVICE_URL=http://stats-service:3009
+    restart: unless-stopped
+
+  # Match Service
+  match-service:
+    build:
+      context: ../services/match-service
+      dockerfile: Dockerfile
+    image: ${ACR_LOGIN_SERVER}/ft-transcendence/match-service:latest
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - DATABASE_URL=${POSTGRES_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=${REDIS_URL}
+    restart: unless-stopped
+
+  # Tournament Service
+  tournament-service:
+    build:
+      context: ../services/tournament-service
+      dockerfile: Dockerfile
+    image: ${ACR_LOGIN_SERVER}/ft-transcendence/tournament-service:latest
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=production
+      - PORT=3005
+      - DATABASE_URL=${POSTGRES_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=${REDIS_URL}
+      - MATCH_SERVICE_URL=http://match-service:3004
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3007
+    restart: unless-stopped
+
+  # Chat Service
+  chat-service:
+    build:
+      context: ../services/chat-service
+      dockerfile: Dockerfile
+    image: ${ACR_LOGIN_SERVER}/ft-transcendence/chat-service:latest
+    ports:
+      - "3006:3006"
+    environment:
+      - NODE_ENV=production
+      - PORT=3006
+      - DATABASE_URL=${POSTGRES_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=${REDIS_URL}
+    restart: unless-stopped
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ../services/notification-service
+      dockerfile: Dockerfile
+    image: ${ACR_LOGIN_SERVER}/ft-transcendence/notification-service:latest
+    ports:
+      - "3007:3007"
+    environment:
+      - NODE_ENV=production
+      - PORT=3007
+      - DATABASE_URL=${POSTGRES_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=${REDIS_URL}
+      - EMAIL_SERVICE_API_KEY=${EMAIL_SERVICE_API_KEY}
+      - EMAIL_FROM=${EMAIL_FROM}
+    restart: unless-stopped
+
+  # File Service
+  file-service:
+    build:
+      context: ../services/file-service
+      dockerfile: Dockerfile
+    image: ${ACR_LOGIN_SERVER}/ft-transcendence/file-service:latest
+    ports:
+      - "3008:3008"
+    environment:
+      - NODE_ENV=production
+      - PORT=3008
+      - DATABASE_URL=${POSTGRES_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING}
+      - AZURE_STORAGE_CONTAINER_NAME=${AZURE_STORAGE_CONTAINER_NAME}
+    restart: unless-stopped
+
+  # Stats Service
+  stats-service:
+    build:
+      context: ../services/stats-service
+      dockerfile: Dockerfile
+    image: ${ACR_LOGIN_SERVER}/ft-transcendence/stats-service:latest
+    ports:
+      - "3009:3009"
+    environment:
+      - NODE_ENV=production
+      - PORT=3009
+      - DATABASE_URL=${POSTGRES_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=${REDIS_URL}
+    restart: unless-stopped
+
+networks:
+  default:
+    name: ft-transcendence-network

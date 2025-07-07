@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile.prod
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  api-gateway:
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+
+  auth-service:
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+
+  user-service:
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+
+  game-service:
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    deploy:
+      replicas: 3
+
+  chat-service:
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+
+  tournament-service:
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  match-service:
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  notification-service:
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  file-service:
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  stats-service:
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  postgres:
+    restart: unless-stopped
+    command: postgres -c shared_preload_libraries=pg_stat_statements -c max_connections=200
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+  redis:
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+
+  nginx:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  prometheus:
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+
+  grafana:
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=secure_password
+      - GF_USERS_ALLOW_SIGN_UP=false
+
+  elasticsearch:
+    restart: unless-stopped
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
