@@ -1,6 +1,5 @@
 const fastify = require("fastify")();
 const db = require("../../models");
-
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
@@ -62,6 +61,7 @@ const login = (request, reply) => {
               username: user.username,
               email: user.email,
               image: user.image,
+              name: user.name,
             },
             token,
           });
