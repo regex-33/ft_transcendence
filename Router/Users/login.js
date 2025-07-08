@@ -50,7 +50,7 @@ const login = (request, reply) => {
               .send({ error: "Invalid username or password." });
 
           const token = jwt.sign(
-            { id: user.id, username: user.username },
+            { id: user.id, username: user.username , email: user.email },
             JWT_SECRET,
             { expiresIn: TIME_TOKEN_EXPIRATION }
           );

@@ -68,7 +68,7 @@ const register =  (request, reply) => {
         }
       })
       .catch((error) => {
-        return reply.status(500).send({ error: "Internal server error" });
+        return reply.status(500).send({ message: "Internal server error", error });
       });
 
     const hashedPassword = bcrypt.hashSync(password, 10);
@@ -80,10 +80,10 @@ const register =  (request, reply) => {
       image: path || null,
       name
     })
-      .then(() => {
+      .then((user) => {
 
         const token = jsonwebtoken.sign(
-          { username, email },
+          {id: user.id, username: user.username, email: user.email },
           jwt_secret,
           { expiresIn: time_token_expiration },
           (error, token) => {
@@ -101,16 +101,16 @@ const register =  (request, reply) => {
           }
         );
       })
-      .catch((error) => {
-        return reply.status(500).send({ error: "Internal server error" });
+      .catch((erro) => {
+        return reply.status(500).send({ message: "Internal server erro", erro });
       });
-    }).catch((error) => {
-      console.error("Error processing multipart request:", error);
-      return reply.status(500).send({ error: "Failed to process multipart request" });
+    }).catch((errorr) => {
+      console.error("Error processing multipart request:", errorr);
+      return reply.status(500).send({ message: "Failed to process multipart request", errorr });
     });
-  } catch (error) {
-    console.error("Unexpected error during registration:", error);
-    return reply.status(500).send({ error: "Internal server error" });
+  } catch (err) {
+    console.error("Unexpected error during registration:", err);
+    return reply.status(500).send({ message: "Internal server error", err });
   }
 };
 

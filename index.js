@@ -12,6 +12,7 @@ fastify.register(fastifyStatic, {
   root: path.join(__dirname, "uploads"),
   prefix: "/uploads/",
 });
+
 fastify.register(require("@fastify/multipart"));
 
 fastify.register(UserRoutes, { prefix: "/api" });

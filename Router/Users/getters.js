@@ -34,6 +34,8 @@ const getbyusername = (request, reply) => {
 };
 
 const getbyId = (request, reply) => {
+  const check = checkAuthJWT(request, reply);
+  if (check) return check;
   const { id } = request.params;
   if (!id) {
     return reply.status(400).send({ error: "User ID is required." });
