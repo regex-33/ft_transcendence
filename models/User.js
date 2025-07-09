@@ -30,6 +30,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      friends: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        allowNull: true,
+        defaultValue: [],
+      },
       bio: {
         type: DataTypes.TEXT,
         allowNull: true,

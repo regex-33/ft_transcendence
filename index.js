@@ -2,7 +2,7 @@ const fastify = require("fastify")();
 const db = require("./models");
 const path = require("path");
 const fastifyStatic = require("@fastify/static");
-const UserRoutes = require("./Router");
+const {UserRoutes,FriendRoutes} = require("./Router");
 
 fastify.addHook("onRequest", async (request, reply) => {
   console.log(`[${new Date().toISOString()}] ${request.method} ${request.url} ,content-Type: ${request.headers['content-type']} - Body:`, request.body);
@@ -16,6 +16,7 @@ fastify.register(fastifyStatic, {
 fastify.register(require("@fastify/multipart"));
 
 fastify.register(UserRoutes, { prefix: "/api" });
+fastify.register(FriendRoutes, { prefix: "/api" });
 
 db.sequelize
   .sync()

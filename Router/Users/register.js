@@ -68,7 +68,7 @@ const register =  (request, reply) => {
         }
       })
       .catch((error) => {
-        return reply.status(500).send({ message: "Internal server error", error });
+        return reply.status(500).send({ message: "Internal server error" });
       });
 
     const hashedPassword = bcrypt.hashSync(password, 10);
@@ -101,16 +101,17 @@ const register =  (request, reply) => {
           }
         );
       })
-      .catch((erro) => {
-        return reply.status(500).send({ message: "Internal server erro", erro });
+      .catch((error) => {
+        console.error("Error creating user:", error);
+        return reply.status(500).send({ message: "Internal server error" });
       });
-    }).catch((errorr) => {
-      console.error("Error processing multipart request:", errorr);
-      return reply.status(500).send({ message: "Failed to process multipart request", errorr });
+    }).catch((error) => {
+      console.error("Error processing multipart request:", error);
+      return reply.status(500).send({ message: "Failed to process multipart request" });
     });
   } catch (err) {
     console.error("Unexpected error during registration:", err);
-    return reply.status(500).send({ message: "Internal server error", err });
+    return reply.status(500).send({ message: "Internal server error" });
   }
 };
 
