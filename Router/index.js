@@ -1,10 +1,12 @@
 const login = require("./Users/login");
 const register = require("./Users/register");
+
 const actionsHandler = require("./Friends/actionsHandler");
 const addFriend = require("./Friends/addFriend.js");
 const {
     getbyusername,
     getbyId,
+    getUsers,
 } = require("./Users/getters");
 const updateUser = require("./Users/update");
 
@@ -14,6 +16,7 @@ async function UserRoutes(fastify, options) {
   fastify.put("/users/update", updateUser);
   fastify.get("/users/:username", getbyusername);
   fastify.get("/users/id/:id", getbyId);
+  fastify.get("/users", getUsers);
 
 }
 

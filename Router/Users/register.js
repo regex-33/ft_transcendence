@@ -102,11 +102,11 @@ const register =  (request, reply) => {
         );
       })
       .catch((error) => {
-        console.error("Error creating user:", error);
+        console.error("Error creating user:", error.message);
         return reply.status(500).send({ message: "Internal server error" });
       });
     }).catch((error) => {
-      console.error("Error processing multipart request:", error);
+      console.error("Error processing multipart request:", error.message);
       return reply.status(500).send({ message: "Failed to process multipart request" });
     });
   } catch (err) {
