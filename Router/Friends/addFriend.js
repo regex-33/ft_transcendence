@@ -29,29 +29,42 @@ const addFriend = async (request, reply) => {
 
   check = check || validate(reply, id, fid);
   if (check) return check;
-
+  let users;
   try {
-  const users = await User.findAll({
-    where: {
-      id: [id, fid],
-    },
-  });
+    users = await User.findAll({
+      where: {
+        id: [id, fid],
+      },
+    });
+    if (users.length !== 2) {
+      return reply.status(404).send({
+        error: "User not found.",
+      });
+    }
   } catch (error) {
     return reply.status(500).send({
       error: "An error occurred while fetching users.",
       details: error.message,
     });
   }
-  
+
   try {
     const rel = await Relationship.findAll({
       where: {
-        [db.Sequelize.Op.and]: [
-          { first: Math.min(id, fid) },
-          { second: Math.max(id, fid) },
+        [db.Sequelize.Op.or]: [
+          { from: id, to: fid },
+          { to: id, from: fid },
         ],
       },
     });
+    if (rel.length != 0) {
+      return reply.status(400).send({
+        message:
+          "you can't send addfriend " + ((rel[0].status != "blocked")
+            ? " two times"
+            : "to this user"),
+      });
+    }
   } catch (error) {
     return reply.status(500).send({
       error: "An error occurred while checking relationships.",
@@ -59,22 +72,19 @@ const addFriend = async (request, reply) => {
     });
   }
 
-  if (rel.length != 0) {
-    reply.status(400).send({
-      message: "you can't send addfriend two times",
-    });
-  }
-
   try {
-    await Relationship.create({
-      first: Math.min(id, fid),
-      second: Math.max(id, fid),
+    const rel = await Relationship.create({
+      from: id,
+      to: fid,
+      creator: id,
     });
-    // users.forEach((user) => {
-  
-    reply.status(200).send({
-      message: "Friend request sent successfully",
-    });
+    await Promise.all(
+      users.map((user) => {
+        return user.update({ friends: user.friends + 1 });
+      })
+    );
+
+    reply.status(201).send(rel);
   } catch (error) {
     reply.status(500).send({
       error: "An error occurred while sending the friend request.",
