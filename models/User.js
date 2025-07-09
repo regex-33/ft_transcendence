@@ -31,9 +31,9 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       friends: {
-        type: DataTypes.ARRAY(DataTypes.INTEGER),
-        allowNull: true,
-        defaultValue: [],
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
       },
       bio: {
         type: DataTypes.TEXT,

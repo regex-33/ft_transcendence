@@ -7,16 +7,21 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      first: {
+      creator:{
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      }
+      ,
+      from: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      second: {
+      to: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
       status: {
-        type: DataTypes.ENUM("pending", "accepted", "rejected", "blocked"),
+        type: DataTypes.ENUM("pending", "friend", "blocked"),
         allowNull: false,
         defaultValue: "pending",
       },
