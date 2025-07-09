@@ -36,9 +36,10 @@ const getbyusername = (request, reply) => {
 const getbyId = (request, reply) => {
   const check = checkAuthJWT(request, reply);
   if (check) return check;
-  const { id } = request.params;
+  let { id } = request.params;
   if (!id) {
-    return reply.status(400).send({ error: "User ID is required." });
+    id = request.user.id; 
+    // return reply.status(400).send({ error: "User ID is required." });
   }
   if (!/^\d+$/.test(id)) {
     return reply.status(400).send({ error: "Invalid user ID format." });
@@ -64,7 +65,31 @@ const getbyId = (request, reply) => {
     });
 };
 
+const getUsers = (request, reply) => {
+  const check = checkAuthJWT(request, reply);
+  if (check) return check;
+
+  db.User.findAll()
+    .then((users) => {
+      reply.send(
+        users.map((user) => ({
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          image: user.image,
+          name: user.name,
+          bio: user.bio,
+        }))
+      );
+    })
+    .catch((err) => {
+      console.error("Error fetching users:", err);
+      reply.status(500).send({ error: "Internal server error." });
+    });
+};
+
 module.exports = {
   getbyusername,
   getbyId,
+  getUsers,
 };
