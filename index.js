@@ -2,10 +2,10 @@ const fastify = require("fastify")();
 const db = require("./models");
 const path = require("path");
 const fastifyStatic = require("@fastify/static");
-const {UserRoutes,FriendRoutes} = require("./Router");
+const {UserRoutes,FriendRoutes,OauthRoutes} = require("./Router");
 
-fastify.addHook("onRequest", async (request, reply) => {
-  console.log(`[${new Date().toISOString()}] ${request.method} ${request.url} ,content-Type: ${request.headers['content-type']} - Body:`, request.body);
+fastify.addHook("onResponse", async (request, reply) => {
+  console.log(`[${new Date().toISOString()}] ${request.method} ${request.url}  - ${reply.statusCode}`);
 });
 
 fastify.register(fastifyStatic, {
@@ -17,6 +17,12 @@ fastify.register(require("@fastify/multipart"));
 
 fastify.register(UserRoutes, { prefix: "/api" });
 fastify.register(FriendRoutes, { prefix: "/api" });
+fastify.register(OauthRoutes, { prefix: "/api" });
+
+// fastify.get("/", async (request, reply) => {
+
+//   return  reply.sendFile("oauth.html");
+// });
 
 db.sequelize
   .sync()
