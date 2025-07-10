@@ -23,7 +23,7 @@ const getBody = async (request) => {
             await stream(part.file, fs.createWriteStream(filePath));
             body[part.fieldname] = {
               name: safeFilename,
-              path: path.join("uploads", safeFilename),
+              path: `${request.protocol}://${request.headers.host}/uploads/${safeFilename}`,
             };
             console.log("File saved:", filePath);
           } catch (err) {
