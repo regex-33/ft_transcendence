@@ -1,14 +1,19 @@
 const login = require("./Users/login");
 const register = require("./Users/register");
-
+const access = require("./Oauth/access");
 const actionsHandler = require("./Friends/actionsHandler");
 const addFriend = require("./Friends/addFriend.js");
+const redirecting = require("./Oauth/redirecting");
 const {
     getbyusername,
     getbyId,
     getUsers,
 } = require("./Users/getters");
 const updateUser = require("./Users/update");
+
+const GITHUB_CLIENT_ID = "Ov23li9XghxCIA1SbDTu";
+const GITHUB_CLIENT_SECRET = "96dd02f019520463b64fa7ef1170d1cf033404b4";
+
 
 async function UserRoutes(fastify, options) {
   fastify.post("/register", register);
@@ -25,5 +30,9 @@ async function FriendRoutes(fastify, options) {
   fastify.post("/friends/actions", actionsHandler);
 }
 
+async function OauthRoutes(fastify, options) {
+  fastify.get("/auth/github", redirecting);
+  fastify.get("/auth/access", access);
+}
 
-module.exports = {UserRoutes, FriendRoutes};
+module.exports = { UserRoutes, FriendRoutes, OauthRoutes };
