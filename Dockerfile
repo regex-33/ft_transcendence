@@ -10,8 +10,8 @@ WORKDIR /app
 COPY . .
 RUN npm install --production
 
-RUN chmod +x database.sh
+RUN chmod +x enterpoint.sh
 
 EXPOSE 3000
 
-ENTRYPOINT ["sh", "./database.sh"]
+ENTRYPOINT ["sh", "./enterpoint.sh"]
