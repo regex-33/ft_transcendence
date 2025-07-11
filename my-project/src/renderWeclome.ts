@@ -1,21 +1,20 @@
 export function renderWeclome(container: HTMLElement) {
  container.innerHTML = `
 <div class="relative w-full min-h-screen overflow-hidden bg-cover bg-center" style="background-image: url('/assets/bg-login.png');">
-  <!-- Navigation -->
+
   <nav class="flex items-center w-full justify-between px-4 sm:px-6 md:px-12 py-4 h-20">
     <div class="flex items-center text-white">
       <img src="/assets/logo.png" alt="logo" class="w-10 h-10 md:w-12 md:h-12">
       <h2 class="text-lg md:text-xl font-[Poppins] italic ml-2">The Game</h2>
     </div>
     
-    <!-- Desktop Navigation -->
+  
     <div class="hidden md:flex text-[#055D65] text-lg md:text-xl font-bold space-x-6 lg:space-x-10">
       <a href="#" class=" hover:text-blue-400 transition">Home</a>
       <a href="#" class=" hover:text-white transition">Game</a>
       <a href="#" class=" hover:text-white transition">About</a>
     </div>
     
-    <!-- Mobile Menu Button -->
     <button class="md:hidden text-white">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -23,9 +22,7 @@ export function renderWeclome(container: HTMLElement) {
     </button>
   </nav>
 
-  <!-- Main Content -->
   <section class="w-full min-h-[calc(100vh-5rem)] flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 md:px-12 lg:px-20 py-8">
-    <!-- Text Content -->
     <div class="w-full md:w-1/2 text-center md:text-left mt-8 md:mt-0">
       <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-[#055D65] leading-tight">
         ARE YOU READY
@@ -64,8 +61,6 @@ export function renderWeclome(container: HTMLElement) {
         </div>
       </div>
     </div>
-    
-    <!-- Image Content -->
     <div class="w-full md:w-1/2 flex justify-center">
       <div class=" rounded-xl w-full max-w-[800px] h-[700px] sm:h-[350px] md:h-[400px]" alt="Ping Pong Players">
       <img src="assets/player_fix.svg" alt="player.svg">
