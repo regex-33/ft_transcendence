@@ -1,6 +1,6 @@
 const fastify = require("fastify")();
 const db = require("../../models");
-const jsonwebtoken = require("jsonwebtoken");
+const jsonwebtoken = require("../../middleware/jwt");
 const bcrypt = require("bcrypt");
 const multer = require("../../middleware/Multer");
 const jwt_secret = process.env.JWT_SECRET || "your_jwt_secret";

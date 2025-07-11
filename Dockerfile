@@ -8,7 +8,7 @@ RUN apt-get update && \
 WORKDIR /app
 
 COPY . .
-RUN npm install --production
+RUN npm install 
 
 RUN chmod +x enterpoint.sh
 

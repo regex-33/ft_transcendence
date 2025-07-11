@@ -1,5 +1,5 @@
 const db = require("../../models");
-const jsonwebtoken = require("jsonwebtoken");
+const jsonwebtoken = require("../../middleware/jwt");
 const checkAuthJWT = require("../../middleware/checkauthjwt");
 const getbyusername = (request, reply) => {
   const check = checkAuthJWT(request, reply);
@@ -44,7 +44,7 @@ const getbyId = (request, reply) => {
   if (!/^\d+$/.test(id)) {
     return reply.status(400).send({ error: "Invalid user ID format." });
   }
-
+console.log("Fetching user by ID:", id);
   db.User.findByPk(id)
     .then((user) => {
       if (!user) {

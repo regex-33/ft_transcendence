@@ -1,7 +1,7 @@
 const db = require("../../models");
 const { request } = require("undici");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const jwt = require("../../middleware/jwt");
 const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } = process.env;
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
 

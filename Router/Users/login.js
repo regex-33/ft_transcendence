@@ -1,6 +1,6 @@
 const fastify = require("fastify")();
 const db = require("../../models");
-const jwt = require("jsonwebtoken");
+const jwt = require("../../middleware/jwt");
 const bcrypt = require("bcrypt");
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
 

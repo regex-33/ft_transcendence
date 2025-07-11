@@ -28,8 +28,10 @@
     "fastify-express": "^0.4.0",
     "fastify-postgres": "^3.7.0",
     "jsonwebtoken": "^9.0.2",
+    "nodemon": "^3.1.10",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
-    "sequelize": "^6.37.7"
+    "sequelize": "^6.37.7",
+    "undici": "^5.28.0"
   }
 }

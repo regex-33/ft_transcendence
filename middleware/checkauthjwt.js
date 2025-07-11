@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+const jwt = require("./jwt");
 
 const checkAuthJWT = (req, reply) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -13,6 +13,7 @@ const checkAuthJWT = (req, reply) => {
       );
     }
     req.user = decoded;
+    console.log("User authenticated:", req.user);
     return false;
   });
 }
