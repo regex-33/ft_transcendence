@@ -5,7 +5,7 @@ export function renderWeclome(container: HTMLElement) {
   <nav class="flex items-center w-full justify-between px-4 sm:px-6 md:px-12 py-4 h-20">
     <div class="flex items-center text-white">
       <img src="/assets/logo.png" alt="logo" class="w-10 h-10 md:w-12 md:h-12">
-      <h2 class="text-lg md:text-xl font-[Poppins] italic ml-2">The Game</h2>
+      <h2 class="text-lg md:text-xl font-[Poppins] italic">The Game</h2>
     </div>
     
   
