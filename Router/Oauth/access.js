@@ -42,15 +42,33 @@ const access = async (req, reply) => {
   });
 
   const userData = await userRes.body.json();
-  const { login: username, avatar_url: avatarUrl, name: fullName } = userData;
+  const {
+    login: username,
+    avatar_url: avatarUrl,
+    name: fullName,
+    id,
+  } = userData;
+
+  try {
+    const user = await db.User.findOne({ where: { username } });
+    if (user && user.identifier !== id) {
+      return reply
+        .code(400)
+        .send({ error: "Username already exists" });
+    }
+  } catch (err) {
+    console.error("Error checking user:", err);
+    return reply.code(500).send({ error: "Internal server error" });
+  }
   try {
     const [user, created] = await db.User.findOrCreate({
-      where: { username },
+      where: { id: id },
       defaults: {
         username,
+        identifier: id,
         image: avatarUrl,
         name: fullName,
-        email: username + "@github.com",
+        email: "without",
         password: await bcrypt.hash(
           "96dd02f019520463b(-_*)64fa7ef1170d1cf033404b4",
           10

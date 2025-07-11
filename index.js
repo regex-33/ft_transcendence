@@ -2,10 +2,14 @@ const fastify = require("fastify")();
 const db = require("./models");
 const path = require("path");
 const fastifyStatic = require("@fastify/static");
-const {UserRoutes,FriendRoutes,OauthRoutes} = require("./Router");
+const { UserRoutes, FriendRoutes, OauthRoutes } = require("./Router");
 
 fastify.addHook("onResponse", async (request, reply) => {
-  console.log(`[${new Date().toISOString()}] ${request.method} ${request.url}  - ${reply.statusCode}`);
+  console.log(
+    `[${new Date().toISOString()}] ${request.method} ${request.url}  - ${
+      reply.statusCode
+    }`
+  );
 });
 
 fastify.register(fastifyStatic, {
@@ -19,16 +23,16 @@ fastify.register(UserRoutes, { prefix: "/api" });
 fastify.register(FriendRoutes, { prefix: "/api" });
 fastify.register(OauthRoutes, { prefix: "/api" });
 
-// fastify.get("/", async (request, reply) => {
+fastify.get("/", async (request, reply) => {
 
-//   return  reply.sendFile("oauth.html");
-// });
+  return reply.sendFile("oauth.html");
+});
 
 db.sequelize
   .sync()
   .then(() => {
     console.log("Database connected successfully");
-    return fastify.listen({ port: 3000, host: '0.0.0.0' });
+    return fastify.listen({ port: 3000, host: "0.0.0.0" });
   })
   .then(() => {
     console.log(`Server is running on port 3000`);

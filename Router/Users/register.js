@@ -11,7 +11,7 @@ const validation = (body, reply) => {
     return reply.status(400).send({ error: "Request body is required" });
   }
 
-  const { username, password, email,name } = body;
+  const { username, password, email, name } = body;
 
   if (!username || !password || !email || !name) {
     return reply
@@ -33,9 +33,18 @@ const validation = (body, reply) => {
   if (!/^[a-zA-Z_]+$/.test(username)) {
     return reply
       .status(400)
-      .send({ error: "Username must contain only letters, numbers, and underscores" });
+      .send({
+        error: "Username must contain only letters, numbers, and underscores",
+      });
   }
-  if (username.length < 3 || password.length < 6 || !email.includes("@") || nameParts.length != 2 || nameParts[0].length < 3 || nameParts[1].length < 3) {
+  if (
+    username.length < 3 ||
+    password.length < 6 ||
+    !email.includes("@") ||
+    nameParts.length != 2 ||
+    nameParts[0].length < 3 ||
+    nameParts[1].length < 3
+  ) {
     return reply
       .status(400)
       .send({ error: "Invalid username, password, email, or name format" });
@@ -44,73 +53,74 @@ const validation = (body, reply) => {
   return null;
 };
 
-const register =  (request, reply) => {
+const register = async (request, reply) => {
   try {
-    multer(request).then((body) => {
+    let body;
+    try {
+      body = await multer(request);
+      if (!body) {
+        return reply.status(400).send({ error: "No data received" });
+      }
+    } catch (error) {
+      console.error("Error processing multipart request:", error.message);
+      return reply
+        .status(500)
+        .send({ message: "Failed to process multipart request" });
+    }
     const validationError = validation(body, reply);
 
     if (validationError) return validationError;
 
-    const { username, password, email, image , name } = body;
+    const { username, password, email, image, name } = body;
     let path = image ? image.path : "uploads/default_profile_picture.png";
-    db.User.findOne({
-      where: {
-        [db.Sequelize.Op.or]: [{ username: username }, { email: email }],
-      },
-    })
-      .then((user) => {
-        if (user) {
-          return reply.status(400).send({
-            error: `${
-              user.username === username ? "Username" : "Email"
-            } already exists`,
-          });
-        }
-      })
-      .catch((error) => {
-        return reply.status(500).send({ message: "Internal server error" });
+    try {
+      const user = await db.User.findOne({
+        where: {
+          [db.Sequelize.Op.or]: [{ username: username }, { email: email }],
+        },
       });
+
+      if (user) {
+        return reply.status(400).send({
+          error: `${
+            user.username === username ? "Username" : "Email"
+          } already exists`,
+        });
+      }
+    } catch (error) {
+      console.error("Error checking user existence:", error.message);
+      return reply.status(500).send({ message: "Internal server error" });
+    }
 
     const hashedPassword = bcrypt.hashSync(password, 10);
-
-    db.User.create({
-      username,
-      password: hashedPassword,
-      email,
-      image: path || null,
-      name
-    })
-      .then((user) => {
-
-        const token = jsonwebtoken.sign(
-          {id: user.id, username: user.username, email: user.email },
-          jwt_secret,
-          { expiresIn: time_token_expiration },
-          (error, token) => {
-            if (error)
-              return reply
-                .status(500)
-                .send({ error: "Error generating token" });
-
-            return reply.send({
-              message: `User ${username} registered successfully!`,
-              email,
-              token,
-              name
-            });
-          }
-        );
-      })
-      .catch((error) => {
-        console.error("Error creating user:", error.message);
-        return reply.status(500).send({ message: "Internal server error" });
+    try {
+      const user = await db.User.create({
+        username,
+        password: hashedPassword,
+        email,
+        image: path || null,
+        name,
       });
-    }).catch((error) => {
-      console.error("Error processing multipart request:", error.message);
-      return reply.status(500).send({ message: "Failed to process multipart request" });
-    });
-  } catch (err) {
-    console.error("Unexpected error during registration:", err);
+      const token = await jsonwebtoken.sign(
+        { id: user.id, username: user.username, email: user.email },
+        jwt_secret,
+        { expiresIn: time_token_expiration }
+      );
+      if (!token)
+        return reply.status(500).send({ error: "Error generating token" });
+
+      return reply.status(201).send({
+        message: `User ${username} registered successfully!`,
+        email,
+        token,
+        name,
+      });
+    } catch (error) {
+      console.error("Error creating user:", error.message);
+      return reply.status(500).send({ message: "Internal server error" });
+    }
+  } catch (error) {
+    console.error("Error in register handler:", error.message);
     return reply.status(500).send({ message: "Internal server error" });
   }
 };

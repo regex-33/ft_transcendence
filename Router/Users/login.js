@@ -18,7 +18,7 @@ const validateInputs = (username, password) => {
   return { valid: true };
 };
 
-const login = (request, reply) => {
+const login = async (request, reply) => {
   try {
     if (!request.body)
       return reply
@@ -31,46 +31,44 @@ const login = (request, reply) => {
     if (!validation.valid) {
       return reply.status(400).send({ error: validation.message });
     }
+    try {
+      const user = await db.User.findOne({ where: { username } });
 
-    db.User.findOne({ where: { username } })
-      .then((user) => {
-        if (!user) {
-          return reply
-            .status(401)
-            .send({ error: "Invalid username or password." });
-        }
+      if (!user) {
+        return reply
+          .status(401)
+          .send({ error: "Invalid username or password." });
+      }
 
-        bcrypt.compare(password, user.password, (err, isMatch) => {
-          if (err)
-            return reply.status(500).send({ error: "Internal server error." });
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return reply
+          .status(401)
+          .send({ error: "Invalid username or password." });
+      }
 
-          if (!isMatch)
-            return reply
-              .status(401)
-              .send({ error: "Invalid username or password." });
-
-          const token = jwt.sign(
-            { id: user.id, username: user.username , email: user.email },
-            JWT_SECRET,
-            { expiresIn: TIME_TOKEN_EXPIRATION }
-          );
-
-          reply.send({
-            user: {
-              id: user.id,
-              username: user.username,
-              email: user.email,
-              image: user.image,
-              name: user.name,
-            },
-            token,
-          });
-        });
-      })
-      .catch((err) => {
-        console.error("Error during login:", err);
-        reply.status(500).send({ error: "Internal server error." });
+      const token = jwt.sign(
+        { id: user.id, username: user.username, email: user.email },
+        JWT_SECRET,
+        { expiresIn: TIME_TOKEN_EXPIRATION }
+      );
+      if (!token) {
+        return reply.status(500).send({ error: "Failed to generate token." });
+      }
+      reply.send({
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          image: user.image,
+          name: user.name,
+        },
+        token,
       });
+    } catch (err) {
+      console.error("Error during login:", err);
+      reply.status(500).send({ error: "Internal server error." });
+    }
   } catch (error) {
     console.error("Unexpected error during login:", error);
     return reply.status(500).send({ error: "Internal server error." });
