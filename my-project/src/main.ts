@@ -1,15 +1,17 @@
 import './style.css';
 // import { renderWeclome } from './renderWeclome';
-import { renderSing } from './renderSing';
-// import { showLogin, showRegister } from './auth';
+import { renderlogin } from './renderlogin';
+
+import { renderSignup } from './renderSignup';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 app.innerHTML = `<div id="root"></div>`;
 
 const root = document.getElementById('root');
 if (root) {
-  renderSing(root);
+  renderlogin(root);
 }
 
-// (window as any).showLogin = showLogin;
-// (window as any).showRegister = showRegister;
+// Expose globally for onclick inline use
+(window as any).renderlogin = renderlogin;
+(window as any).renderSignup = renderSignup;
