@@ -1,9 +1,9 @@
 const login = require("./Users/login");
 const register = require("./Users/register");
-const access = require("./Oauth/access");
 const actionsHandler = require("./Friends/actionsHandler");
 const addFriend = require("./Friends/addFriend.js");
-const redirecting = require("./Oauth/redirecting");
+const github = require("./Oauth/github");
+const intra = require("./Oauth/intra");
 const {
     getbyusername,
     getbyId,
@@ -31,8 +31,10 @@ async function FriendRoutes(fastify, options) {
 }
 
 async function OauthRoutes(fastify, options) {
-  fastify.get("/auth/github", redirecting);
-  fastify.get("/auth/access", access);
+  fastify.get("/auth/github", github.redirect);
+  fastify.get("/auth/access", github.handleAuthCallback);
+  fastify.get("/auth/intra", intra.redirect);
+  fastify.get("/auth/intra/callback", intra.handleAuthCallback);
 }
 
 module.exports = { UserRoutes, FriendRoutes, OauthRoutes };

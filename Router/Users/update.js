@@ -69,7 +69,7 @@ const updateUser = (req, res) => {
         name,
         email,
         password,
-        image.path,
+        image ? undefined : image.path,
         username
       );
 
@@ -85,6 +85,7 @@ const updateUser = (req, res) => {
           if (password) updatedData.password = password;
           if (image) updatedData.image = image.path;
           if (username) updatedData.username = username;
+          if (image) updatedData.image = image.path;
 
           user
             .update(updatedData)

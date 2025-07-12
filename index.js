@@ -1,8 +1,11 @@
 const fastify = require("fastify")();
 const db = require("./models");
+const { request } = require("undici");
+
 const path = require("path");
 const fastifyStatic = require("@fastify/static");
 const { UserRoutes, FriendRoutes, OauthRoutes } = require("./Router");
+const { Console } = require("console");
 
 fastify.addHook("onResponse", async (request, reply) => {
   console.log(
@@ -23,9 +26,8 @@ fastify.register(UserRoutes, { prefix: "/api" });
 fastify.register(FriendRoutes, { prefix: "/api" });
 fastify.register(OauthRoutes, { prefix: "/api" });
 
-fastify.get("/", async (request, reply) => {
-
-  return reply.sendFile("oauth.html");
+fastify.get("/", (req, reply) => {
+  reply.type("text/html").sendFile("oauth.html");
 });
 
 db.sequelize

@@ -5,7 +5,14 @@ const jwt = require("../../middleware/jwt");
 const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } = process.env;
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
 
-const access = async (req, reply) => {
+
+const redirect = async (req, reply) => {
+  const redirectURL = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}`;
+  reply.redirect(redirectURL);
+};
+
+
+const handleAuthCallback = async (req, reply) => {
   const { code } = req.query;
 
   if (!code) {
@@ -62,10 +69,10 @@ const access = async (req, reply) => {
   }
   try {
     const [user, created] = await db.User.findOrCreate({
-      where: { id: id },
+      where: { identifier: `github-${id}` },
       defaults: {
         username,
-        identifier: id,
+        identifier: `github-${id}`,
         image: avatarUrl,
         name: fullName,
         email: "without",
@@ -101,4 +108,7 @@ const access = async (req, reply) => {
     console.error("Error creating or finding user:", err);
   }
 };
-module.exports = access;
+module.exports = {
+  handleAuthCallback,
+  redirect
+};
