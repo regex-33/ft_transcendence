@@ -2,6 +2,7 @@ const db = require("../../models/");
 const { User } = db;
 const checkAuthJWT = require("../../middleware/checkauthjwt");
 const multer = require("../../middleware/Multer");
+const bcrypt = require("bcrypt");
 const validation = (res, ...inputs) => {
   const [id, name, email, password, image, username] = inputs;
   if (name !== undefined && name.split(" ").length < 2) {
@@ -69,7 +70,7 @@ const updateUser = (req, res) => {
         name,
         email,
         password,
-        image ? undefined : image.path,
+        image ? image.path:undefined,
         username
       );
 
@@ -82,7 +83,7 @@ const updateUser = (req, res) => {
           const updatedData = {};
           if (name) updatedData.name = name;
           if (email) updatedData.email = email;
-          if (password) updatedData.password = password;
+          if (password) updatedData.password = bcrypt.hashSync(password, 10);
           if (image) updatedData.image = image.path;
           if (username) updatedData.username = username;
           if (image) updatedData.image = image.path;

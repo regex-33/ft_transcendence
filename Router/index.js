@@ -11,6 +11,8 @@ const {
 } = require("./Users/getters");
 const updateUser = require("./Users/update");
 
+const checkcode = require("./Users/checkcode");
+
 const GITHUB_CLIENT_ID = "Ov23li9XghxCIA1SbDTu";
 const GITHUB_CLIENT_SECRET = "96dd02f019520463b64fa7ef1170d1cf033404b4";
 
@@ -37,4 +39,8 @@ async function OauthRoutes(fastify, options) {
   fastify.get("/auth/intra/callback", intra.handleAuthCallback);
 }
 
-module.exports = { UserRoutes, FriendRoutes, OauthRoutes };
+async function checkCodeRoutes(fastify, options) {
+  fastify.post("/sendcode", checkcode.send_code);
+  fastify.post("/checkcode", checkcode.check_code);
+}
+module.exports = { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes };

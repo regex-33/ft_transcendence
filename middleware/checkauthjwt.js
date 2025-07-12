@@ -13,7 +13,6 @@ const checkAuthJWT = (req, reply) => {
       );
     }
     req.user = decoded;
-    console.log("User authenticated:", req.user);
     return false;
   });
 }
