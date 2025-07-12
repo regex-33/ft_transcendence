@@ -58,7 +58,7 @@ const handleAuthCallback = async (req, reply) => {
 
   try {
     const user = await db.User.findOne({ where: { username } });
-    if (user && user.identifier !== id) {
+    if (user && user.identifier !== `github-${id}`) {
       return reply
         .code(400)
         .send({ error: "Username already exists" });

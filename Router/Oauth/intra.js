@@ -2,12 +2,12 @@ const request = require("undici").request;
 const db = require("../../models");
 const bcrypt = require("bcrypt");
 const jwt = require("../../middleware/jwt");
-const { 
-        JWT_SECRET,
-        TIME_TOKEN_EXPIRATION,
-        INTRA_CLIENT_ID,
-        INTRA_CLIENT_SECRET
-    } = process.env;
+const {
+    JWT_SECRET,
+    TIME_TOKEN_EXPIRATION,
+    INTRA_CLIENT_ID,
+    INTRA_CLIENT_SECRET
+} = process.env;
 const redirect = (req, reply) => {
     const redirectURL = `https://api.intra.42.fr/oauth/authorize?client_id=${INTRA_CLIENT_ID}&response_type=code&redirect_uri=http://localhost:3000/api/auth/intra/callback`;
     reply.redirect(redirectURL);
@@ -53,47 +53,53 @@ const handleAuthCallback = async (req, reply) => {
     const {
         id, email, login, first_name, last_name, image: { link: url } = {},
     } = userData;
-    
+    const user = await db.User.findOne({ where: { username: login } });
+    if (user && user.identifier !== `intra-${id}`) {
+        return reply
+            .code(400)
+            .send({ error: "Username already exists" });
+    }
+
     try {
         const [user, created] = await db.User.findOrCreate({
-          where: { identifier: `intra-${id}` },
-          defaults: {
-            username: login,
-            identifier: `intra-${id}`,
-            image: url,
-            name: `${first_name} ${last_name}`,
-            email: email || "without",
-            password: await bcrypt.hash(
-              "96dd02f019520463b(-_*)64fa7ef1170d1cf033404b4",
-              10
-            ),
-          },
+            where: { identifier: `intra-${id}` },
+            defaults: {
+                username: login,
+                identifier: `intra-${id}`,
+                image: url,
+                name: `${first_name} ${last_name}`,
+                email: email || "without",
+                password: await bcrypt.hash(
+                    "96dd02f019520463b(-_*)64fa7ef1170d1cf033404b4",
+                    10
+                ),
+            },
         });
-    
+
         if (created) {
-          console.log(`User ${login} created successfully.`);
+            console.log(`User ${login} created successfully.`);
         } else {
-          console.log(`User ${login} already exists.`);
+            console.log(`User ${login} already exists.`);
         }
         const token = jwt.sign(
-          { id: user.id, username: user.username, email: user.email },
-          JWT_SECRET,
-          { expiresIn: TIME_TOKEN_EXPIRATION }
+            { id: user.id, username: user.username, email: user.email },
+            JWT_SECRET,
+            { expiresIn: TIME_TOKEN_EXPIRATION }
         );
         if (!token) {
-          return reply.code(500).send({ error: "Failed to generate token" });
+            return reply.code(500).send({ error: "Failed to generate token" });
         }
         return reply.send({
-          user: {
-            id: user.id,
-            username: user.username,
-            name: user.name,
-          },
-          token: token || null,
+            user: {
+                id: user.id,
+                username: user.username,
+                name: user.name,
+            },
+            token: token || null,
         });
-      } catch (err) {
+    } catch (err) {
         console.error("Error creating or finding user:", err);
-      }
+    }
 };
 
 module.exports = {

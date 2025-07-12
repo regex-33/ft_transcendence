@@ -23,7 +23,8 @@ module.exports = (sequelize, DataTypes) => {
       },
       identifier: {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: false,
+        defaultValue: "without",
       },
       password: {
         type: DataTypes.STRING,
