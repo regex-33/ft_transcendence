@@ -4,6 +4,7 @@ const actionsHandler = require("./Friends/actionsHandler");
 const addFriend = require("./Friends/addFriend.js");
 const github = require("./Oauth/github");
 const intra = require("./Oauth/intra");
+const getFriends = require("./Friends/getFriends");
 const {
     getbyusername,
     getbyId,
@@ -13,10 +14,6 @@ const updateUser = require("./Users/update");
 
 const checkcode = require("./Users/checkcode");
 
-const GITHUB_CLIENT_ID = "Ov23li9XghxCIA1SbDTu";
-const GITHUB_CLIENT_SECRET = "96dd02f019520463b64fa7ef1170d1cf033404b4";
-
-
 async function UserRoutes(fastify, options) {
   fastify.post("/register", register);
   fastify.post("/login", login);
@@ -24,12 +21,12 @@ async function UserRoutes(fastify, options) {
   fastify.get("/users/:username", getbyusername);
   fastify.get("/users/id/:id", getbyId);
   fastify.get("/users", getUsers);
-
 }
 
 async function FriendRoutes(fastify, options) {
   fastify.post("/friends/add", addFriend);
   fastify.post("/friends/actions", actionsHandler);
+  fastify.get("/friends", getFriends);
 }
 
 async function OauthRoutes(fastify, options) {
