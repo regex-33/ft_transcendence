@@ -53,11 +53,14 @@ const handleAuthCallback = async (req, reply) => {
     login: username,
     avatar_url: avatarUrl,
     name: fullName,
+    email,
     id,
   } = userData;
 
   try {
-    const user = await db.User.findOne({ where: { username } });
+    const user = await db.User.findOne({ where: { 
+      [db.Sequelize.Op.or]: [{ username }, { email }]
+     } });
     if (user && user.identifier !== `github-${id}`) {
       return reply
         .code(400)
@@ -75,7 +78,7 @@ const handleAuthCallback = async (req, reply) => {
         identifier: `github-${id}`,
         image: avatarUrl,
         name: fullName,
-        email: "without",
+        email: email || `${username}@github.com`,
         password: await bcrypt.hash(
           "96dd02f019520463b(-_*)64fa7ef1170d1cf033404b4",
           10

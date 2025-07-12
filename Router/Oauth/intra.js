@@ -53,7 +53,7 @@ const handleAuthCallback = async (req, reply) => {
     const {
         id, email, login, first_name, last_name, image: { link: url } = {},
     } = userData;
-    const user = await db.User.findOne({ where: { username: login } });
+    const user = await db.User.findOne({ where: { [db.Sequelize.Op.or]: [{ username: login }, { email: email }] } });
     if (user && user.identifier !== `intra-${id}`) {
         return reply
             .code(400)
@@ -68,7 +68,7 @@ const handleAuthCallback = async (req, reply) => {
                 identifier: `intra-${id}`,
                 image: url,
                 name: `${first_name} ${last_name}`,
-                email: email || "without",
+                email: email || `${login}@intra.42.fr`,
                 password: await bcrypt.hash(
                     "96dd02f019520463b(-_*)64fa7ef1170d1cf033404b4",
                     10
