@@ -46,7 +46,9 @@ const login = async (request, reply) => {
           .status(401)
           .send({ error: "Invalid username or password." });
       }
-
+      if (user.TwoFA) {
+        return reply.send({ "2fa": true });
+      }
       const token = jwt.sign(
         { id: user.id, username: user.username, email: user.email },
         JWT_SECRET,

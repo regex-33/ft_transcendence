@@ -15,7 +15,6 @@ module.exports = (sequelize, DataTypes) => {
       name: {
         type: DataTypes.STRING,
         allowNull: false,
-        
       },
       email: {
         type: DataTypes.STRING,
@@ -43,6 +42,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: true,
         defaultValue: "__",
+      },
+      TwoFA: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
       },
     },
     {
