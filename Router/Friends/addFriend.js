@@ -4,6 +4,7 @@ const { User, Relationship } = db;
 
 const validate = (reply, ...ids) => {
   const [userId, friendId] = ids.map((id) => parseInt(id, 10));
+
   if (!friendId || !userId) {
     return reply
       .status(400)

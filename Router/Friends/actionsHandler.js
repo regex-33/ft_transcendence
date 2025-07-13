@@ -13,10 +13,9 @@ const actionsHandler = async (req, reply) => {
   const { action, id } = req.body;
   const userId = req.user.id;
 
-  if (!action || (!id && action !== "block")) {
+  if (!action || (!id)) {
     return reply.status(400).send({ error: "Action and ID are required." });
   }
-  
 
   if (typeof id !== "number" || isNaN(id)) {
     return reply.status(400).send({ error: "Invalid ID format." });

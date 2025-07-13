@@ -2,7 +2,6 @@ const { User, Relationship } = require("../../models");
 
 const acceptFriendRequest = async (reply, ...inputs) => {
   const [userId, action, id] = inputs;
-  console.log(userId, action, id);
   const rel = await Relationship.findOne({
     where: {
       from: id,
