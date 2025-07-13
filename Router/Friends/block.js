@@ -23,7 +23,6 @@ const blockUser = async (reply, userId, action, id) => {
         ],
       },
     });
-    console.log("=============================================")
     if (!rel) {
       const block = await Relationship.create({
         from: userId,
@@ -38,21 +37,22 @@ const blockUser = async (reply, userId, action, id) => {
       }
       return reply.status(202).send({ blocked: true });
     } else {
+      if (rel.status === "friend") {
+        await Promise.all(users.map((user) => user.update({ friends: user.friends - 1 })));
+      }
+      rel.creator = userId;
       if (rel.status === "blocked") {
         return reply.status(400).send({
           error: "User is already blocked.",
         });
       }
-      if (rel.status === "friend") {
-        await Promise.all(users.map((user) => user.update({ friends: user.friends - 1 })));
-      }
       await rel.update({ status: "blocked" });
       return reply.status(204).send();
     }
   } catch (error) {
+    console.error("Error blocking user:", error);
     return reply.status(500).send({
       error: "An error occurred while blocking the user.",
-      details: error.message,
     });
   }
 };

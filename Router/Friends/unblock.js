@@ -4,8 +4,8 @@ const unblockFriendRequest = async (reply, ...inputs) => {
   const [userId, action, id] = inputs;
   const rel = await Relationship.findOne({
     where: {
-      id: id,
-      creator: userId,
+      to: id,
+      creator: userId, 
       status: "blocked",
     },
   });
@@ -21,7 +21,7 @@ const unblockFriendRequest = async (reply, ...inputs) => {
   }
 
   await rel.destroy();
-  return reply.status(204).send({ deleted: true });
+  return reply.status(204).send();
 };
 
 module.exports = unblockFriendRequest;

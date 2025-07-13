@@ -41,6 +41,7 @@ const getbyId = (request, reply) => {
     id = request.user.id; 
     // return reply.status(400).send({ error: "User ID is required." });
   }
+  
   if (!/^\d+$/.test(id)) {
     return reply.status(400).send({ error: "Invalid user ID format." });
   }

@@ -23,11 +23,12 @@ const validate = (reply, ...ids) => {
 
 const addFriend = async (request, reply) => {
   let check = checkAuthJWT(request, reply);
+  if (check) return check;
 
-  const id = 1 || request.user.id;
-  const fid = 2 || request.body.id;
+  const id = request.user.id;
+  const fid = request.body.id;
 
-  check = check || validate(reply, id, fid);
+  check = validate(reply, id, fid);
   if (check) return check;
   let users;
   try {
@@ -73,16 +74,12 @@ const addFriend = async (request, reply) => {
   }
 
   try {
+    console.log("Creating relationship between", id, "and", fid);
     const rel = await Relationship.create({
       from: id,
       to: fid,
       creator: id,
     });
-    await Promise.all(
-      users.map((user) => {
-        return user.update({ friends: user.friends + 1 });
-      })
-    );
 
     reply.status(201).send(rel);
   } catch (error) {
