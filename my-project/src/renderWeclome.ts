@@ -23,7 +23,7 @@ export function renderWeclome(container: HTMLElement) {
   </nav>
 
   <section class="w-full min-h-[calc(100vh-5rem)] flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 md:px-12 lg:px-20 py-8">
-    <div class="w-full md:w-1/2 text-center md:text-left mt-8 md:mt-0">
+    <div class="w-full px-12 space-y-8  md:w-1/2 text-center md:text-left mt-8 md:mt-0">
       <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-[#055D65] leading-tight">
         ARE YOU READY
       </h1>
@@ -37,7 +37,7 @@ export function renderWeclome(container: HTMLElement) {
         Challenge friends or climb the leaderboard in the ultimate ping pong showdown.
       </p>
       
-      <div class="flex flex-col items-center md:items-start mt-8 space-y-6">
+      <div class="flex flex-col items-center md:items-start mt-8 space-y-7 px-48">
         <button class="border-2 md:border-4 border-white text-white px-12 py-2 md:px-20 md:py-1 rounded-full text-lg md:text-xl font-semibold hover:bg-white hover:text-[#0A3E61] transition-all duration-300">
           Log In
         </button>
