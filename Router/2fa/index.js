@@ -26,32 +26,7 @@ const create2fa = async (req, res) => {
         obj.secret = secret.base32;
         await obj.save();
     }
-    res.type("html").send(`
-                        <!DOCTYPE html>
-                        <html lang="en">
-                            <head>
-                            <meta charset="UTF-8" />
-                            <title>2FA QR Code</title>
-                            <style>
-                                body {
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                height: 100vh;
-                                background: #f0f0f0;
-                                margin: 0;
-                                font-family: sans-serif;
-                                }
-                                img {
-                                box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-                                }
-                            </style>
-                            </head>
-                            <body>
-                            <img src="${qrCodeUrl}" alt="QR Code" />
-                            </body>
-                        </html>
-                        `);
+    res.send({qrCodeUrl});
 };
 
 const verify2fa = async (req, res) => {
