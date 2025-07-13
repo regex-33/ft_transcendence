@@ -3,7 +3,7 @@ const db = require("./models");
 const banner = require("./middleware/banner");
 const path = require("path");
 const fastifyStatic = require("@fastify/static");
-const { UserRoutes, FriendRoutes, OauthRoutes,  checkCodeRoutes} = require("./Router");
+const { UserRoutes, FriendRoutes, OauthRoutes,  checkCodeRoutes , _2faRoutes} = require("./Router");
 const logger = require("./middleware/logger");
 
 fastify.addHook("onResponse", logger);
@@ -15,6 +15,7 @@ fastify.register(UserRoutes, { prefix: "/api" });
 fastify.register(FriendRoutes, { prefix: "/api" });
 fastify.register(OauthRoutes, { prefix: "/api" });
 fastify.register(checkCodeRoutes, { prefix: "/api" });
+fastify.register(_2faRoutes, { prefix: "/api" });
 fastify.register(fastifyStatic, {
   root: path.join(__dirname, "uploads"),
   prefix: "/uploads/",

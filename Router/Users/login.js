@@ -46,8 +46,18 @@ const login = async (request, reply) => {
           .status(401)
           .send({ error: "Invalid username or password." });
       }
-      if (user.TwoFA) {
-        return reply.send({ "2fa": true });
+      try {
+        const TwoFA = await db.TwoFA.findOne({ where: { username } });
+        if (TwoFA) {
+          return reply.send({
+            needCode: true,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching 2FA status:", error);
+        return reply
+          .status(500)
+          .send({ error: "Internal server error " });
       }
       const token = jwt.sign(
         { id: user.id, username: user.username, email: user.email },
@@ -58,13 +68,6 @@ const login = async (request, reply) => {
         return reply.status(500).send({ error: "Failed to generate token." });
       }
       reply.send({
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          image: user.image,
-          name: user.name,
-        },
         token,
       });
     } catch (err) {

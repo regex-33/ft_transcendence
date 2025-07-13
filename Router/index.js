@@ -11,8 +11,8 @@ const {
     getUsers,
 } = require("./Users/getters");
 const updateUser = require("./Users/update");
-
 const checkcode = require("./Users/checkcode");
+const _2fa = require("./2fa");
 
 async function UserRoutes(fastify, options) {
   fastify.post("/register", register);
@@ -40,4 +40,10 @@ async function checkCodeRoutes(fastify, options) {
   fastify.post("/sendcode", checkcode.send_code);
   fastify.post("/checkcode", checkcode.check_code);
 }
-module.exports = { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes };
+
+async function _2faRoutes(fastify, options) {
+  fastify.get("/2fa/generate/:username", _2fa.create2fa);
+  fastify.post("/2fa/verify", _2fa.verify2fa);
+}
+
+module.exports = { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes };

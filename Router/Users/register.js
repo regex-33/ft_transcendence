@@ -82,9 +82,8 @@ const register = async (request, reply) => {
 
       if (user) {
         return reply.status(400).send({
-          error: `${
-            user.username === username ? "Username" : "Email"
-          } already exists`,
+          error: `${user.username === username ? "Username" : "Email"
+            } already exists`,
         });
       }
     } catch (error) {
@@ -110,10 +109,7 @@ const register = async (request, reply) => {
         return reply.status(500).send({ error: "Error generating token" });
 
       return reply.status(201).send({
-        message: `User ${username} registered successfully!`,
-        email,
         token,
-        name,
       });
     } catch (error) {
       console.error("Error creating user:", error.message);
