@@ -3,7 +3,7 @@ endence
 ## Run
 
 ```sh
-sudo make # or make if you have docker permission
+sudo make
 ```
 
 # Endpoints
