@@ -45,7 +45,7 @@ async function checkCodeRoutes(fastify, options) {
 }
 
 async function _2faRoutes(fastify, options) {
-  fastify.get("/generate/:username", _2fa.create2fa);
+  fastify.get("/generate", _2fa.create2fa);
   fastify.post("/verify", _2fa.verify2fa);
 }
 

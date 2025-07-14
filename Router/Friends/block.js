@@ -47,7 +47,7 @@ const blockUser = async (reply, userId, action, id) => {
         });
       }
       await rel.update({ status: "blocked" });
-      return reply.status(204).send();
+      return reply.status(202).send({ blocked: true });
     }
   } catch (error) {
     console.error("Error blocking user:", error);

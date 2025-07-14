@@ -1,12 +1,16 @@
 const speakeasy = require("speakeasy");
 const qrcode = require("qrcode");
 const db = require("../../models");
-
+const checkAuthJWT = require("../../middleware/checkauthjwt");
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
 const jwt = require("../../middleware/jwt");
 
 const create2fa = async (req, res) => {
-    const { username } = req.params;
+    const authError = checkAuthJWT(req, res);
+    if (authError) {
+        return res.status(401).send(authError);
+    }
+    const { username } = req.user;
     const secret = speakeasy.generateSecret({
         name: `ft_transcendence (${username})`,
     });

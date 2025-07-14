@@ -82,7 +82,7 @@ const addFriend = async (request, reply) => {
       creator: id,
     });
 
-    reply.status(201).send(rel);
+    reply.status(201).send();
   } catch (error) {
     reply.status(500).send({
       error: "An error occurred while sending the friend request.",
