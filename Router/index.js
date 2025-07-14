@@ -4,6 +4,7 @@ const actionsHandler = require("./Friends/actionsHandler");
 const addFriend = require("./Friends/addFriend.js");
 const github = require("./Oauth/github");
 const intra = require("./Oauth/intra");
+const google = require("./Oauth/google");
 const getFriends = require("./Friends/getFriends");
 const {
     getbyusername,
@@ -31,9 +32,11 @@ async function FriendRoutes(fastify, options) {
 
 async function OauthRoutes(fastify, options) {
   fastify.get("/auth/github", github.redirect);
-  fastify.get("/auth/access", github.handleAuthCallback);
+  fastify.get("/auth/github/callback", github.handleAuthCallback);
   fastify.get("/auth/intra", intra.redirect);
   fastify.get("/auth/intra/callback", intra.handleAuthCallback);
+  fastify.get("/auth/google", google.redirect);
+  fastify.get("/auth/google/callback", google.handleAuthCallback);
 }
 
 async function checkCodeRoutes(fastify, options) {

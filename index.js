@@ -21,6 +21,10 @@ fastify.register(fastifyStatic, {
   prefix: "/uploads/",
 });
 
+fastify.get("/", (req, reply) => {
+  reply.type("text/html").sendFile("oauth.html");
+});
+
 db.sequelize
   .sync()
   .then(() => {

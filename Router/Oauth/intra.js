@@ -46,7 +46,7 @@ const handleAuthCallback = async (req, reply) => {
     const userRes = await request("https://api.intra.42.fr/v2/me", {
         headers: {
             Authorization: `Bearer ${token}`,
-            "User-Agent": "Fastify-App",
+            "User-Agent": "ft_transcendence",
         },
     });
     const userData = await userRes.body.json();

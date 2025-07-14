@@ -44,7 +44,7 @@ const handleAuthCallback = async (req, reply) => {
   const userRes = await request("https://api.github.com/user", {
     headers: {
       Authorization: `Bearer ${tokenData.access_token}`,
-      "User-Agent": "Fastify-App",
+      "User-Agent": "ft_transcendence",
     },
   });
 
