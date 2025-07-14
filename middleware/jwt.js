@@ -1,12 +1,15 @@
 const { base64urlEncode, base64urlDecode } = require("./base64");
 const crypto = require("crypto");
 
-const sign = (payload, secret) => {
+const sign = (payload, secret, options={}) => {
     const header = {
         alg: "HS256",
         typ: "JWT"
     };
-
+    const { expiresIn } = options;
+    if (expiresIn) {
+        header.exp =  Math.floor(Date.now() / 1000) + expiresIn;
+    }
     const headerEncoded = base64urlEncode(JSON.stringify(header));
     const payloadEncoded = base64urlEncode(JSON.stringify(payload));
 
@@ -39,6 +42,13 @@ const verify = async (token, secret, callback) => {
     }
 
     const payload = JSON.parse(base64urlDecode(payloadEncoded));
+    const header = JSON.parse(base64urlDecode(headerEncoded));
+    if (header.exp && header.exp < Math.floor(Date.now() / 1000))
+    {
+        await callback("token expired", payload);
+        return;
+    }
+    
     await callback(null, payload);
     return payload;
 }
