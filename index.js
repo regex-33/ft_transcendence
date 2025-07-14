@@ -11,11 +11,11 @@ fastify.addHook("onRequest", banner);
 
 
 fastify.register(require("@fastify/multipart"));
-fastify.register(UserRoutes, { prefix: "/api" });
-fastify.register(FriendRoutes, { prefix: "/api" });
-fastify.register(OauthRoutes, { prefix: "/api" });
+fastify.register(UserRoutes, { prefix: "/api/users" });
+fastify.register(FriendRoutes, { prefix: "/api/friends" });
+fastify.register(OauthRoutes, { prefix: "/api/auth" });
 fastify.register(checkCodeRoutes, { prefix: "/api" });
-fastify.register(_2faRoutes, { prefix: "/api" });
+fastify.register(_2faRoutes, { prefix: "/api/2fa" });
 fastify.register(fastifyStatic, {
   root: path.join(__dirname, "uploads"),
   prefix: "/uploads/",
