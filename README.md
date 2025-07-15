@@ -12,7 +12,7 @@ These routes manage user accounts and all begin with `/api/users/...`
 
 | Method                 | Endpoint                    | Content-Type        | Body Fields or Params                  | Need Token |
 | ---------------------- | --------------------------- | ------------------- | -------------------------------------- | :--------: |
-| [POST](#post-register) | [/register](#post-register) | form-data/multipart | username, password, email, image, name |     No     |
+| [POST](#post-register) | [/register](#post-register) | application/json    | username, password, email, image, name |     No     |
 | [POST](#post-login)    | [/login](#post-login)       | application/json    | username, password                     |     No     |
 | [PUT](#put-update)     | [/update](#put-update)      | form-data/multipart | Any fields you want to update          |    Yes     |
 | [GET](#get-username)   | [/:username](#get-username) | -                   | username param                         |    Yes     |
