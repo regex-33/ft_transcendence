@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ft_transcendence Architecture</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        #diagram {
+            width: 100%;
+            height: auto;
+            min-height: 800px;
+        }
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ft_transcendence Microservices Architecture</h1>
+        
+        <div class="controls">
+            <button onclick="renderDiagram()">Render Diagram</button>
+            <button onclick="exportSVG()">Export SVG</button>
+            <button onclick="zoomIn()">Zoom In</button>
+            <button onclick="zoomOut()">Zoom Out</button>
+        </div>
+        
+        <div id="loading" class="loading">
+            <p>Loading diagram...</p>
+        </div>
+        
+        <div id="error" class="error" style="display: none;">
+            <p>Error rendering diagram. Please try refreshing the page.</p>
+        </div>
+        
+        <div id="diagram"></div>
+    </div>
+
+    <script>
+        // Initialize Mermaid with proper configuration
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            themeVariables: {
+                fontFamily: 'Arial, sans-serif',
+                fontSize: '12px'
+            }
+        });
+
+        // Your Mermaid diagram definition
+        const diagramDefinition = `graph TB
+    subgraph "Docker Network: ft_transcendence"
+        subgraph "Client Layer"
+            Frontend[🌐 Frontend<br/>React/TypeScript<br/>Port: 80/443<br/>Purpose: User Interface]
+            APIGateway[🚪 API Gateway<br/>Node.js/Express<br/>Port: 3000<br/>Purpose: Request Routing & Auth]
+        end
+        
+        subgraph "Core Microservices Layer"
+            Auth[🔐 Auth Service<br/>Node.js/Express<br/>Port: 3001<br/>Purpose: Authentication & JWT]
+            User[👥 User Service<br/>Node.js/Express<br/>Port: 3002<br/>Purpose: User Management & Profiles] 
+            Game[🎮 Game Service<br/>Node.js/Socket.io<br/>Port: 3003<br/>Purpose: Pong Game Engine & WebSocket]
+            Chat[💬 Chat Service<br/>Node.js/Socket.io<br/>Port: 3004<br/>Purpose: Real-time Messaging]
+            Tournament[🏆 Tournament Service<br/>Node.js/Express<br/>Port: 3005<br/>Purpose: Tournament Management]
+            Match[📊 Match Service<br/>Node.js/Express<br/>Port: 3006<br/>Purpose: Match History & Rankings]
+            Notification[🔔 Notification Service<br/>Node.js/Express<br/>Port: 3007<br/>Purpose: Multi-channel Notifications]
+            FileService[📁 File Service<br/>Node.js/Express<br/>Port: 3008<br/>Purpose: File Upload & Storage]
+            Stats[📈 Stats Service<br/>Node.js/Express<br/>Port: 3009<br/>Purpose: Statistics & Analytics]
+        end
+        
+        subgraph "Go Monitoring Agents (Separate Containers)"
+            SD[🔍 Service Discovery Agent<br/>Go Binary<br/>Port: 8500<br/>Purpose: Service Registration & Discovery<br/>Deployment: Dedicated Container]
+            HM[💓 Health Monitor Agent<br/>Go Binary<br/>Port: 8501<br/>Purpose: Health Checks & Liveness<br/>Deployment: Dedicated Container]
+            CB[⚡ Circuit Breaker Agent<br/>Go Binary<br/>Port: 8502<br/>Purpose: Failure Protection<br/>Deployment: Dedicated Container]
+            LB[⚖️ Load Balancer Agent<br/>Go Binary<br/>Port: 8503<br/>Purpose: Request Distribution<br/>Deployment: Dedicated Container]
+            MA[📊 Metrics Aggregator Agent<br/>Go Binary<br/>Port: 8504<br/>Purpose: Metrics Collection<br/>Deployment: Dedicated Container]
+        end
+        
+        subgraph "Infrastructure Services"
+            Consul[🏛️ Service Registry<br/>Consul<br/>Port: 8500<br/>Purpose: Service Discovery Backend]
+            Nginx[🌐 Load Balancer<br/>Nginx<br/>Port: 80/443<br/>Purpose: Reverse Proxy & SSL]
+        end
+        
+        subgraph "Message Brokers"
+            RabbitMQ[🐰 RabbitMQ<br/>Message Broker<br/>Port: 5672<br/>Purpose: Async Communication]
+            Redis[⚡ Redis Cluster<br/>In-Memory Cache<br/>Port: 6379<br/>Purpose: Caching & Sessions]
+        end
+        
+        subgraph "Databases"
+            PostgresMain[🐘 PostgreSQL Primary<br/>Database<br/>Port: 5432<br/>Purpose: Main Data Storage]
+            PostgresReplica[🐘 PostgreSQL Replica<br/>Database<br/>Port: 5433<br/>Purpose: Read Replica]
+        end
+        
+        subgraph "Monitoring Stack"
+            Prometheus[📈 Prometheus<br/>Metrics Storage<br/>Port: 9090<br/>Purpose: Metrics Collection & Storage]
+            Grafana[📊 Grafana<br/>Visualization<br/>Port: 3000<br/>Purpose: Dashboards & Alerting]
+            AlertManager[🚨 AlertManager<br/>Alert Routing<br/>Port: 9093<br/>Purpose: Alert Management]
+        end
+        
+        subgraph "Logging Stack (ELK)"
+            Elasticsearch[🔍 Elasticsearch<br/>Search Engine<br/>Port: 9200<br/>Purpose: Log Storage & Search]
+            Logstash[📝 Logstash<br/>Log Processor<br/>Port: 5044<br/>Purpose: Log Processing & Parsing]
+            Kibana[📊 Kibana<br/>Log Visualization<br/>Port: 5601<br/>Purpose: Log Analytics Dashboard]
+            Filebeat[📄 Filebeat<br/>Log Shipper<br/>Sidecar in each service<br/>Purpose: Log Collection]
+        end
+        
+        subgraph "Tracing"
+            Jaeger[🔗 Jaeger<br/>Distributed Tracing<br/>Port: 16686<br/>Purpose: Request Tracing]
+        end
+        
+        subgraph "Security & Backup"
+            Vault[🔐 HashiCorp Vault<br/>Secret Management<br/>Port: 8200<br/>Purpose: Secret Storage & Management]
+            Backup[💾 Backup Service<br/>Automated Backup<br/>Port: 9000<br/>Purpose: Database & File Backup]
+        end
+        
+        subgraph "External Services"
+            EmailService[📧 Email Service<br/>SMTP/SendGrid<br/>Port: 587<br/>Purpose: Email Notifications]
+            CDN[🌍 Content Delivery Network<br/>CloudFlare/AWS<br/>Purpose: Static Asset Delivery]
+        end
+    end
+    
+    %% Step 1: Client Layer Connections (BLUE)
+    Frontend -->|1. HTTP/HTTPS Requests| Nginx
+    Nginx -->|2. Route to API Gateway| APIGateway
+    Nginx -->|3. WebSocket Proxy| Game
+    Nginx -->|4. WebSocket Proxy| Chat
+    
+    %% Step 2: Load Balancer Integration (PURPLE)
+    APIGateway -->|5. Request Load Balancing| LB
+    LB -->|6. Distribute to Services| Auth
+    LB -->|7. Distribute to Services| User
+    LB -->|8. Distribute to Services| Game
+    LB -->|9. Distribute to Services| Chat
+    LB -->|10. Distribute to Services| Tournament
+    LB -->|11. Distribute to Services| Match
+    LB -->|12. Distribute to Services| Notification
+    LB -->|13. Distribute to Services| FileService
+    LB -->|14. Distribute to Services| Stats
+    
+    %% Step 3: Circuit Breaker Protection (ORANGE)
+    CB -->|15. Monitor & Protect| LB
+    CB -.->|16. Failure Detection| Auth
+    CB -.->|17. Failure Detection| User
+    CB -.->|18. Failure Detection| Game
+    CB -.->|19. Failure Detection| Chat
+    CB -.->|20. Failure Detection| Tournament
+    CB -.->|21. Failure Detection| Match
+    CB -.->|22. Failure Detection| Notification
+    CB -.->|23. Failure Detection| FileService
+    CB -.->|24. Failure Detection| Stats
+    
+    %% Step 4: Service Discovery (GREEN)
+    Auth -.->|25. Register Service| SD
+    User -.->|26. Register Service| SD
+    Game -.->|27. Register Service| SD
+    Chat -.->|28. Register Service| SD
+    Tournament -.->|29. Register Service| SD
+    Match -.->|30. Register Service| SD
+    Notification -.->|31. Register Service| SD
+    FileService -.->|32. Register Service| SD
+    Stats -.->|33. Register Service| SD
+    SD -->|34. Store Registry| Consul
+    
+    %% Step 5: Health Monitoring (RED)
+    HM -.->|35. Health Check| Auth
+    HM -.->|36. Health Check| User
+    HM -.->|37. Health Check| Game
+    HM -.->|38. Health Check| Chat
+    HM -.->|39. Health Check| Tournament
+    HM -.->|40. Health Check| Match
+    HM -.->|41. Health Check| Notification
+    HM -.->|42. Health Check| FileService
+    HM -.->|43. Health Check| Stats
+    HM -->|44. Report Health Status| LB
+    HM -->|45. Report Health Status| CB
+    
+    %% Step 6: Inter-Service Communication (BROWN)
+    Auth -->|46. User Events| RabbitMQ
+    User -->|47. Profile Updates| RabbitMQ
+    Game -->|48. Game Events| RabbitMQ
+    Chat -->|49. Chat Events| RabbitMQ
+    Tournament -->|50. Tournament Events| RabbitMQ
+    Match -->|51. Match Results| RabbitMQ
+    RabbitMQ -->|52. Event Distribution| Notification
+    RabbitMQ -->|53. Stats Updates| Stats
+    
+    %% Step 7: Database Operations (DARK GREEN)
+    Auth -->|54. Auth Data| PostgresMain
+    User -->|55. User Profiles| PostgresMain
+    Game -->|56. Game States| PostgresMain
+    Chat -->|57. Chat History| PostgresMain
+    Tournament -->|58. Tournament Data| PostgresMain
+    Match -->|59. Match History| PostgresMain
+    FileService -->|60. File Metadata| PostgresMain
+    Stats -->|61. Statistics| PostgresMain
+    PostgresMain -.->|62. Replication| PostgresReplica
+    
+    %% Step 8: Caching Layer (BRIGHT RED)
+    Auth -->|63. Session Cache| Redis
+    User -->|64. Profile Cache| Redis
+    Game -->|65. Game State Cache| Redis
+    Chat -->|66. Active Chats| Redis
+    Stats -->|67. Leaderboards| Redis
+    
+    %% Step 9: Metrics Collection (YELLOW)
+    Auth -.->|68. App Metrics| MA
+    User -.->|69. App Metrics| MA
+    Game -.->|70. App Metrics| MA
+    Chat -.->|71. App Metrics| MA
+    Tournament -.->|72. App Metrics| MA
+    Match -.->|73. App Metrics| MA
+    Notification -.->|74. App Metrics| MA
+    FileService -.->|75. App Metrics| MA
+    Stats -.->|76. App Metrics| MA
+    SD -.->|77. Agent Metrics| MA
+    HM -.->|78. Agent Metrics| MA
+    CB -.->|79. Agent Metrics| MA
+    LB -.->|80. Agent Metrics| MA
+    
+    %% Step 10: Monitoring Pipeline (CYAN)
+    MA -->|81. Export Metrics| Prometheus
+    Prometheus -->|82. Scrape Data| Grafana
+    Prometheus -->|83. Trigger Alerts| AlertManager
+    AlertManager -->|84. Send Notifications| Notification
+    
+    %% Step 11: Logging Pipeline (PINK)
+    Auth -.->|85. App Logs| Filebeat
+    User -.->|86. App Logs| Filebeat
+    Game -.->|87. App Logs| Filebeat
+    Chat -.->|88. App Logs| Filebeat
+    Tournament -.->|89. App Logs| Filebeat
+    Match -.->|90. App Logs| Filebeat
+    Notification -.->|91. App Logs| Filebeat
+    FileService -.->|92. App Logs| Filebeat
+    Stats -.->|93. App Logs| Filebeat
+    SD -.->|94. Agent Logs| Filebeat
+    HM -.->|95. Agent Logs| Filebeat
+    CB -.->|96. Agent Logs| Filebeat
+    LB -.->|97. Agent Logs| Filebeat
+    MA -.->|98. Agent Logs| Filebeat
+    Filebeat -->|99. Ship Logs| Logstash
+    Logstash -->|100. Process Logs| Elasticsearch
+    Elasticsearch -->|101. Visualize| Kibana
+    
+    %% Step 12: Distributed Tracing (LIME)
+    Auth -.->|102. Trace Spans| Jaeger
+    User -.->|103. Trace Spans| Jaeger
+    Game -.->|104. Trace Spans| Jaeger
+    Chat -.->|105. Trace Spans| Jaeger
+    Tournament -.->|106. Trace Spans| Jaeger
+    Match -.->|107. Trace Spans| Jaeger
+    Notification -.->|108. Trace Spans| Jaeger
+    FileService -.->|109. Trace Spans| Jaeger
+    Stats -.->|110. Trace Spans| Jaeger
+    SD -.->|111. Agent Traces| Jaeger
+    HM -.->|112. Agent Traces| Jaeger
+    CB -.->|113. Agent Traces| Jaeger
+    LB -.->|114. Agent Traces| Jaeger
+    MA -.->|115. Agent Traces| Jaeger
+    
+    %% Step 13: Security & Secrets (DARK BLUE)
+    Auth -->|116. Get Secrets| Vault
+    User -->|117. Get Secrets| Vault
+    Game -->|118. Get Secrets| Vault
+    Chat -->|119. Get Secrets| Vault
+    Tournament -->|120. Get Secrets| Vault
+    Match -->|121. Get Secrets| Vault
+    Notification -->|122. Get Secrets| Vault
+    FileService -->|123. Get Secrets| Vault
+    Stats -->|124. Get Secrets| Vault
+    
+    %% Step 14: Backup Operations (GRAY)
+    Backup -->|125. Backup Data| PostgresMain
+    Backup -->|126. Backup Files| FileService
+    Backup -->|127. Backup Configs| Consul
+    
+    %% Step 15: External Services (TEAL)
+    Notification -->|128. Send Emails| EmailService
+    Frontend -->|129. Static Assets| CDN
+    FileService -->|130. Store Files| CDN
+    
+    %% Step 16: Agent Inter-Communication (INDIGO)
+    SD -->|131. Service Info| LB
+    SD -->|132. Service Info| CB
+    SD -->|133. Service Info| HM
+    HM -->|134. Health Status| SD
+    CB -->|135. Circuit Status| SD
+    LB -->|136. Load Info| SD
+    
+    %% Styling
+    classDef clientClass fill:#e3f2fd,stroke:#1565c0,stroke-width:3px
+    classDef serviceClass fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef agentClass fill:#e8f5e8,stroke:#1b5e20,stroke-width:3px
+    classDef infraClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef brokerClass fill:#fff8e1,stroke:#ff8f00,stroke-width:2px
+    classDef dbClass fill:#e0f2f1,stroke:#00695c,stroke-width:3px
+    classDef monitorClass fill:#e1f5fe,stroke:#006064,stroke-width:2px
+    classDef loggingClass fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef tracingClass fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+    classDef securityClass fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px
+    classDef externalClass fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+    
+    class Frontend,APIGateway clientClass
+    class Auth,User,Game,Chat,Tournament,Match,Notification,FileService,Stats serviceClass
+    class SD,HM,CB,LB,MA agentClass
+    class Consul,Nginx infraClass
+    class RabbitMQ,Redis brokerClass
+    class PostgresMain,PostgresReplica dbClass
+    class Prometheus,Grafana,AlertManager monitorClass
+    class Elasticsearch,Logstash,Kibana,Filebeat loggingClass
+    class Jaeger tracingClass
+    class Vault,Backup securityClass
+    class EmailService,CDN externalClass
+
+
+    %% Step 1: Client Layer Connections (BLUE)
+    linkStyle 0 stroke:#2196f3,stroke-width:2px;
+    linkStyle 1 stroke:#2196f3,stroke-width:2px;
+    linkStyle 2 stroke:#2196f3,stroke-width:2px;
+    linkStyle 3 stroke:#2196f3,stroke-width:2px;
+
+    %% Step 2: Load Balancer Integration (PURPLE)
+    linkStyle 4 stroke:#9c27b0,stroke-width:2px;
+    linkStyle 5,6,7,8,9,10,11,12,13 stroke:#9c27b0,stroke-width:2px;
+
+    %% Step 3: Circuit Breaker Protection (ORANGE)
+    linkStyle 14 stroke:#ff9800,stroke-width:2px;
+    linkStyle 15,16,17,18,19,20,21,22,23 stroke:#ff9800,stroke-dasharray: 5, 5;
+
+    %% Step 4: Service Discovery (GREEN)
+    linkStyle 24,25,26,27,28,29,30,31 stroke:#4caf50,stroke-dasharray: 2, 2;
+    linkStyle 32 stroke:#4caf50,stroke-width:2px;
+
+    %% Step 5: Health Monitoring (RED)
+    linkStyle 33,34,35,36,37,38,39,40,41 stroke:#f44336,stroke-dasharray: 2, 2;
+    linkStyle 42,43 stroke:#f44336,stroke-width:2px;
+
+    %% Step 6: Inter-Service Communication (BROWN)
+    linkStyle 44,45,46,47,48,49,50,51 stroke:#8d6e63,stroke-width:2px;
+
+    %% Step 7: Database Operations (DARK GREEN)
+    linkStyle 52,53,54,55,56,57,58,59 stroke:#2e7d32,stroke-width:2px;
+    linkStyle 60 stroke:#2e7d32,stroke-dasharray: 3, 3;
+
+    %% Step 8: Caching Layer (BRIGHT RED)
+    linkStyle 61,62,63,64,65 stroke:#d32f2f,stroke-width:2px;
+
+    %% Step 9: Metrics Collection (YELLOW)
+    linkStyle 66,67,68,69,70,71,72,73,74,75,76,77,78,79 stroke:#ffeb3b,stroke-dasharray: 2, 2;
+
+    %% Step 10: Monitoring Pipeline (CYAN)
+    linkStyle 80,81,82 stroke:#00bcd4,stroke-width:2px;
+    linkStyle 83 stroke:#00bcd4,stroke-dasharray: 3, 3;
+
+    %% Step 11: Logging Pipeline (PINK)
+    linkStyle 84,85,86,87,88,89,90,91,92,93,94,95,96,97 stroke:#ec407a,stroke-dasharray: 2, 2;
+    linkStyle 98,99,100 stroke:#ec407a,stroke-width:2px;
+
+    %% Step 12: Distributed Tracing (LIME)
+    linkStyle 101,102,103,104,105,106,107,108,109,110,111,112,113,114 stroke:#cddc39,stroke-dasharray: 1, 2;
+
+    %% Step 13: Security & Secrets (DARK BLUE)
+    linkStyle 115,116,117,118,119,120,121,122,123 stroke:#3f51b5,stroke-width:2px;
+
+    %% Step 14: Backup Operations (GRAY)
+    linkStyle 124,125,126 stroke:#9e9e9e,stroke-dasharray: 4, 2;
+
+    %% Step 15: External Services (TEAL)
+    linkStyle 127,128,129 stroke:#009688,stroke-width:2px;
+
+    %% Step 16: Agent Inter-Communication (INDIGO)
+    linkStyle 130,131,132,133,134,135 stroke:#3f51b5,stroke-dasharray: 3, 1;`;
+
+        let currentScale = 1;
+        let isRendered = false;
+
+        // Function to render the diagram
+        async function renderDiagram() {
+            const diagramDiv = document.getElementById('diagram');
+            const loadingDiv = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            
+            try {
+                // Show loading, hide error
+                loadingDiv.style.display = 'block';
+                errorDiv.style.display = 'none';
+                
+                // Clear previous diagram
+                diagramDiv.innerHTML = '';
+                
+                // Create a unique ID for this render
+                const diagramId = 'mermaid-diagram-' + Date.now();
+                
+                // Render the diagram
+                const { svg } = await mermaid.render(diagramId, diagramDefinition);
+                
+                // Insert the SVG into the container
+                diagramDiv.innerHTML = svg;
+                
+                // Hide loading
+                loadingDiv.style.display = 'none';
+                isRendered = true;
+                
+                console.log('Diagram rendered successfully');
+                
+            } catch (error) {
+                console.error('Error rendering diagram:', error);
+                loadingDiv.style.display = 'none';
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = `<p>Error rendering diagram: ${error.message}</p>`;
+            }
+        }
+
+        // Function to export SVG
+        function exportSVG() {
+            if (!isRendered) {
+                alert('Please render the diagram first');
+                return;
+            }
+            
+            const svgElement = document.querySelector('#diagram svg');
+            if (svgElement) {
+                const svgData = new XMLSerializer().serializeToString(svgElement);
+                const blob = new Blob([svgData], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'ft_transcendence_architecture.svg';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        // Function to zoom in
+        function zoomIn() {
+            const svgElement = document.querySelector('#diagram svg');
+            if (svgElement) {
+                currentScale *= 1.2;
+                svgElement.style.transform = `scale(${currentScale})`;
+                svgElement.style.transformOrigin = 'top left';
+            }
+        }
+
+        // Function to zoom out
+        function zoomOut() {
+            const svgElement = document.querySelector('#diagram svg');
+            if (svgElement) {
+                currentScale /= 1.2;
+                svgElement.style.transform = `scale(${currentScale})`;
+                svgElement.style.transformOrigin = 'top left';
+            }
+        }
+
+        // Auto-render on page load
+        window.addEventListener('load', function() {
+            setTimeout(renderDiagram, 500);
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (isRendered) {
+                setTimeout(renderDiagram, 100);
+            }
+        });
+    </script>
+</body>
+</html>
+
