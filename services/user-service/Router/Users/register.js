@@ -11,9 +11,9 @@ const validation = (body, reply) => {
     return reply.status(400).send({ error: "Request body is required" });
   }
 
-  const { username, password, email, name } = body;
+  const { username, password, email } = body;
 
-  if (!username || !password || !email || !name) {
+  if (!username || !password || !email ) {
     return reply
       .status(400)
       .send({ error: "Username, password, and email are required" });
@@ -29,25 +29,14 @@ const validation = (body, reply) => {
       .status(400)
       .send({ error: "Username, password, email, and name must be strings" });
   }
-  const nameParts = name.split(" ");
-  if (!/^[a-zA-Z_]+$/.test(username)) {
-    return reply
-      .status(400)
-      .send({
-        error: "Username must contain only letters, numbers, and underscores",
-      });
-  }
   if (
     username.length < 3 ||
     password.length < 6 ||
-    !email.includes("@") ||
-    nameParts.length != 2 ||
-    nameParts[0].length < 3 ||
-    nameParts[1].length < 3
+    !email.includes("@")
   ) {
     return reply
       .status(400)
-      .send({ error: "Invalid username, password, email, or name format" });
+      .send({ error: "Invalid username, password, or email   format" });
   }
 
   return null;
@@ -71,7 +60,7 @@ const register = async (request, reply) => {
 
     if (validationError) return validationError;
 
-    const { username, password, email, image, name } = body;
+    const { username, password, email, image } = body;
     let path = image ? image.path : "uploads/default_profile_picture.png";
     try {
       const user = await db.User.findOne({

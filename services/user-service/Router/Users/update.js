@@ -4,14 +4,9 @@ const checkAuthJWT = require("../../middleware/checkauthjwt");
 const multer = require("../../middleware/Multer");
 const bcrypt = require("bcrypt");
 const validation = (res, ...inputs) => {
-  const [id, name, email, password, image, username] = inputs;
-  if (name !== undefined && name.split(" ").length < 2) {
-    return res
-      .status(400)
-      .send({ error: "Name must contain at least first and last name." });
-  }
+  const [id , email, password, image, username] = inputs;
+
   if (
-    name === undefined &&
     email === undefined &&
     password === undefined &&
     image === undefined
@@ -32,17 +27,7 @@ const validation = (res, ...inputs) => {
   if (email && !email.includes("@")) {
     return res.status(400).send({ error: "Invalid email format." });
   }
-  const nameParts = name ? name.split(" ") : [];
-  if (
-    name &&
-    (nameParts.length != 2 ||
-      nameParts[0].length < 3 ||
-      nameParts[1].length < 3)
-  ) {
-    return res
-      .status(400)
-      .send({ error: "Name must contain at least first and last name." });
-  }
+
   if (password && password.length < 6) {
     return res
       .status(400)
@@ -57,7 +42,7 @@ const updateUser = (req, res) => {
   console.log("parts", req.parts);
   multer(req)
     .then((body) => {
-      const { username, name, email, password, image } = body;
+      const { username, email, password, image } = body;
       if (id != req.user.id) {
         return res
           .status(403)
@@ -67,7 +52,7 @@ const updateUser = (req, res) => {
       const validationError = validation(
         res,
         id,
-        name,
+       
         email,
         password,
         image ? image.path:undefined,
@@ -81,12 +66,10 @@ const updateUser = (req, res) => {
             return res.status(404).send({ error: "User not found." });
           }
           const updatedData = {};
-          if (name) updatedData.name = name;
           if (email) updatedData.email = email;
           if (password) updatedData.password = bcrypt.hashSync(password, 10);
-          if (image) updatedData.image = image.path;
+          if (image) updatedData.image = image.path ? image.path : "uploads/default_profile_picture.png";
           if (username) updatedData.username = username;
-          if (image) updatedData.image = image.path;
 
           user
             .update(updatedData)
