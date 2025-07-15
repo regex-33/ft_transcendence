@@ -57,7 +57,7 @@ const register = async (request, reply) => {
   try {
     let body;
     try {
-      body = await multer(request);
+      body = req.body;
       if (!body) {
         return reply.status(400).send({ error: "No data received" });
       }
