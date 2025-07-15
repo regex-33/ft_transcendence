@@ -9,7 +9,8 @@ export const AuthForm: ComponentFunction = () => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
 
   const showLogin = useCallback(() => setIsLoginMode(true), []);
@@ -21,6 +22,13 @@ export const AuthForm: ComponentFunction = () => {
 
   const handleSubmit = useCallback((e: Event) => {
     e.preventDefault();
+    
+    // Validate confirm password in register mode
+    if (!isLoginMode && formData.password !== formData.confirmPassword) {
+      alert("Passwords don't match!");
+      return;
+    }
+    
     console.log(isLoginMode ? 'Logging in' : 'Registering', formData);
     // Add your API calls here
   }, [formData, isLoginMode]);
@@ -42,38 +50,19 @@ export const AuthForm: ComponentFunction = () => {
         h('div', { 
           className: 'bg-white rounded-2xl shadow-lg p-8 mt-[80px] md:p-12 min-h-[600px] w-full max-w-[800px] mr-[20px] flex flex-col justify-center h-full transition-all duration-500'
         },
-          // Title
-          h('h2', { className: 'text-4xl font-semibold text-gray-300 mb-[100px] text-center' },
-            h('span', { 
-              className: 'text-gray-300 cursor-pointer',
-              // onClick: showRegister
-            }, 'Login/'),
-            h('span', { 
-              className: 'text-[#3F99B4] transition-transform duration-300 hover:scale-105 inline-block cursor-pointer',
-              onClick: showLogin
-            }, 'Signup')
+          // Title with two buttons
+          h('div', { className: 'flex justify-center gap-4 mb-8' },
+            h('button', { 
+              className: `text-2xl font-semibold ${isLoginMode ? 'text-[#3F99B4]' : 'text-gray-300'}`,
+            }, 'Sign In'),
+            h('span', { className: 'text-2xl text-gray-300' }, '/'),
+            h('button', { 
+              className: `text-2xl font-semibold ${!isLoginMode ? 'text-[#3F99B4]' : 'text-gray-300'}`,
+            }, 'Sign Up')
           ),
-
-          // Mr. Bean Image
-          // h('div', { className: 'flex justify-center mb-0' },
-          //   h('img', { 
-          //     src: '/images/mrbean.svg', 
-          //     alt: 'Mr. Bean',
-          //     className: 'w-[200px] h-[200px] rounded-full object-cover' 
-          //   })
-          // ),
 
           // Form Fields
           h('form', { onSubmit: handleSubmit },
-            isLoginMode && h('input', {
-              type: 'text',
-              placeholder: 'Username',
-              className: 'w-full mb-3 px-4 py-3  border border-gray-300 rounded-3xl',
-              value: formData.username,
-              onInput: (e: Event) => handleInputChange('username', (e.target as HTMLInputElement).value),
-              required: true
-            }),
-
             !isLoginMode && h('input', {
               type: 'email',
               placeholder: 'Email',
@@ -84,29 +73,63 @@ export const AuthForm: ComponentFunction = () => {
             }),
 
             h('input', {
+              type: 'text',
+              placeholder: 'Username',
+              className: 'w-full mb-3 px-4 py-3 border border-gray-300 rounded-3xl',
+              value: formData.username,
+              onInput: (e: Event) => handleInputChange('username', (e.target as HTMLInputElement).value),
+              required: true
+            }),
+
+            h('input', {
               type: 'password',
               placeholder: 'Password',
-              className: 'w-full mb-2 px-4 py-3 border border-gray-300 rounded-3xl',
+              className: 'w-full mb-3 px-4 py-3 border border-gray-300 rounded-3xl',
               value: formData.password,
               onInput: (e:Event) => handleInputChange('password', (e.target as HTMLInputElement).value),
               required: true
             }),
 
+            !isLoginMode && h('input', {
+              type: 'password',
+              placeholder: 'Confirm Password',
+              className: 'w-full mb-6 px-4 py-3 border border-gray-300 rounded-3xl',
+              value: formData.confirmPassword,
+              onInput: (e:Event) => handleInputChange('confirmPassword', (e.target as HTMLInputElement).value),
+              required: !isLoginMode
+            }),
+
             // Submit Button
             h('button', { 
               type: 'submit',
-              className: 'w-full bg-[#3F99B4] hover:bg-[#044850] text-white py-3 rounded-3xl font-semibold transition'
-            }, isLoginMode ? 'Login' : 'Signup'),
-
-            // Toggle Link
-            h('p', { className: 'text-sm text-gray-600 mt-6 text-center' },
-              isLoginMode ? "Don't have an account? " : "Already have an account? ",
-              h('button', { 
-                className: 'text-[#055D65] font-semibold underline',
-                onClick: isLoginMode ? showRegister : showLogin
-              }, isLoginMode ? 'Signup' : 'Login')
-            )
+              className: 'w-full bg-[#67A7B9] hover:bg-[#044850] text-white py-3 rounded-3xl font-semibold transition mb-10'
+            }, isLoginMode ? 'Sign In' : 'Sign Up')
+          ),
+          
+          // Toggle 
+        h('div', { className: 'relative w-full max-w-[300px] mb-6 mx-auto' },
+          h('div', { className: 'flex gap-4 w-full relative' },
+            h('button', {
+              onClick: showLogin,
+              className: `flex-1 py-2 rounded-full font-semibold transition-all duration-300 relative z-10 ${isLoginMode ? 'text-white bg-[#67A7B9]' : 'text-[#858585] bg-[#F2F0F0]'}`
+            },
+              h('span', { className: 'relative z-20' }, 'Login')
+            ),
+            h('button', {
+              onClick: showRegister,
+              className: `flex-1 py-2 rounded-full font-semibold transition-all duration-300 relative z-10 ${!isLoginMode ? 'text-white bg-[#67A7B9]' : 'text-[#858585] bg-[#F2F0F0]'}`
+            },
+              h('span', { className: 'relative z-20' }, 'Register')
+            ),
+            h('div', {
+              className: 'absolute bottom-0 h-full w-[calc(50%-8px)] bg-[#67A7B9] rounded-full transition-all duration-500',
+              style: {
+                left: isLoginMode ? '8px' : 'calc(50% + 8px)',
+                transitionTimingFunction: 'cubic-bezier(0.4,0,0.2,1)'
+              }
+            })
           )
+        )
         )
       ),
 
