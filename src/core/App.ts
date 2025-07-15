@@ -17,6 +17,7 @@ import { useMemo } from "../hooks/useMemo";
 import { useRef } from "../hooks/useRef";
 import { useCallback } from "../hooks/useCallback";
 import { AuthForm } from "../components/examples/AuthForm";
+import { Welcome } from "../components/examples/Welcome";
 
 
 
@@ -289,9 +290,13 @@ private setupRoutes(): void {
   this.createFunctionalComponent(AuthForm)
 );
 
+   this.router.addRoute("/Welcome", () => 
+  this.createFunctionalComponent(Welcome)
+);
+
 
   
-  this.router.addRoute("/login", () =>
+  this.router.addRoute("/pinlog", () =>
     this.createFunctionalComponent(PongLoginPage)
   );
 

@@ -20,24 +20,80 @@ export const AuthForm: ComponentFunction = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const handleSubmit = useCallback((e: Event) => {
-    e.preventDefault();
-    
-    if (!isLoginMode && formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match!");
-      return;
-    }
-    
-    console.log(isLoginMode ? 'Logging in' : 'Registering', formData);
-    // Add your API calls here
-  }, [formData, isLoginMode]);
+  ///////////////////////////////
+ const handleSubmit = useCallback(async (e: Event) => {
+  e.preventDefault();
+  
+  // Validate confirm password in register mode
+  if (!isLoginMode && formData.password !== formData.confirmPassword) {
+    alert("Passwords don't match!");
+    return;
+  }
 
+  try {
+    const apiUrl = isLoginMode 
+      ? '/api/users/login'
+      : '/api/users/register';
+
+    const requestBody = isLoginMode
+      ? {
+          username: formData.username,
+          password: formData.password
+        }
+      : {
+          username: formData.username,
+          password: formData.password,
+          email: formData.email,
+        };
+
+    const response = await fetch(apiUrl, 
+      {
+      method: 'POST',
+      headers: 
+      {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) 
+    {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Authentication failed');
+    }
+
+    const data = await response.json();
+    const token = data.token;
+
+    // Store token
+    localStorage.setItem('authToken', token);
+
+    console.log('successful:', data);
+    // Redirect
+    
+  } 
+  catch (error) 
+  {
+    console.error('Authentication error:', error);
+    
+  
+    if (error instanceof Error) 
+    {
+      alert(error.message || 'An error occurred during authentication');
+    }
+    else 
+    {
+      alert('An unknown error occurred');
+    }
+  }
+}, [formData, isLoginMode]);
+////////////////////////////////////////
   return h('div', { 
     className: 'relative min-h-screen bg-cover bg-center',
     style: { backgroundImage: 'url(/images/bg-login.png)' }
   },
     // Logo
-    h('div', { className: 'absolute  left-6 flex md:top-6 sm:top-3  items-center text-white gap-0' },
+    h('div', { className: 'absolute  left-6 flex md:top-6   items-center text-white gap-0' },
       h('img', { src: '/images/logo.png', alt: 'logo', className: 'w-10 h-10' }),
       h('h2', { className: 'text-xl italic font-semibold' }, 'The Game')
     ),
@@ -49,7 +105,6 @@ export const AuthForm: ComponentFunction = () => {
         h('div', { 
           className: 'bg-white rounded-2xl shadow-lg p-8 mt-[80px] md:p-12 min-h-[400px] w-full max-w-[700px] mr-[20px] flex flex-col justify-center h-full transition-all duration-500'
         },
-          // Title with two buttons
           h('div', { className: 'flex justify-center gap-4 mb-8' },
             h('button', { 
               className: `text-2xl font-semibold ${isLoginMode ? 'text-[#3F99B4]' : 'text-gray-300'}`,
@@ -59,7 +114,7 @@ export const AuthForm: ComponentFunction = () => {
               className: `text-2xl font-semibold ${!isLoginMode ? 'text-[#3F99B4]' : 'text-gray-300'}`,
             }, 'Sign Up')
           ),
-          // Mr Bean Image
+        
           h('img', {
           src: '/images/mrbean-open.webp',
           alt: 'Mr Bean',
@@ -137,7 +192,6 @@ export const AuthForm: ComponentFunction = () => {
         )
       ),
 
-      // Player Image
       h('div', { className: 'w-full md:w-1/2 flex items-center justify-center' },
         h('img', { 
           src: '/images/player_fix.svg', 
