@@ -19,7 +19,7 @@ const handleGoogleLogin = useCallback(() => {
     console.log('42 login');
   }, []);
 
-  
+
   return h('div', { 
     className: 'relative w-full min-h-screen overflow-hidden bg-cover bg-center',
     style: { backgroundImage: 'url(/images/bg-login.png)' }
@@ -52,19 +52,23 @@ const handleGoogleLogin = useCallback(() => {
         ),
         
         // Buttons
-        h('div', { 
+        h('div', {
         className: 'flex flex-col items-center md:items-start mt-8 space-y-7 px-4 sm:px-12 md:px-24 lg:px-32 xl:px-48' 
         },
+          h('a', { 
+    href: '/login',
+    className: 'w-full max-w-[280px] sm:max-w-[300px] md:w-[200px] lg:w-[220px]' // Match button width
+  },
         h('button', { 
         className: 'border-2 md:border-4 border-white text-white \
             px-6 sm:px-8 md:px-12 lg:px-16 py-2 md:py-2.5 rounded-full \
             text-base sm:text-lg md:text-xl font-semibold hover:bg-white \
             hover:text-[#0A3E61] transition-all duration-300 w-full max-w-[280px] \
             sm:max-w-[300px] md:w-[200px] lg:w-[220px]'
-        }, 'Log In'),
+        }, 'Log In')),
           
           // Social Icons
-          h('div', { className: 'flex gap-9 ml-3' },
+          h('div', { className: 'flex gap-8 ml-6' },
             h('button', 
                 { className: 'transform transition-all duration-300 hover:scale-110' 
                     , onClick: handleGoogleLogin

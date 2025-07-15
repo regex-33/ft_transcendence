@@ -118,7 +118,7 @@ export const AuthForm: ComponentFunction = () => {
           h('img', {
           src: '/images/mrbean-open.webp',
           alt: 'Mr Bean',
-          className: 'relative top-[40px]  left-[130px] w-48 transform transition-transform duration-300 hover:scale-105'
+          className: 'relative top-[40px] left-[200px] w-48 transform transition-transform duration-300 hover:scale-105 hidden sm:hidden lg:block'
         }),
           // Form Fields
           h('form', { onSubmit: handleSubmit},

@@ -274,23 +274,17 @@ private cleanupActiveComponents(): void {
 private setupRoutes(): void {
   console.log("Setting up routes...");
   
-  this.router.addRoute("/", () => this.createPlaceholderComponent("Home"));
-  
-  this.router.addRoute("/counter-class", () => 
-    this.createClassComponent(CounterClassComponent, { initialCount: 5 })
-  );
-  
   this.router.addRoute("/counter", () =>
     this.createFunctionalComponent(CounterExample, { initialCount: 1 })
   );
 
 
 
- this.router.addRoute("/Login", () => 
+ this.router.addRoute("/login", () => 
   this.createFunctionalComponent(AuthForm)
 );
 
-   this.router.addRoute("/Welcome", () => 
+   this.router.addRoute("/", () => 
   this.createFunctionalComponent(Welcome)
 );
 
