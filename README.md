@@ -1,3 +1,6 @@
+
+
+```
 ft_transcendence/
 ├── docker-compose.yml
 ├── .env
@@ -35,3 +38,4 @@ ft_transcendence/
         ├── databases/              # Database Configurations
         ├── scripts/                # Automation Scripts
         └── configs/                # Configuration Files
+```
