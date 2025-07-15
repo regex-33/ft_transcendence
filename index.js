@@ -3,7 +3,7 @@ const db = require("./models");
 const banner = require("./middleware/banner");
 const path = require("path");
 const fastifyStatic = require("@fastify/static");
-const { UserRoutes, FriendRoutes, OauthRoutes,  checkCodeRoutes , _2faRoutes} = require("./Router");
+const { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes } = require("./Router");
 const logger = require("./middleware/logger");
 
 fastify.addHook("onResponse", logger);
@@ -29,10 +29,10 @@ db.sequelize
   .sync()
   .then(() => {
     console.log("Database connected successfully");
-    return fastify.listen({ port: 3000, host: "0.0.0.0" });
+    return fastify.listen({ port: process.env.PORT || 80, host: "0.0.0.0" });
   })
   .then(() => {
-    console.log(`Server is running on port 3000`);
+    console.log(`Server is running on port ${process.env.PORT || 80}`);
   })
   .catch((err) => {
     console.error("Unable to connect to the database:", err);

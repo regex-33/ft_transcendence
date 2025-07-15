@@ -1,17 +1,14 @@
-const login = require("./login");
-const register = require("./Users/register");
-const actionsHandler = require("./Friends/actionsHandler");
-const addFriend = require("./Friends/addFriend.js");
-const github = require("./Oauth/github");
-const intra = require("./Oauth/intra");
-const google = require("./Oauth/google");
-const getFriends = require("./Friends/getFriends");
 const {
-  getbyusername,
-  getbyId,
-  getUsers,
-} = require("./Users/getters");
-const updateUser = require("./Users/update");
+  login, getbyusername, getbyId, getUsers, register, updateUser
+} = require("./Users");
+const {
+  addFriend, getFriends, actionsHandler
+} = require("./Friends");
+
+const {
+  github, intra, google
+} = require("./Oauth");
+
 const checkcode = require("./emailconfirm");
 const _2fa = require("./2fa");
 
