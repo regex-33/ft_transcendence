@@ -5,6 +5,7 @@ services:
       context: ./services/frontend
       dockerfile: Dockerfile
     container_name: transcendence-frontend
+    restart: unless-stopped
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     # volumes:
@@ -30,6 +31,7 @@ services:
       context: ./services/user-service
       dockerfile: Dockerfile
     container_name: transcendence-user-service
+    restart: unless-stopped
     ports:
       - "${USER_SERVICE_PORT:-8001}:${USER_SERVICE_PORT:-8001}"
     networks:
@@ -65,6 +67,7 @@ services:
       - postgres
       - redis
     profiles: ["user-service", "backend", "dev"]
+    restart: unless-stopped
 
   # Nginx as Reverse Proxy
   nginx:
@@ -81,6 +84,7 @@ services:
       # don't forget logs for elk
       # - ./services/devops/nginx/conf.d:/etc/nginx/conf.d
     profiles: ["nginx", "dev"]
+    restart: unless-stopped
 
   # PostgreSQL Database
   postgres:
@@ -88,6 +92,7 @@ services:
       context: ./services/devops/databases/postgres
       dockerfile: Dockerfile
     container_name: transcendence-postgres
+    restart: unless-stopped
     environment:
       # - POSTGRES_DB=${POSTGRES_DB}
       # - POSTGRES_USER=${POSTGRES_USER}
@@ -110,6 +115,7 @@ services:
       context: ./services/devops/databases/redis
       dockerfile: Dockerfile
     container_name: redis
+    restart: unless-stopped
     volumes:
       - redis_logs:/var/log/redis
       - redis_data:/data
