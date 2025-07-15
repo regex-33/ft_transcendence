@@ -23,7 +23,6 @@ export const AuthForm: ComponentFunction = () => {
   const handleSubmit = useCallback((e: Event) => {
     e.preventDefault();
     
-    // Validate confirm password in register mode
     if (!isLoginMode && formData.password !== formData.confirmPassword) {
       alert("Passwords don't match!");
       return;
@@ -38,7 +37,7 @@ export const AuthForm: ComponentFunction = () => {
     style: { backgroundImage: 'url(/images/bg-login.png)' }
   },
     // Logo
-    h('div', { className: 'absolute top-6 left-6 flex items-center text-white gap-3' },
+    h('div', { className: 'absolute  left-6 flex md:top-6 sm:top-3  items-center text-white gap-0' },
       h('img', { src: '/images/logo.png', alt: 'logo', className: 'w-10 h-10' }),
       h('h2', { className: 'text-xl italic font-semibold' }, 'The Game')
     ),
@@ -48,7 +47,7 @@ export const AuthForm: ComponentFunction = () => {
       // Form Container
       h('div', { className: 'flex justify-center items-center w-full md:w-1/2' },
         h('div', { 
-          className: 'bg-white rounded-2xl shadow-lg p-8 mt-[80px] md:p-12 min-h-[600px] w-full max-w-[800px] mr-[20px] flex flex-col justify-center h-full transition-all duration-500'
+          className: 'bg-white rounded-2xl shadow-lg p-8 mt-[80px] md:p-12 min-h-[400px] w-full max-w-[700px] mr-[20px] flex flex-col justify-center h-full transition-all duration-500'
         },
           // Title with two buttons
           h('div', { className: 'flex justify-center gap-4 mb-8' },
@@ -60,13 +59,18 @@ export const AuthForm: ComponentFunction = () => {
               className: `text-2xl font-semibold ${!isLoginMode ? 'text-[#3F99B4]' : 'text-gray-300'}`,
             }, 'Sign Up')
           ),
-
+          // Mr Bean Image
+          h('img', {
+          src: '/images/mrbean-open.webp',
+          alt: 'Mr Bean',
+          className: 'relative top-[40px]  left-[130px] w-48 transform transition-transform duration-300 hover:scale-105'
+        }),
           // Form Fields
-          h('form', { onSubmit: handleSubmit },
+          h('form', { onSubmit: handleSubmit},
             !isLoginMode && h('input', {
               type: 'email',
               placeholder: 'Email',
-              className: 'w-full mb-3 px-4 py-3 border border-gray-300 rounded-3xl',
+              className: 'w-full mb-3 bg-[#F2F0F0]  px-4 py-3  rounded-3xl',
               value: formData.email,
               onInput: (e:Event) => handleInputChange('email', (e.target as HTMLInputElement).value),
               required: !isLoginMode
@@ -75,7 +79,7 @@ export const AuthForm: ComponentFunction = () => {
             h('input', {
               type: 'text',
               placeholder: 'Username',
-              className: 'w-full mb-3 px-4 py-3 border border-gray-300 rounded-3xl',
+              className: 'w-full mb-3 px-4 bg-[#F2F0F0]  py-3  rounded-3xl',
               value: formData.username,
               onInput: (e: Event) => handleInputChange('username', (e.target as HTMLInputElement).value),
               required: true
@@ -84,7 +88,7 @@ export const AuthForm: ComponentFunction = () => {
             h('input', {
               type: 'password',
               placeholder: 'Password',
-              className: 'w-full mb-3 px-4 py-3 border border-gray-300 rounded-3xl',
+              className: 'w-full mb-3 px-4 py-3  bg-[#F2F0F0]  rounded-3xl',
               value: formData.password,
               onInput: (e:Event) => handleInputChange('password', (e.target as HTMLInputElement).value),
               required: true
@@ -93,7 +97,7 @@ export const AuthForm: ComponentFunction = () => {
             !isLoginMode && h('input', {
               type: 'password',
               placeholder: 'Confirm Password',
-              className: 'w-full mb-6 px-4 py-3 border border-gray-300 rounded-3xl',
+              className: 'w-full mb-6 px-4 py-3 bg-[#F2F0F0]   rounded-3xl',
               value: formData.confirmPassword,
               onInput: (e:Event) => handleInputChange('confirmPassword', (e.target as HTMLInputElement).value),
               required: !isLoginMode
@@ -108,7 +112,7 @@ export const AuthForm: ComponentFunction = () => {
           
           // Toggle 
         h('div', { className: 'relative w-full max-w-[300px] mb-6 mx-auto' },
-          h('div', { className: 'flex gap-4 w-full relative' },
+          h('div', { className: 'flex gap-6 w-full relative ' },
             h('button', {
               onClick: showLogin,
               className: `flex-1 py-2 rounded-full font-semibold transition-all duration-300 relative z-10 ${isLoginMode ? 'text-white bg-[#67A7B9]' : 'text-[#858585] bg-[#F2F0F0]'}`
