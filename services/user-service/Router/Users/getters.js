@@ -1,51 +1,62 @@
 const db = require("../../models");
 const jsonwebtoken = require("../../middleware/jwt");
 const checkAuthJWT = require("../../middleware/checkauthjwt");
-const getbyusername = (request, reply) => {
+
+  /**
+     * return user obj,
+     * get user by username
+     */
+const getbyusername = async (request, reply) => {
   const check = checkAuthJWT(request, reply);
   if (check) return check;
+
   if (!request.params || !request.params.username) {
     return reply.status(400).send({ error: "Username is required." });
   }
+
   const { username } = request.params;
 
   if (!/^[a-zA-Z_]+$/.test(username)) {
     return reply.status(400).send({ error: "Invalid username format." });
   }
 
-  db.User.findOne({ where: { username } })
-    .then((user) => {
-      if (!user) {
-        return reply.status(404).send({ error: "User not found." });
-      }
-      reply.send({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        image: user.image,
-        name: user.name,
-        bio: user.bio,
-      });
-    })
-    .catch((err) => {
-      console.error("Error fetching user by username:", err);
-      reply.status(500).send({ error: "Internal server error." });
+  try {
+
+    const user = await db.User.findOne({ where: { username } });
+    if (!user) {
+      return reply.status(404).send({ error: "User not found." });
+    }
+    reply.send({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      image: user.image,
+      bio: user.bio,
     });
+  }
+  catch (err) {
+    console.error("Error fetching user by username:", err);
+    reply.status(500).send({ error: "Internal server error." });
+  };
 };
 
+
+  /**
+     * return user obj,
+     * get user by id
+     */
 const getbyId = (request, reply) => {
   const check = checkAuthJWT(request, reply);
   if (check) return check;
   let { id } = request.params;
   if (!id) {
-    id = request.user.id; 
-    // return reply.status(400).send({ error: "User ID is required." });
+    return reply.status(400).send({ error: "User ID is required." });
   }
-  
+
   if (!/^\d+$/.test(id)) {
     return reply.status(400).send({ error: "Invalid user ID format." });
   }
-console.log("Fetching user by ID:", id);
+
   db.User.findByPk(id)
     .then((user) => {
       if (!user) {
@@ -56,7 +67,6 @@ console.log("Fetching user by ID:", id);
         username: user.username,
         email: user.email,
         image: user.image,
-        name: user.name,
         bio: user.bio,
       });
     })
@@ -66,27 +76,31 @@ console.log("Fetching user by ID:", id);
     });
 };
 
-const getUsers = (request, reply) => {
+
+
+  /**
+     * return  all users objs,
+     * 
+     */
+const getUsers = async (request, reply) => {
   const check = checkAuthJWT(request, reply);
   if (check) return check;
-
-  db.User.findAll()
-    .then((users) => {
-      reply.send(
-        users.map((user) => ({
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          image: user.image,
-          name: user.name,
-          bio: user.bio,
-        }))
-      );
-    })
-    .catch((err) => {
-      console.error("Error fetching users:", err);
-      reply.status(500).send({ error: "Internal server error." });
-    });
+  try {
+    const users = db.User.findAll();
+    return reply.send(
+      users.map((user) => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        image: user.image,
+        bio: user.bio,
+      }))
+    );
+  }
+  catch (err) {
+    console.error("Error fetching users:", err);
+    reply.status(500).send({ error: "Internal server error." });
+  };
 };
 
 module.exports = {

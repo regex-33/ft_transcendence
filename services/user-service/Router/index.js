@@ -1,17 +1,14 @@
-const login = require("./Users/login");
-const register = require("./Users/register");
-const actionsHandler = require("./Friends/actionsHandler");
-const addFriend = require("./Friends/addFriend.js");
-const github = require("./Oauth/github");
-const intra = require("./Oauth/intra");
-const google = require("./Oauth/google");
-const getFriends = require("./Friends/getFriends");
 const {
-  getbyusername,
-  getbyId,
-  getUsers,
-} = require("./Users/getters");
-const updateUser = require("./Users/update");
+  login, getbyusername, getbyId, getUsers, register, updateUser
+} = require("./Users");
+const {
+  addFriend, getFriends, actionsHandler
+} = require("./Friends");
+
+const {
+  github, intra, google
+} = require("./Oauth");
+
 const checkcode = require("./emailconfirm");
 const _2fa = require("./2fa");
 
@@ -50,22 +47,3 @@ async function _2faRoutes(fastify, options) {
 }
 
 module.exports = { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes };
-
-
-
-
-// Maybe you Able to do it in this way Alghlimi
-
-// const UserRoutes = require('./Users');
-// const FriendRoutes = require('./Friends');
-// const OauthRoutes = require('./Oauth');
-// const checkCodeRoutes = require('./emailconfirm');
-// const 2faRoutes = require('./2fa');
-//
-// module.exports = {
-//     UserRoutes,
-//     FriendRoutes,
-//     OauthRoutes,
-//     checkCodeRoutes,
-//     2faRoutes
-// };

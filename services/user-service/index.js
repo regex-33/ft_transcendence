@@ -27,16 +27,21 @@ fastify.get("/", (req, reply) => {
 const PORT = process.env.PORT || 8001;
 const HOST = process.env.HOST || "0.0.0.0";
 
-db.sequelize
-  .sync()
-  .then(() => {
-    console.log("Database connected successfully");
-    return fastify.listen({ port: PORT, host: HOST });
-  })
-  .then(() => {
-    console.log(`Server is running on port ${PORT}`);
-  })
-  .catch((err) => {
-    console.error("Unable to connect to the database:", err);
-    process.exit(1);
-  });
+function connect() {
+  db.sequelize
+    .sync()
+    .then(() => {
+      console.log("Database connected successfully");
+      return fastify.listen({ port: PORT, host: HOST });
+    })
+    .then(() => {
+      console.log(`Server is running on port ${PORT}`);
+    })
+    .catch((err) => {
+      console.error("Unable to connect to the database:", err);
+      setTimeout(() => {
+        connect();
+      }, 1000);
+    });
+}
+connect();

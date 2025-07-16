@@ -11,7 +11,7 @@ const validation = (body, reply) => {
     return reply.status(400).send({ error: "Request body is required" });
   }
 
-  const { username, password, email } = body;
+  const { username, password, email} = body;
 
   if (!username || !password || !email ) {
     return reply
@@ -22,21 +22,21 @@ const validation = (body, reply) => {
   if (
     typeof username !== "string" ||
     typeof password !== "string" ||
-    typeof email !== "string" ||
-    typeof name !== "string"
+    typeof email !== "string" 
   ) {
     return reply
       .status(400)
       .send({ error: "Username, password, email, and name must be strings" });
   }
+
   if (
     username.length < 3 ||
     password.length < 6 ||
-    !email.includes("@")
+    !email.includes("@") 
   ) {
     return reply
       .status(400)
-      .send({ error: "Invalid username, password, or email   format" });
+      .send({ error: "Invalid username, password, email, or name format" });
   }
 
   return null;
@@ -46,7 +46,7 @@ const register = async (request, reply) => {
   try {
     let body;
     try {
-      body = await multer(request);
+      body = req.body;
       if (!body) {
         return reply.status(400).send({ error: "No data received" });
       }
@@ -61,7 +61,7 @@ const register = async (request, reply) => {
     if (validationError) return validationError;
 
     const { username, password, email, image } = body;
-    let path = image ? image.path : "uploads/default_profile_picture.png";
+    let path = image ? image.path : `${request.protocol}://${request.headers.host}/uploads/default_profile_picture.png`;
     try {
       const user = await db.User.findOne({
         where: {
@@ -71,8 +71,7 @@ const register = async (request, reply) => {
 
       if (user) {
         return reply.status(400).send({
-          error: `${user.username === username ? "Username" : "Email"
-            } already exists`,
+          error: `${user.username === username ? "Username" : "Email"} already exists`,
         });
       }
     } catch (error) {
@@ -86,8 +85,7 @@ const register = async (request, reply) => {
         username,
         password: hashedPassword,
         email,
-        image: path || null,
-        name,
+        image: path || null
       });
       const token = await jsonwebtoken.sign(
         { id: user.id, username: user.username, email: user.email },
