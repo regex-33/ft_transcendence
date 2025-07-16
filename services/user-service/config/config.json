@@ -1,17 +1,17 @@
 {
-  "development": {
+  "test": {
     "username": "aghlimi",
     "password": "1234",
     "database": "db",
     "host": "postgres",
     "dialect": "postgres"
   },
-  "test": {
-    "username": "root",
-    "password": null,
-    "database": "database_test",
-    "host": "postgres",
-    "dialect": "mysql"
+  "development": {
+    "username": "aghlimi",
+    "password": "1234",
+    "database": "db",
+    "host": "localhost",
+    "dialect": "postgres"
   },
   "production": {
     "username": "root",
