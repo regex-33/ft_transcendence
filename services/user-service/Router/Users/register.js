@@ -8,12 +8,14 @@ const time_token_expiration = process.env.TIME_TOKEN_EXPIRATION || "10h";
 const Cookies = require("../../middleware/cookie");
 const validation = (body, reply) => {
   if (!body) {
+    console.error("Request body is missing");
     return reply.status(400).send({ error: "Request body is required" });
   }
 
   const { username, password, email} = body;
 
   if (!username || !password || !email ) {
+    console.error("Missing required fields:", { username, password, email });
     return reply
       .status(400)
       .send({ error: "Username, password, and email are required" });
@@ -24,6 +26,11 @@ const validation = (body, reply) => {
     typeof password !== "string" ||
     typeof email !== "string" 
   ) {
+    console.error("Invalid field types:", {
+      username: typeof username,
+      password: typeof password,
+      email: typeof email,
+    });
     return reply
       .status(400)
       .send({ error: "Username, password, email,   must be strings" });
@@ -46,8 +53,10 @@ const register = async (request, reply) => {
   try {
     let body;
     try {
-      body = req.body;
+      body = request.body;
+      
       if (!body) {
+        console.error("No data received in request body");
         return reply.status(400).send({ error: "No data received" });
       }
     } catch (error) {

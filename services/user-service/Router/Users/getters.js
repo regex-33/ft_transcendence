@@ -86,7 +86,10 @@ const getUsers = async (request, reply) => {
   const check = checkAuthJWT(request, reply);
   if (check) return check;
   try {
-    const users = db.User.findAll();
+    const users = await db.User.findAll();
+    if (!users || users.length === 0) {
+      return reply.status(404).send({ error: "No users found." });
+    }
     return reply.send(
       users.map((user) => ({
         id: user.id,

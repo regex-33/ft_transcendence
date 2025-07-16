@@ -8,6 +8,9 @@ const logger = require("./middleware/logger");
 
 fastify.addHook("onResponse", logger);
 fastify.addHook("onRequest", banner);
+const fastifyCookie = require('@fastify/cookie');
+
+fastify.register(fastifyCookie);
 
 fastify.register(require("@fastify/multipart"));
 fastify.register(UserRoutes, { prefix: "/api/users" });

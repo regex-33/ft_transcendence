@@ -1,6 +1,6 @@
 module.exports = {
   login:require("./login"),
-  register:require("./Users/register"),
-  updateUser:require("./Users/update"),
-  ...require("./Users/getters")
+  register:require("./register"),
+  updateUser:require("./update"),
+  ...require("./getters")
 }; 
