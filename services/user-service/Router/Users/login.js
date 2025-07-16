@@ -46,6 +46,7 @@ const login = async (request, reply) => {
           .status(401)
           .send({ error: "Invalid username or password." });
       }
+
       try {
         const TwoFA = await db.TwoFA.findOne({ where: { username } });
         if (TwoFA) {
@@ -59,17 +60,18 @@ const login = async (request, reply) => {
           .status(500)
           .send({ error: "Internal server error " });
       }
+
       const token = jwt.sign(
         { id: user.id, username: user.username, email: user.email },
         JWT_SECRET,
         { expiresIn: TIME_TOKEN_EXPIRATION }
       );
+
       if (!token) {
         return reply.status(500).send({ error: "Failed to generate token." });
       }
-      reply.send({
-        token,
-      });
+
+      return Cookies(reply, token).send({});
     } catch (err) {
       console.error("Error during login:", err);
       reply.status(500).send({ error: "Internal server error." });

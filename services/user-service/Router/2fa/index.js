@@ -56,7 +56,7 @@ const verify2fa = async (req, res) => {
         if (!token) {
             return res.status(500).send({ error: "Failed to generate token" });
         }
-        res.send({ token });
+        return Cookies(reply, token).status(200).send({});
     } else {
         return res.status(401).send("Invalid token");
     }

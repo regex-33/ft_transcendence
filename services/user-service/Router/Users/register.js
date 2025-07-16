@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const multer = require("../../middleware/Multer");
 const jwt_secret = process.env.JWT_SECRET || "your_jwt_secret";
 const time_token_expiration = process.env.TIME_TOKEN_EXPIRATION || "10h";
-
+const Cookies = require("../../middleware/cookie");
 const validation = (body, reply) => {
   if (!body) {
     return reply.status(400).send({ error: "Request body is required" });
@@ -26,7 +26,7 @@ const validation = (body, reply) => {
   ) {
     return reply
       .status(400)
-      .send({ error: "Username, password, email, and name must be strings" });
+      .send({ error: "Username, password, email,   must be strings" });
   }
 
   if (
@@ -36,7 +36,7 @@ const validation = (body, reply) => {
   ) {
     return reply
       .status(400)
-      .send({ error: "Invalid username, password, email, or name format" });
+      .send({ error: "Invalid username, password, email format" });
   }
 
   return null;
@@ -95,9 +95,7 @@ const register = async (request, reply) => {
       if (!token)
         return reply.status(500).send({ error: "Error generating token" });
 
-      return reply.status(201).send({
-        token,
-      });
+      return Cookies(reply, token).status(201).send({});
     } catch (error) {
       console.error("Error creating user:", error.message);
       return reply.status(500).send({ message: "Internal server error" });

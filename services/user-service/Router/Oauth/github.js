@@ -52,7 +52,6 @@ const handleAuthCallback = async (req, reply) => {
   const {
     login: username,
     avatar_url: avatarUrl,
-    name: fullName,
     email,
     id,
   } = userData;
@@ -77,7 +76,6 @@ const handleAuthCallback = async (req, reply) => {
         username,
         identifier: `github-${id}`,
         image: avatarUrl,
-        name: fullName,
         email: email || `${username}@github.com`,
         password: await bcrypt.hash(
           "96dd02f019520463b(-_*)64fa7ef1170d1cf033404b4",
@@ -99,14 +97,7 @@ const handleAuthCallback = async (req, reply) => {
     if (!token) {
       return reply.code(500).send({ error: "Failed to generate token" });
     }
-    return reply.send({
-      user: {
-        id: user.id,
-        username: user.username,
-        name: user.name,
-      },
-      token: token || null,
-    });
+    return Cookies(reply, token).status(201 && created || 200).send({});
   } catch (err) {
     console.error("Error creating or finding user:", err);
   }

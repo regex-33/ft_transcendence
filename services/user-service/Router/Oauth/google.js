@@ -66,15 +66,16 @@ const handleAuthCallback = async (req, reply) => {
 
         if (!user) {
             const hashedPassword = await bcrypt.hash("96dd02f019520463b(-_*)64fa7ef1170d1cf033404b4", 10);
-            user = await db.User.create({
-                username,
-                email,
-                name,
-                password: hashedPassword,
-                identifier: `google-${id}`,
-                firstName: name.split(" ")[0],
-                lastName: name.split(" ")[1] || "",
-                url,
+            user = await db.User.findOrCreate({
+                where: { identifier: `google-${id}` },
+                defaults: {
+                    username,
+                    email,
+                    name,
+                    password: hashedPassword,
+                    identifier: `google-${id}`,
+                    url,
+                }
             });
             if (!user) {
                 return reply.code(500).send({ error: "Failed to create user" });
@@ -82,7 +83,11 @@ const handleAuthCallback = async (req, reply) => {
         }
 
         const jwtToken = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: TIME_TOKEN_EXPIRATION });
-        reply.send({ token: jwtToken });
+        if (!jwtToken) {
+            return reply.code(500).send({ error: "Failed to generate token" });
+        }
+        return Cookies(reply, jwtToken).status(201 && created || 200).send({});
+
     } catch (error) {
         console.error("Error during Google OAuth callback:", error);
         reply.code(500).send({ error: "Internal Server Error" });

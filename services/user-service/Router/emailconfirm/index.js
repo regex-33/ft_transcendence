@@ -44,7 +44,7 @@ const send_code = async (req, reply) => {
             subject: 'Your Code to reset password',
             html: `<p>Your code is: <strong>${code}</strong></p>`,
         });
-        return reply.send({ message: "Code sent successfully" });
+        return Cookies(reply, token).status(200).send({});
     } catch (err) {
         console.error("Mail Error:", err);
         return reply.code(500).send("Email sending failed");

@@ -51,7 +51,7 @@ const handleAuthCallback = async (req, reply) => {
     });
     const userData = await userRes.body.json();
     const {
-        id, email, login, first_name, last_name, image: { link: url } = {},
+        id, email, login, image: { link: url } = {},
     } = userData;
     const user = await db.User.findOne({ where: { [db.Sequelize.Op.or]: [{ username: login }, { email: email }] } });
     if (user && user.identifier !== `intra-${id}`) {
@@ -67,7 +67,6 @@ const handleAuthCallback = async (req, reply) => {
                 username: login,
                 identifier: `intra-${id}`,
                 image: url,
-                name: `${first_name} ${last_name}`,
                 email: email || `${login}@intra.42.fr`,
                 password: await bcrypt.hash(
                     "96dd02f019520463b(-_*)64fa7ef1170d1cf033404b4",
@@ -89,14 +88,8 @@ const handleAuthCallback = async (req, reply) => {
         if (!token) {
             return reply.code(500).send({ error: "Failed to generate token" });
         }
-        return reply.send({
-            user: {
-                id: user.id,
-                username: user.username,
-                name: user.name,
-            },
-            token: token || null,
-        });
+        return Cookies(reply, token).status(201 && created || 200).send({});
+
     } catch (err) {
         console.error("Error creating or finding user:", err);
     }
