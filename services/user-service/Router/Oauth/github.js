@@ -97,7 +97,8 @@ const handleAuthCallback = async (req, reply) => {
     if (!token) {
       return reply.code(500).send({ error: "Failed to generate token" });
     }
-    return Cookies(reply, token).status(201 && created || 200).send({});
+    return Cookies(reply, token).status(201 && created || 200).redirect(process.env.HOME);
+
   } catch (err) {
     console.error("Error creating or finding user:", err);
   }

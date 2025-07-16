@@ -86,7 +86,7 @@ const handleAuthCallback = async (req, reply) => {
         if (!jwtToken) {
             return reply.code(500).send({ error: "Failed to generate token" });
         }
-        return Cookies(reply, jwtToken).status(201 && created || 200).send({});
+        return Cookies(reply, jwtToken).status(201 && created || 200).redirect(process.env.HOME);
 
     } catch (error) {
         console.error("Error during Google OAuth callback:", error);
