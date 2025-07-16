@@ -31,7 +31,6 @@ services:
       context: ./services/user-service
       dockerfile: Dockerfile
     container_name: transcendence-user-service
-    restart: unless-stopped
     ports:
       - "${USER_SERVICE_PORT:-8001}:${USER_SERVICE_PORT:-8001}"
     networks:
