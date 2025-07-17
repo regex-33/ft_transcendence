@@ -1,4 +1,4 @@
-const checkauthjwt = require("../../middleware/checkauthjwt");
+const checkauthjwt = require("../../util/checkauthjwt");
 const acceptFriendRequest = require("./accept");
 const cancelFriendRequest = require("./cancel");
 const unblockFriendRequest = require("./unblock");

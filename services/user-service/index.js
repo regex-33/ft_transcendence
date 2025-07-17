@@ -1,10 +1,10 @@
 const fastify = require("fastify")();
 const db = require("./models");
-const banner = require("./middleware/banner");
+const banner = require("./util/banner");
 const path = require("path");
 const fastifyStatic = require("@fastify/static");
 const { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes } = require("./Router");
-const logger = require("./middleware/logger");
+const logger = require("./util/logger_request");
 
 fastify.addHook("onResponse", logger);
 fastify.addHook("onRequest", banner);

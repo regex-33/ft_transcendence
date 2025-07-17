@@ -1,4 +1,4 @@
-const checkAuthJWT = require("../../middleware/checkauthjwt");
+const checkAuthJWT = require("../../util/checkauthjwt");
 module.exports = async (req, res) => {
     const authError = checkAuthJWT(req, res);
     if (authError) {

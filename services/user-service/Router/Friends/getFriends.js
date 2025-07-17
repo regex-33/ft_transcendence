@@ -1,5 +1,5 @@
 const db = require("../../models");
-const checkAuthJWT = require("../../middleware/checkauthjwt");
+const checkAuthJWT = require("../../util/checkauthjwt");
 const { Op } = require("sequelize");
 const createArray = async (array, id) => {
     return Promise.all(array.map(async (item) => {

@@ -1,6 +1,6 @@
 const db = require("../../models");
-const jsonwebtoken = require("../../middleware/jwt");
-const checkAuthJWT = require("../../middleware/checkauthjwt");
+const jsonwebtoken = require("../../util/jwt");
+const checkAuthJWT = require("../../util/checkauthjwt");
 
   /**
      * return user obj,

@@ -6,4 +6,6 @@ const logger = async (request, reply) => {
   );
 };
 
+
+
 module.exports = logger;

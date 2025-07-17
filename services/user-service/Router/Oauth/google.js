@@ -1,7 +1,7 @@
 const request = require("undici").request;
 const db = require("../../models");
 const bcrypt = require("bcrypt");
-const jwt = require("../../middleware/jwt");
+const jwt = require("../../util/jwt");
 
 const {
     JWT_SECRET,

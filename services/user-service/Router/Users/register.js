@@ -1,11 +1,11 @@
 const fastify = require("fastify")();
 const db = require("../../models");
-const jsonwebtoken = require("../../middleware/jwt");
+const jsonwebtoken = require("../../util/jwt");
 const bcrypt = require("bcrypt");
-const multer = require("../../middleware/Multer");
+const multer = require("../../util/Multer");
 const jwt_secret = process.env.JWT_SECRET || "your_jwt_secret";
 const time_token_expiration = process.env.TIME_TOKEN_EXPIRATION || "10h";
-const Cookies = require("../../middleware/cookie");
+const Cookies = require("../../util/cookie");
 const validation = (body, reply) => {
   if (!body) {
     console.error("Request body is missing");

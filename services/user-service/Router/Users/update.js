@@ -1,7 +1,7 @@
 const db = require("../../models/");
 const { User } = db;
-const checkAuthJWT = require("../../middleware/checkauthjwt");
-const multer = require("../../middleware/Multer");
+const checkAuthJWT = require("../../util/checkauthjwt");
+const multer = require("../../util/Multer");
 const bcrypt = require("bcrypt");
 
 

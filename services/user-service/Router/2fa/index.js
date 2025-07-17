@@ -1,9 +1,9 @@
 const speakeasy = require("speakeasy");
 const qrcode = require("qrcode");
 const db = require("../../models");
-const checkAuthJWT = require("../../middleware/checkauthjwt");
+const checkAuthJWT = require("../../util/checkauthjwt");
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
-const jwt = require("../../middleware/jwt");
+const jwt = require("../../util/jwt");
 
 const create2fa = async (req, res) => {
     const authError = checkAuthJWT(req, res);

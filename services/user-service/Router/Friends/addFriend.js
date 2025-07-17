@@ -1,5 +1,5 @@
 const db = require("../../models");
-const checkAuthJWT = require("../../middleware/checkauthjwt");
+const checkAuthJWT = require("../../util/checkauthjwt");
 const { User, Relationship } = db;
 
 const validate = (reply, ...ids) => {

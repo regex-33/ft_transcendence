@@ -2,7 +2,7 @@
 const nodemailer = require('nodemailer');
 const db = require("../../models");
 const { User , ResetCode } = db;
-const jwt = require("../../middleware/jwt");
+const jwt = require("../../util/jwt");
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
