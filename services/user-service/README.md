@@ -14,12 +14,15 @@ These routes manage user accounts and all begin with `/api/users/...`
 
 | Method                 | Endpoint                    | Content-Type        | Body Fields or Params                  | Need Token |
 | ---------------------- | --------------------------- | ------------------- | -------------------------------------- | :--------: |
-| [POST](#post-register) | [/register](#post-register) | form-data/multipart | username, password, email, image, name |     No     |
+| [POST](#post-register) | [/register](#post-register) | application/json    | username, password, email              |     No     |
 | [POST](#post-login)    | [/login](#post-login)       | application/json    | username, password                     |     No     |
 | [PUT](#put-update)     | [/update](#put-update)      | form-data/multipart | Any fields you want to update          |    Yes     |
 | [GET](#get-username)   | [/:username](#get-username) | -                   | username param                         |    Yes     |
 | [GET](#get-id-id)      | [/id/:id](#get-id-id)       | -                   | id param                               |    Yes     |
 | [GET](#get-users)      | [/](#get-users)             | -                   | -                                      |    Yes     |
+| [POST](#post-logout)   | [/logout](#post-logout)     | -                   | -                                      |    Yes     |
+| [GET](#get-online)     | [/online](#get-online)      | -                   | username as param if not the same user |    Yes     |
+| [PUT](#put-online)     | [/online](#put-online)      | application/json    | online (bool: is online or is not)     |    Yes     |
 
 ---
 
@@ -66,6 +69,7 @@ These routes provide 2FA and begin with `/api/2fa/...`
 | ------------------------ | ------------------------------ | ---------------- | ---------------------------- | :--------: |
 | [GET](#get-2fa-generate) | [/generate](#get-2fa-generate) | -                | -                            |     No     |
 | [POST](#post-2fa-verify) | [/verify](#post-2fa-verify)    | application/json | username, code (named token) |     No     |
+| [POST](#post-2fa-disable)| [/disable](#post-2fa-disable)  | -                | -                            |    Yes     |
 
 ---
 
@@ -95,6 +99,18 @@ return { id ,username,email,image,name,bio}
 #### <a name="get-users"></a>GET /
 Lists all users; requires authentication.
 return like array of getById
+
+### <a name="post-logout"></a> POST /logout
+Logout by deleting cookies
+
+
+#### <a name="get-online"></a>GET /online
+Checks if a user is online by username; requires authentication.
+Returns online status as a boolean.
+
+#### <a name="put-online"></a>PUT /online
+Sets the online status for the authenticated user; requires authentication.
+Accepts `online` (boolean) in the request body.
 ---
 
 ### Friends
@@ -143,3 +159,6 @@ Generates a 2FA qrcode.
 #### <a name="post-2fa-verify"></a>POST /verify
 Verifies a 2FA code for the user.
 return token
+
+#### <a name="post-2fa-disable"></a>POST /disable
+disable 2fa

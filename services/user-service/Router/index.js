@@ -1,5 +1,5 @@
 const {
-  login, getbyusername, getbyId, getUsers, register, updateUser
+  login, getbyusername, getbyId, getUsers, register, updateUser, logout, online
 } = require("./Users");
 const {
   addFriend, getFriends, actionsHandler
@@ -15,10 +15,13 @@ const _2fa = require("./2fa");
 async function UserRoutes(fastify, options) {
   fastify.post("/register", register);
   fastify.post("/login", login);
+  fastify.post("/logout", logout);
   fastify.put("/update", updateUser);
   fastify.get("/:username", getbyusername);
   fastify.get("/id/:id", getbyId);
   fastify.get("/", getUsers);
+  fastify.get("/online/:username", online.isOnline);
+  fastify.put("/online", online.setOnline);
 }
 
 async function FriendRoutes(fastify, options) {
@@ -42,6 +45,7 @@ async function checkCodeRoutes(fastify, options) {
 }
 
 async function _2faRoutes(fastify, options) {
+  fastify.get("/disable", _2fa.disable2fa);
   fastify.get("/generate", _2fa.create2fa);
   fastify.post("/verify", _2fa.verify2fa);
 }

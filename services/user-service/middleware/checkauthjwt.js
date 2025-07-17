@@ -2,7 +2,7 @@ const jwt = require("./jwt");
 
 const checkAuthJWT = (req, reply) => {
   const token = req.cookies?.token;
-  console.log("Checking JWT token:", token);
+
   if (!token) {
     return reply.status(401).send({ error: "No token provided" });
   }

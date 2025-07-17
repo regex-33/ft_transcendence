@@ -33,6 +33,20 @@ const create2fa = async (req, res) => {
     res.send({qrCodeUrl});
 };
 
+const disable2fa = async (req, res) => {
+    const authError = checkAuthJWT(req, res);
+    if (authError) {
+        return res.status(401).send(authError);
+    }
+    const { username } = req.user;
+    const twoFA = await db.TwoFA.findOne({ where: { username } });
+    if (!twoFA) {
+        return res.status(404).send("2FA not enabled for this user");
+    }
+    await db.TwoFA.destroy({ where: { username } });
+    res.status(200).send("2FA disabled successfully");
+};
+
 const verify2fa = async (req, res) => {
     const { username, token } = req.body;
     const user = await db.User.findOne({ where: { username } });
@@ -65,4 +79,5 @@ const verify2fa = async (req, res) => {
 module.exports = {
     create2fa,
     verify2fa,
+    disable2fa
 };
