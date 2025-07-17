@@ -1,3 +1,5 @@
+
+```json
 {
   "sample_log_formats": {
     "auth.log": {
@@ -137,7 +139,7 @@
       }
     }
   },
-
+```
 ```bash
 # Make the setup script executable and run it
 chmod +x setup_auth_logs.sh
