@@ -8,15 +8,15 @@ export const Welcome: ComponentFunction = () => {
 
 
 const handleGoogleLogin = useCallback(() => {
-    console.log('Google login');
+    window.location.href = '/api/auth/google';
   }, []);
 
   const handleGithubLogin = useCallback(() => {
-    console.log('Github login');
+    window.location.href = '/api/auth/github';
   }, []);
 
   const handle42Login = useCallback(() => {
-    console.log('42 login');
+    window.location.href = '/api/auth/intra';
   }, []);
 
 

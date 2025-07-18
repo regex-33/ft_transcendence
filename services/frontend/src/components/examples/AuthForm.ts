@@ -66,7 +66,7 @@ export const AuthForm: ComponentFunction = () => {
     const token = data.token;
 
     console.log('successful:', data);
-    // Redirect
+    
     
   } 
   catch (error) 
