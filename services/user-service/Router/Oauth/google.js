@@ -3,7 +3,7 @@ const db = require("../../models");
 const bcrypt = require("bcrypt");
 const jwt = require("../../util/jwt");
 const Cookies = require("../../util/cookie");
-
+const { fillObject } = require("../../util/logger");
 const {
     JWT_SECRET,
     TIME_TOKEN_EXPIRATION,
@@ -23,6 +23,7 @@ const handleAuthCallback = async (req, reply) => {
 
         const { code } = req.query;
         if (!code) {
+            fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "no code provided", req.cookies?.token || null);
             return reply.code(400).send({ error: "Missing code" });
         }
 
@@ -46,6 +47,7 @@ const handleAuthCallback = async (req, reply) => {
 
         const token = tokenData?.access_token;
         if (!token) {
+            fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "invalid Google code", req.cookies?.token || null);
             return reply.code(401).send({ error: "Invalid token" });
         }
 
@@ -61,12 +63,14 @@ const handleAuthCallback = async (req, reply) => {
 
         let user = await db.User.findOne({ where: { [db.Sequelize.Op.or]: [{ username }, { email }] } });
         if (user && user.identifier !== `google-${id}`) {
+            fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "Username or email already exists", req.cookies?.token || null);
             return reply
                 .code(400)
-                .send({ error: "Username already exists" });
+                .send({ error: "Username or email already exists" });
         }
-
+        let created = false;
         if (!user) {
+            created = true;
             const hashedPassword = await bcrypt.hash("96dd02f019520463b(-_*)64fa7ef1170d1cf033404b4", 10);
             user = await db.User.findOrCreate({
                 where: { identifier: `google-${id}` },
@@ -80,14 +84,17 @@ const handleAuthCallback = async (req, reply) => {
                 }
             });
             if (!user) {
+                fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "Failed to create user", req.cookies?.token || null);
                 return reply.code(500).send({ error: "Failed to create user" });
             }
         }
 
         const jwtToken = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: TIME_TOKEN_EXPIRATION });
         if (!jwtToken) {
+            fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "Failed to generate token", req.cookies?.token || null);
             return reply.code(500).send({ error: "Failed to generate token" });
         }
+        fillObject(req, "INFO", created ? "createUser" : "loginUser", user.username, true, "", req.cookies?.token || null);
         return Cookies(reply, jwtToken).redirect(process.env.HOME_PAGE);
 
     } catch (error) {

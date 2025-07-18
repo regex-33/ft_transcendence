@@ -10,10 +10,12 @@ const actionsHandler = async (req, reply) => {
   const userId = req.user.id;
 
   if (!action || (!id)) {
+    fillObject(req, "WARNING", "actionsHandler", userId, false, "action or id not provided", req.cookies?.token || null);
     return reply.status(400).send({ error: "Action and ID are required." });
   }
 
   if (typeof id !== "number" || isNaN(id)) {
+    fillObject(req, "WARNING", "actionsHandler", userId, false, "Invalid ID format.", req.cookies?.token || null);
     return reply.status(400).send({ error: "Invalid ID format." });
   }
   switch (action) {
@@ -22,6 +24,7 @@ const actionsHandler = async (req, reply) => {
         const result = await acceptFriendRequest(reply, userId, action, id);
         if (result) return result;
       } catch (error) {
+        fillObject(req, "ERROR", "acceptFriendRequest", userId, false, error.message, req.cookies?.token || null);
         console.error("Error accepting friend request:", error);
         return reply
           .status(500)
@@ -33,6 +36,7 @@ const actionsHandler = async (req, reply) => {
         const result = await cancelFriendRequest(reply, userId, action, id);
         if (result) return result;
       } catch (error) {
+        fillObject(req, "ERROR", "cancelFriendRequest", userId, false, error.message, req.cookies?.token || null);
         console.error("Error canceling friend request:", error);
         return reply
           .status(500)
@@ -44,6 +48,7 @@ const actionsHandler = async (req, reply) => {
         const result = await blockUser(reply, userId, action, id);
         if (result) return result;
       } catch (error) {
+        fillObject(req, "ERROR", "blockUser", userId, false, error.message, req.cookies?.token || null);
         console.error("Error blocking user:", error);
         return reply
           .status(500)
@@ -55,6 +60,7 @@ const actionsHandler = async (req, reply) => {
         const result = await unblockFriendRequest(reply, userId, action, id);
         if (result) return result;
       } catch (error) {
+        fillObject(req, "ERROR", "unblockFriendRequest", userId, false, error.message, req.cookies?.token || null);
         console.error("Error unblocking user:", error);
         return reply
           .status(500)

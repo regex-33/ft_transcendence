@@ -64,11 +64,15 @@ const updateUser = async (req, res) => {
       username
     );
 
-    if (validationError) return validationError;
+    if (validationError) {
+      fillObject(req, "WARNING", "updateUser", id, false, validationError.message, req.cookies?.token || null);
+      return validationError;
+    }
 
     try {
       const user = await User.findByPk(id)
       if (!user) {
+        fillObject(req, "WARNING", "updateUser", id, false, "User not found.", req.cookies?.token || null);
         return res.status(404).send({ error: "User not found." });
       }
 
@@ -85,16 +89,19 @@ const updateUser = async (req, res) => {
         });
       }
       catch (err) {
+        fillObject(req, "ERROR", "updateUser", id, false, err.message, req.cookies?.token || null);
         console.error("Error updating user:", err);
         res.status(500).send({ error: "Internal server error." });
       };
     }
     catch (err) {
+      fillObject(req, "ERROR", "updateUser", id, false, err.message, req.cookies?.token || null);
       console.error("Error fetching user:", err);
       res.status(500).send({ error: "Internal server error." });
     };
   }
   catch (err) {
+    fillObject(req, "ERROR", "updateUser", "unknown", false, err.message, req.cookies?.token || null);
     console.error("Error processing multipart request:", err);
     res.status(500).send({ error: "Internal server error." });
   };

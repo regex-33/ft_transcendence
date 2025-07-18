@@ -8,9 +8,11 @@ const isOnline = async (req, res) => {
     const { username } = req.user;
     const user = await db.User.findOne({ where: { username } });
     if (user) {
+        fillObject(req, "INFO", "isOnline", user.id, true, "", req.cookies?.token || null);
         return res.status(200).send({ online: user.online });
     }
-    return res.status(200).send({ online: false });
+    fillObject(req, "WARNING", "isOnline", "unknown", false, "User not found", req.cookies?.token || null);
+    return res.status(404).send("user not found");
 };
 
 const setOnline = async (req, res) => {
@@ -31,8 +33,10 @@ const setOnline = async (req, res) => {
             user.online = req.body.online;
             await user.save();
         }
+        fillObject(req, "INFO", "setOnline", user.id, true, "", req.cookies?.token || null);
         return res.status(200).send({ online: req.body.online });
     }
+    fillObject(req, "WARNING", "setOnline", username, false, "User not found", req.cookies?.token || null);
     return res.status(404).send("User not found");
 };
 

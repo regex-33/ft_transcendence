@@ -1,6 +1,7 @@
 const db = require("../../models");
 const checkAuthJWT = require("../../util/checkauthjwt");
 const { Op } = require("sequelize");
+const { fillObject } = require("../../util/logger");
 const createArray = async (array, id) => {
     return Promise.all(array.map(async (item) => {
         const friendId = item.from === id ? item.to : item.from;
@@ -38,9 +39,10 @@ const getFriends = async (request, reply) => {
                 ]
             }
         });
-
+        fillObject(request, "INFO", "getFriends", userId, true, "", request.cookies?.token || null);
         reply.send(await createArray(friends, userId));
     } catch (error) {
+        fillObject(request, "ERROR", "getFriends", userId, false, error.message, request.cookies?.token || null);
         console.error("Error fetching friends:", error);
         reply.status(500).send({ error: "Internal Server Error" });
     }

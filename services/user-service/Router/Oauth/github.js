@@ -5,6 +5,7 @@ const jwt = require("../../util/jwt");
 const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } = process.env;
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
 const Cookies = require("../../util/cookie");
+const { fillObject } = require("../../util/logger");
 
 const redirect = async (req, reply) => {
   const redirectURL = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}`;
@@ -16,6 +17,7 @@ const handleAuthCallback = async (req, reply) => {
   const { code } = req.query;
 
   if (!code) {
+    fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "no code provided", req.cookies?.token || null);
     return reply.code(400).send({ error: "Missing code" });
   }
 
@@ -38,6 +40,7 @@ const handleAuthCallback = async (req, reply) => {
   const tokenData = await tokenRes.body.json();
 
   if (!tokenData.access_token) {
+    fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "invalid GitHub code", req.cookies?.token || null);
     return reply.code(401).send({ error: "Invalid GitHub code" });
   }
 
@@ -61,12 +64,14 @@ const handleAuthCallback = async (req, reply) => {
       [db.Sequelize.Op.or]: [{ username }, { email }]
      } });
     if (user && user.identifier !== `github-${id}`) {
+      fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "username or email already exists", req.cookies?.token || null);
       return reply
         .code(400)
-        .send({ error: "Username already exists" });
+        .send({ error: "Username or email already exists" });
     }
   } catch (err) {
     console.error("Error checking user:", err);
+    fillObject(req, "ERROR", "handleAuthCallback", "unknown", false, err.message, req.cookies?.token || null);
     return reply.code(500).send({ error: "Internal server error" });
   }
   try {
@@ -84,23 +89,22 @@ const handleAuthCallback = async (req, reply) => {
       },
     });
 
-    if (created) {
-      console.log(`User ${username} created successfully.`);
-    } else {
-      console.log(`User ${username} already exists.`);
-    }
     const token = jwt.sign(
       { id: user.id, username: user.username, email: user.email },
       JWT_SECRET,
       { expiresIn: TIME_TOKEN_EXPIRATION }
     );
     if (!token) {
+      fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "Failed to generate token", req.cookies?.token || null);
       return reply.code(500).send({ error: "Failed to generate token" });
     }
+    fillObject(req, "INFO", created ? "createUser" : "loginUser", user.username, true, "", req.cookies?.token || null);
     return Cookies(reply, token).redirect(process.env.HOME_PAGE);
 
   } catch (err) {
+    fillObject(req, "ERROR", "handleAuthCallback", "unknown", false, err.message, req.cookies?.token || null);
     console.error("Error creating or finding user:", err);
+    return reply.code(500).send({ error: "Internal server error" });
   }
 };
 module.exports = {
