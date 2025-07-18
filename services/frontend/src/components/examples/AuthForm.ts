@@ -65,9 +65,6 @@ export const AuthForm: ComponentFunction = () => {
     const data = await response.json();
     const token = data.token;
 
-    // Store token
-    localStorage.setItem('authToken', token);
-
     console.log('successful:', data);
     // Redirect
     
@@ -118,14 +115,14 @@ export const AuthForm: ComponentFunction = () => {
           h('img', {
           src: '/images/mrbean-open.webp',
           alt: 'Mr Bean',
-          className: 'relative top-[40px]  left-[130px] w-48 transform transition-transform duration-300 hover:scale-105'
+          className: 'relative top-[39px] left-[200px] w-48 transform transition-transform duration-300 hover:scale-105 hidden sm:hidden lg:block z-[5]'
         }),
           // Form Fields
-          h('form', { onSubmit: handleSubmit},
+          h('form', { onSubmit: handleSubmit , className: 'relative z-[10]'},
             !isLoginMode && h('input', {
               type: 'email',
               placeholder: 'Email',
-              className: 'w-full mb-3 bg-[#F2F0F0]  px-4 py-3  rounded-3xl',
+              className: 'w-full mb-3 bg-[#F2F0F0]  px-4 py-3  rounded-3xl pl-16 border outline-none  focus:border-[#3F99B4]',
               value: formData.email,
               onInput: (e:Event) => handleInputChange('email', (e.target as HTMLInputElement).value),
               required: !isLoginMode
@@ -134,7 +131,7 @@ export const AuthForm: ComponentFunction = () => {
             h('input', {
               type: 'text',
               placeholder: 'Username',
-              className: 'w-full mb-3 px-4 bg-[#F2F0F0]  py-3  rounded-3xl',
+              className: 'w-full mb-3 px-4 bg-[#F2F0F0]  py-3  rounded-3xl border outline-none  focus:border-[#3F99B4]',
               value: formData.username,
               onInput: (e: Event) => handleInputChange('username', (e.target as HTMLInputElement).value),
               required: true
@@ -143,7 +140,7 @@ export const AuthForm: ComponentFunction = () => {
             h('input', {
               type: 'password',
               placeholder: 'Password',
-              className: 'w-full mb-3 px-4 py-3  bg-[#F2F0F0]  rounded-3xl',
+              className: 'w-full mb-3 px-4 py-3  bg-[#F2F0F0]  rounded-3xl border outline-none  focus:border-[#3F99B4]',
               value: formData.password,
               onInput: (e:Event) => handleInputChange('password', (e.target as HTMLInputElement).value),
               required: true
@@ -152,7 +149,7 @@ export const AuthForm: ComponentFunction = () => {
             !isLoginMode && h('input', {
               type: 'password',
               placeholder: 'Confirm Password',
-              className: 'w-full mb-6 px-4 py-3 bg-[#F2F0F0]   rounded-3xl',
+              className: 'w-full mb-6 px-4 py-3 bg-[#F2F0F0]   rounded-3xl border outline-none  focus:border-[#3F99B4]',
               value: formData.confirmPassword,
               onInput: (e:Event) => handleInputChange('confirmPassword', (e.target as HTMLInputElement).value),
               required: !isLoginMode
@@ -202,3 +199,4 @@ export const AuthForm: ComponentFunction = () => {
     )
   );
 };
+

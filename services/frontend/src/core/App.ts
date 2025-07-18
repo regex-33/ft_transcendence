@@ -274,12 +274,6 @@ private cleanupActiveComponents(): void {
 private setupRoutes(): void {
   console.log("Setting up routes...");
   
-  // this.router.addRoute("/", () => this.createPlaceholderComponent("Home"));
-  
-  this.router.addRoute("/counter-class", () => 
-    this.createClassComponent(CounterClassComponent, { initialCount: 5 })
-  );
-  
   this.router.addRoute("/counter", () =>
     this.createFunctionalComponent(CounterExample, { initialCount: 1 })
   );
