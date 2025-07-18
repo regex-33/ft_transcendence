@@ -17,7 +17,6 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
       - UV_THREADPOOL_SIZE=128
-      # - REACT_APP_API_URL=http://localhost:${NGINX_PORT:-8080}/api
     command: sh -c "npm install && npm run dev"
     depends_on:
       - nginx
