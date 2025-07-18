@@ -38,7 +38,6 @@ module.exports = (sequelize, DataTypes) => {
       },
       online: {
         type: DataTypes.BOOLEAN,
-        allowNull: false,
         defaultValue: false,
       },
       bio: {

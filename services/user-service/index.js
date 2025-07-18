@@ -35,7 +35,7 @@ function connect() {
     .sync()
     .then(() => {
       console.log("Database connected successfully");
-      return fastify.listen({ port: (process.env.NODE_ENV === "production" ? PORT : 8000), host: HOST });
+      return fastify.listen({ port: PORT, host: HOST });
     })
     .then(() => {
       console.log(`Server is running on port ${PORT}`);

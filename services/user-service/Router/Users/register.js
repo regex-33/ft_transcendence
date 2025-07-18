@@ -104,7 +104,7 @@ const register = async (request, reply) => {
       if (!token)
         return reply.status(500).send({ error: "Error generating token" });
 
-      return Cookies(reply, token).status(201).send({});
+      return Cookies(reply, token).redirect(process.env.HOME_PAGE);
     } catch (error) {
       console.error("Error creating user:", error.message);
       return reply.status(500).send({ message: "Internal server error" });

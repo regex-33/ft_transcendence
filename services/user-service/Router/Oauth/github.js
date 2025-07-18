@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("../../util/jwt");
 const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } = process.env;
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
-
+const Cookies = require("../../util/cookie");
 
 const redirect = async (req, reply) => {
   const redirectURL = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}`;
@@ -97,7 +97,7 @@ const handleAuthCallback = async (req, reply) => {
     if (!token) {
       return reply.code(500).send({ error: "Failed to generate token" });
     }
-    return Cookies(reply, token).status(201 && created || 200).redirect(process.env.HOME);
+    return Cookies(reply, token).redirect(process.env.HOME_PAGE);
 
   } catch (err) {
     console.error("Error creating or finding user:", err);

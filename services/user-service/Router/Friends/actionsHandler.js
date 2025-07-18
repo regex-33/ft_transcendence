@@ -3,13 +3,9 @@ const acceptFriendRequest = require("./accept");
 const cancelFriendRequest = require("./cancel");
 const unblockFriendRequest = require("./unblock");
 const blockUser = require("./block");
-// accept
-// reject
-// block
-// unblock
+
 const actionsHandler = async (req, reply) => {
   let check = checkauthjwt(req, reply);
-  // return reply.status(501).send({ error: "This endpoint is not implemented yet." });
   const { action, id } = req.body;
   const userId = req.user.id;
 

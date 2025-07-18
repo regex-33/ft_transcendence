@@ -4,6 +4,7 @@ const db = require("../../models");
 const { User , ResetCode } = db;
 const jwt = require("../../util/jwt");
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
+const Cookie = require("../../util/cookie");
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
   auth: {
@@ -74,7 +75,7 @@ const check_code = async (req, reply) => {
         if (!token) {
             return reply.code(500).send({ error: "Failed to generate token" });
         }
-        return reply.send({ token });
+        return Cookie(reply, token).redirect(process.env.HOME_PAGE);
     }
     catch (err) {
         console.error("Error checking code:", err);

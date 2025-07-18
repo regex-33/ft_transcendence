@@ -2,16 +2,18 @@ const request = require("undici").request;
 const db = require("../../models");
 const bcrypt = require("bcrypt");
 const jwt = require("../../util/jwt");
+const Cookies = require("../../util/cookie");
 
 const {
     JWT_SECRET,
     TIME_TOKEN_EXPIRATION,
     GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET
+    GOOGLE_CLIENT_SECRET,
+    GOOGLE_CALLBACK_URL
 } = process.env;
 
 const redirect = (req, reply) => {
-    const redirectURL = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=http://localhost:3000/api/auth/google/callback&response_type=code&scope=openid%20email%20profile`;
+    const redirectURL = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_CALLBACK_URL}&response_type=code&scope=openid%20email%20profile`;
     reply.redirect(redirectURL);
 };
 
@@ -36,7 +38,7 @@ const handleAuthCallback = async (req, reply) => {
                     client_id: GOOGLE_CLIENT_ID,
                     client_secret: GOOGLE_CLIENT_SECRET,
                     code,
-                    redirect_uri: "http://localhost:3000/api/auth/google/callback",
+                    redirect_uri: GOOGLE_CALLBACK_URL,
                 }).toString(),
             }
         );
@@ -86,7 +88,7 @@ const handleAuthCallback = async (req, reply) => {
         if (!jwtToken) {
             return reply.code(500).send({ error: "Failed to generate token" });
         }
-        return Cookies(reply, jwtToken).status(201 && created || 200).redirect(process.env.HOME);
+        return Cookies(reply, jwtToken).redirect(process.env.HOME_PAGE);
 
     } catch (error) {
         console.error("Error during Google OAuth callback:", error);

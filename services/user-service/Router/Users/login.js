@@ -2,6 +2,7 @@ const fastify = require("fastify")();
 const db = require("../../models");
 const jwt = require("../../util/jwt");
 const bcrypt = require("bcrypt");
+const Cookies = require("../../util/cookie");
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
 
 const validateInputs = (username, password) => {
@@ -50,9 +51,7 @@ const login = async (request, reply) => {
       try {
         const TwoFA = await db.TwoFA.findOne({ where: { username } });
         if (TwoFA) {
-          return reply.send({
-            needCode: true,
-          });
+          return reply.redirect(`/2fa?username=${username}`);
         }
       } catch (error) {
         console.error("Error fetching 2FA status:", error);
@@ -71,7 +70,7 @@ const login = async (request, reply) => {
         return reply.status(500).send({ error: "Failed to generate token." });
       }
 
-      return Cookies(reply, token).send({});
+      return Cookies(reply, token).redirect(process.env.HOME_PAGE);
     } catch (err) {
       console.error("Error during login:", err);
       reply.status(500).send({ error: "Internal server error." });

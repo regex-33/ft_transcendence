@@ -42,6 +42,8 @@ services:
       - TIME_TOKEN_EXPIRATION=${TIME_TOKEN_EXPIRATION:-3600}
       - DB_HOST=postgres
       - DB_PORT=5432
+      - INTRA_CALLBACK_URL=${INTRA_CALLBACK_URL:-http://localhost:8080/api/auth/intra/callback}
+      - HOME_PAGE=${HOME_PAGE:-/home}
       # - DB_NAME=${POSTGRES_DB}
       # - DB_USER=${POSTGRES_USER}
       # - DB_PASSWORD=${POSTGRES_PASSWORD}

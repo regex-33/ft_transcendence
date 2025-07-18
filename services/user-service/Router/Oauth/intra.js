@@ -2,14 +2,17 @@ const request = require("undici").request;
 const db = require("../../models");
 const bcrypt = require("bcrypt");
 const jwt = require("../../util/jwt");
+const Cookies = require("../../util/cookie");
 const {
     JWT_SECRET,
     TIME_TOKEN_EXPIRATION,
     INTRA_CLIENT_ID,
-    INTRA_CLIENT_SECRET
+    INTRA_CLIENT_SECRET,
+    INTRA_CALLBACK_URL
 } = process.env;
 const redirect = (req, reply) => {
-    const redirectURL = `https://api.intra.42.fr/oauth/authorize?client_id=${INTRA_CLIENT_ID}&response_type=code&redirect_uri=http://localhost:3000/api/auth/intra/callback`;
+    console.log(process.env);
+    const redirectURL = `https://api.intra.42.fr/oauth/authorize?client_id=${INTRA_CLIENT_ID}&redirect_uri=${INTRA_CALLBACK_URL}&response_type=code`;
     reply.redirect(redirectURL);
 };
 
@@ -32,7 +35,7 @@ const handleAuthCallback = async (req, reply) => {
                 client_id: INTRA_CLIENT_ID,
                 client_secret: INTRA_CLIENT_SECRET,
                 code,
-                redirect_uri: "http://localhost:3000/api/auth/intra/callback",
+                redirect_uri:   INTRA_CALLBACK_URL,
             }),
         }
     );
@@ -88,7 +91,7 @@ const handleAuthCallback = async (req, reply) => {
         if (!token) {
             return reply.code(500).send({ error: "Failed to generate token" });
         }
-        return Cookies(reply, token).status(201 && created || 200).redirect(process.env.HOME);
+        return Cookies(reply, token).redirect(process.env.HOME_PAGE);
 
     } catch (err) {
         console.error("Error creating or finding user:", err);
