@@ -5,7 +5,7 @@ all: test-up
 
 test-up:
 	@echo "Starting test environment..."
-	docker-compose -f docker-compose.yml --profile dev up -d
+	docker-compose -f docker-compose.yml --profile dev up 
 	@echo "Waiting for services to start..."
 	sleep 10
 	@echo "Services should be running on:"
