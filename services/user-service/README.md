@@ -73,7 +73,7 @@ These routes provide 2FA and begin with `/api/2fa/...`
 ---
 
 ## Checks
-
+`/api/check/...`
 | Method | Endpoint                        | Content-Type | Body Fields or Params | Need Token |
 | ------ | ------------------------------- | ------------ | --------------------- | :--------: |
 | GET    | [/token](#get-check-token)      | -            | -                     |    Yes     |
