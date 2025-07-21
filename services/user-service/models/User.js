@@ -40,6 +40,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      valid:{
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
       bio: {
         type: DataTypes.TEXT,
         allowNull: true,

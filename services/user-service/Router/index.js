@@ -9,6 +9,8 @@ const {
   github, intra, google
 } = require("./Oauth");
 
+const { check } = require("./check");
+
 const checkcode = require("./emailconfirm");
 const _2fa = require("./2fa");
 
@@ -50,4 +52,8 @@ async function _2faRoutes(fastify, options) {
   fastify.post("/verify", _2fa.verify2fa);
 }
 
-module.exports = { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes };
+async function checksRoutes(fastify, options) {
+  fastify.get("/token", check);
+}
+
+module.exports = { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes };

@@ -1,4 +1,3 @@
-endence
 
 ## Run
 
@@ -73,7 +72,16 @@ These routes provide 2FA and begin with `/api/2fa/...`
 
 ---
 
+## Checks
+
+| Method | Endpoint                        | Content-Type | Body Fields or Params | Need Token |
+| ------ | ------------------------------- | ------------ | --------------------- | :--------: |
+| GET    | [/token](#get-check-token)      | -            | -                     |    Yes     |
+
 # Route Explanations
+
+
+
 
 ### Users
 
@@ -162,3 +170,7 @@ return token
 
 #### <a name="post-2fa-disable"></a>POST /disable
 disable 2fa
+
+### Checks
+#### <a name="get-check-token"></a>GET /token
+Checks if the token exists and is valid.
