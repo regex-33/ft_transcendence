@@ -23,5 +23,9 @@ export default defineConfig({
     rollupOptions: {
       input: './index.html'
     }
+  },
+  esbuild: {
+    jsxFactory: 'h',
+    jsxFragment: 'Fragment' // optional
   }
 })
