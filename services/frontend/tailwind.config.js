@@ -1,14 +1,21 @@
-module.exports = {
+export default {
   content: [
-     './src/**/*.{js,ts,jsx,tsx}',
-    "./index.html"
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
-      colors: {
-        'pong-orange': '#FF6B6B',
-      },
+     fontFamily: {
+          irish: ['"Irish Grover"', 'cursive'],
+          inria: ['"Inria Sans"', 'sans-serif'],
+          luckiest: ['"Luckiest Guy"', 'cursive'],
+          inconsolata: ['"Inconsolata"', 'monospace'],
+          rowdies: ['"Rowdies"', 'cursive'], 
+        },
+
     },
   },
-  plugins: [],
+  plugins: [
+  require('tailwind-scrollbar-hide')
+]
 }

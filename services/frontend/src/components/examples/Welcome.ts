@@ -7,7 +7,8 @@ import { h } from "../../vdom/createElement";
 export const Welcome: ComponentFunction = () => {
 
 
-const handleGoogleLogin = useCallback(() => {
+
+  const handleGoogleLogin = useCallback(() => {
     window.location.href = '/api/auth/google';
   }, []);
 

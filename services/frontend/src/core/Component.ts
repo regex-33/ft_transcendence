@@ -115,9 +115,16 @@ export abstract class Component<
 
     // KEY FIX: Handle first render vs updates differently
     if (this.currentVNode === null) {
+
       // First render after mount - replace the current element
+    console.log("new VNode:", newVNode);
       const newElement = this.renderer.createElement(newVNode);
-      
+
+      if (newVNode.props.ref && typeof newVNode.props.ref === "object") {
+        console.log("Setting ref for new VNode:", newVNode.props.ref);
+        newVNode.props.ref.current = newElement; // <-- where domNode is the rendered element
+      }
+
       if (!(newElement instanceof HTMLElement)) {
         console.error("Rendered VNode did not produce an HTMLElement");
         return;
@@ -137,7 +144,11 @@ export abstract class Component<
       
       const patches = this.vdom.diff(this.currentVNode, newVNode);
       // console.log("PATCHES GENERATED:", patches.length, patches);
-      
+        if (newVNode.props.ref && typeof newVNode.props.ref === "object") {
+                  console.log("Setting ref for existing VNode:", newVNode.props.ref);
+
+        newVNode.props.ref.current = this.element; // <-- where domNode is the rendered element
+      }
       if (patches.length > 0) {
         // CRITICAL FIX: Apply patches to the component's own element, not parent
         this.renderer.patch(this.element, patches);

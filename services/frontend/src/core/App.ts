@@ -10,7 +10,6 @@ import { Renderer } from "../vdom/render";
 import { createElement as h } from "../vdom/createElement";
 import PerformanceOptimizer from "./PerformanceOptimizer";
 
-// Hook imports
 import { useState } from "../hooks/useState";
 import { useEffect } from "../hooks/useEffect";
 import { useMemo } from "../hooks/useMemo";
@@ -18,8 +17,13 @@ import { useRef } from "../hooks/useRef";
 import { useCallback } from "../hooks/useCallback";
 import { AuthForm } from "../components/examples/AuthForm";
 import { Welcome } from "../components/examples/Welcome";
-import { Home } from "../components/examples/Home";
 
+
+import { Home } from "../components/home/Home";
+
+
+import { SettingsPage } from '../components/settings/SettingsPage';
+import { isJSDocAuthorTag } from "typescript";
 
 
 
@@ -45,9 +49,7 @@ export class App {
   private performanceMonitor?: () => void;
   private hooksManager: HooksManager;
   private renderer: Renderer;
-  /**
-   * Optional: Track components for cleanup when routes change
-   */
+ 
   private activeComponents: Component[] = [];
 
   constructor(config: AppConfig = { containerId: "app" }) {
@@ -81,11 +83,6 @@ export class App {
     this.state.loading = true;
 
     try {
-      console.log("🚀 Starting application...");
-
-      // Initialize core services
-      // await this.initializeServices();
-
       // Setup routing
       this.setupRoutes();
 
@@ -149,19 +146,9 @@ export class App {
       error: null,
       currentRoute: "/",
     };
-
-    console.log("✅ Application stopped");
   }
 
-  private async initializeServices(): Promise<void> {
-    console.log("📋 Initializing services...");
 
-
-    // await UserStore.initialize();
-
-
-    console.log("✅ Services initialized");
-  }
 
   private async cleanupServices(): Promise<void> {
     // Cleanup user store
@@ -280,15 +267,31 @@ private setupRoutes(): void {
   );
 
 
+// this.router.addRoute("/home", () =>
+//   this.createClassComponent(CounterClassComponent, { initialCount: 1 })
+// );
+
+this.router.addRoute('/settings', () =>
+  this.createFunctionalComponent(SettingsPage)
+);
+
+// if you want a distinct URL for each tab, you could add them too:
+this.router.addRoute('/settings/profile', () => 
+  this.createFunctionalComponent(SettingsPage, { defaultTab: 'profile' })
+);
+this.router.addRoute('/settings/friends', () => 
+  this.createFunctionalComponent(SettingsPage, { defaultTab: 'friends' })
+);
+
 
  this.router.addRoute("/login", () => 
   this.createFunctionalComponent(AuthForm)
 );
-
    this.router.addRoute("/", () => 
   this.createFunctionalComponent(Welcome)
 );
 
+    
 
    this.router.addRoute("/home", () => 
   this.createFunctionalComponent(Home)

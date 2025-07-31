@@ -104,10 +104,6 @@ export function logVNode(vnode: VNode | null, label: string = 'VNode'): void {
  * Usage example for your diff method:
  */
 export function logDiffComparison(oldVNode: VNode | null, newVNode: VNode | null): void {
-  console.log("+-------------------------");
-  console.log("-- Diffing Virtual DOM --");
-  console.log("+-------------------------");
-  
   if (oldVNode) {
     logVNode(oldVNode, 'OLD VNODE TREE');
   } else {
@@ -121,8 +117,6 @@ export function logDiffComparison(oldVNode: VNode | null, newVNode: VNode | null
   } else {
     console.log('// NEW VNODE TREE\nconst newVNode = null;');
   }
-  
-  console.log("+-------------------------");
 }
 
 /**

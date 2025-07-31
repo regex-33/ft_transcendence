@@ -4,12 +4,11 @@ import { useState } from "../../hooks/useState";
 import { ComponentFunction } from "../../types/global";
 import { h } from '../../vdom/createElement';
 
+import { CounterExample } from "./Counter";
 
 export const Home = () => {
   return (
-    <div className="home-container bg-red-300 ">
-      <h1 className=" text-blue-700 hover:underline font-bold underline-offset-8 ">Welcome to the Home Page</h1>
-      <p className="text-red-600">You are logged in as User</p>
-    </div>
-  );
+  //  <input type="text" placeholder="Search..." className="search-input"  onclick={() => console.log("Search clicked")} />
+  <CounterExample />
+);
 };
