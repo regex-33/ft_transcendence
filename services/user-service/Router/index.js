@@ -9,7 +9,7 @@ const {
   github, intra, google
 } = require("./Oauth");
 
-const { check } = require("./check");
+const check = require("./check");
 
 const checkcode = require("./emailconfirm");
 const _2fa = require("./2fa");

@@ -35,12 +35,14 @@ const fastifyCookie = require('@fastify/cookie');
 
 fastify.register(fastifyCookie);
 fastify.register(require("@fastify/multipart"));
+
 fastify.register(UserRoutes, { prefix: "/api/users" });
 fastify.register(FriendRoutes, { prefix: "/api/friends" });
 fastify.register(OauthRoutes, { prefix: "/api/auth" });
 fastify.register(checkCodeRoutes, { prefix: "/api" });
 fastify.register(_2faRoutes, { prefix: "/api/2fa" });
 fastify.register(checksRoutes, { prefix: "/api/check" });
+
 fastify.register(fastifyStatic, {
   root: path.join(__dirname, "uploads"),
   prefix: "/uploads/",

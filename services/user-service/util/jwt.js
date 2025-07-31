@@ -29,7 +29,7 @@ const sign = (payload, secret, options = {}) => {
 const verify = async (token, secret, callback) => {
     const [headerEncoded, payloadEncoded, signature] = token.split(".");
     const data = `${headerEncoded}.${payloadEncoded}`;
-    let token;
+    let new_token;
     const expectedSignature = crypto
         .createHmac("sha256", secret)
         .update(data)
@@ -60,11 +60,11 @@ const verify = async (token, secret, callback) => {
     }
 
     if (header.exp && header.exp < Math.floor(Date.now() / 1000)) {
-        token = sign(payload, JWT_SECRET, { expiresIn: TIME_TOKEN_EXPIRATION });
+        new_token = sign(payload, JWT_SECRET, { expiresIn: TIME_TOKEN_EXPIRATION });
     }
 
-    await callback(null, { payload, token });
-    return { payload, token };
+    await callback(null, { payload, new_token });
+    return { payload, new_token };
 }
 
 module.exports = {
