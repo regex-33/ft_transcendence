@@ -18,6 +18,14 @@ const friends = [
   { id: 9, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
   { id: 10, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
   { id: 11, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+   { id: 12, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 13 , avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 14, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 15, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 16, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 17, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 18, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 19, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
 ];
 
 const FriendItem: ComponentFunction = (props) => {
@@ -46,26 +54,6 @@ function chunk<T>(arr: T[], size: number): T[][] {
 
 export const ChatPanel: ComponentFunction = () => {
   const friendColumns = chunk(friends, 2);
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-
-    const onWheel = (e: WheelEvent) => {
-      if (e.deltaY !== 0) {
-        e.preventDefault();
-        el.scrollLeft += e.deltaY;
-      }
-    };
-
-    el.addEventListener("wheel", onWheel, { passive: false });
-
-    return () => {
-      el.removeEventListener("wheel", onWheel);
-    };
-  }, []);
-
   return (
     <aside className="w-[25%] p-2 flex flex-col gap-4">
       <div className="relative w-full">
@@ -79,13 +67,12 @@ export const ChatPanel: ComponentFunction = () => {
           </span>
         </button>
         <div
-          className="relative rounded-lg h-[330px] w-[330px] 
-            bg-no-repeat bg-center bg-[length:330px_330px] translate-x-9 overflow-hidden"
+          className="relative rounded-lg h-[320px] w-[340px]
+            bg-no-repeat bg-center bg-[length:340px_330px] translate-x-7 overflow-hidden"
           style={{ backgroundImage: "url('/images/home-assests/bg-online.svg')" }}
         >
           <div
-            ref={scrollContainerRef}
-            className="absolute inset-0 ml-4 pr-4 max-w-[300px] overflow-x-auto overflow-y-hidden"
+            className="absolute inset-0 ml-4 pr-4 max-w-[300px] overflow-x-auto overflow-y-hidden "
             style={{
               scrollbarWidth: 'thin',
               scrollbarColor: '#64B0C5 transparent'
