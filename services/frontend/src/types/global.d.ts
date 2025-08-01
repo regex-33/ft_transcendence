@@ -64,65 +64,9 @@ export interface GameState {
   paddle2Y: number;
 }
 
-export interface RouteConfig {
-  path: string;
-  component: () => Component;
-  requiresAuth?: boolean;
-}
-
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
   error?: string;
 }
 
-// ===== src/vdom/types.ts =====
-// export type VNodeType = string | Function;
-
-
-
-
-
-declare global {
-  interface Window {
-    // Framework globals
-    Framework: {
-      createElement: typeof h;
-      Component: typeof Component;
-      useState: typeof useState;
-      useEffect: typeof useEffect;
-      useMemo: typeof useMemo;
-      useRef: typeof useRef;
-      useCallback: typeof useCallback;
-      render: (component: VNode | ComponentFunction, container: HTMLElement) => void;
-    };
-    // App globals
-    userStore: typeof userStore;
-    router: Router;
-  }
-}
-
-
-// export type ComponentFunction = (props: any) => VNode;
-
-// interface AuthResponse {
-//   success: boolean;
-//   message?: string;
-//   user?: {
-//     id: string;
-//     email: string;
-//   };
-// }
-
-// declare global {
-//   interface Window {
-//     userStore: g{
-//       isLoggedIn: boolean;
-//       currentUser: null | {
-//         id: string;
-//         email: string;
-//       };
-//     };
-//     navigate: (path: string) => void;
-//   }
-// }

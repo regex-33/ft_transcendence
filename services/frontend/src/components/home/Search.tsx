@@ -18,54 +18,68 @@ const players: Player[] = [
 ];
 
 export const Search: ComponentFunction = () => {
-const [showSearch, setShowSearch] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-     
-    const modalRef = useRef<HTMLDivElement | null>(null);
-    
-    const trimmed = searchQuery.trim().toLowerCase();
-    const isSearching = trimmed.length > 0;
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  
+  const trimmed = searchQuery.trim().toLowerCase();
+  const isSearching = trimmed.length > 0;
 
-    const defaultPlayers = players
-      .filter(p => p.online)
-      .concat(players.filter(p => !p.online))
-      .slice(0, 5);
-    
-    const filteredPlayers = players.filter(p =>
-      p.name.toLowerCase().includes(trimmed)
-    );
-    
-    
-    let displayPlayers: typeof players = [];
-    let showNoResults = false;
-    
-    if (!isSearching) {
-      displayPlayers = defaultPlayers;
-    } else if (filteredPlayers.length > 0) {
-      displayPlayers = filteredPlayers;
-    } else {
-      showNoResults = true;
+  const defaultPlayers = players
+    .filter(p => p.online)
+    .concat(players.filter(p => !p.online))
+    .slice(0, 5);
+  
+  const filteredPlayers = players.filter(p =>
+    p.name.toLowerCase().includes(trimmed)
+  );
+  
+  let displayPlayers: typeof players = [];
+  let showNoResults = false;
+  
+  if (!isSearching) {
+    displayPlayers = defaultPlayers;
+  } else if (filteredPlayers.length > 0) {
+    displayPlayers = filteredPlayers;
+  } else {
+    showNoResults = true;
+  }
+  
+  const handleCloseSearch = () => {
+    setShowSearch(false);
+    setSearchQuery('');
+  };
+  
+  // Alternative approach - handle click on overlay directly
+  const handleOverlayClick = (e: MouseEvent) => {
+    // Check if the click was on the overlay (not the modal content)
+    if (e.target === e.currentTarget) {
+      handleCloseSearch();
     }
+  };
+
+  // Backup useEffect approach with different event and timing
+  useEffect(() => {
+    if (!showSearch) return;
     
-    
-    
-    const handleCloseSearch = () => {
-      setShowSearch(false);
-      setSearchQuery('');
+    const handleClickOutside = (e: Event) => {
+      const target = e.target as Element;
+      if (modalRef.current && !modalRef.current.contains(target)) {
+        setShowSearch(false);
+        setSearchQuery('');
+      }
     };
+  
+    // Use 'click' instead of 'mousedown' and add delay
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside, true);
+    }, 200);
     
-    useEffect(() => {
-      const handleClickOutside = (e: MouseEvent) => {
-        if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-          handleCloseSearch();
-        }
-      };
-    
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }, []);
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('click', handleClickOutside, true);
+    };
+  }, [showSearch]);
 
   // Function to handle search button click
   const onSearchInput = () => {
@@ -83,10 +97,14 @@ const [showSearch, setShowSearch] = useState(false);
         </button>
       </div>
       {showSearch && (
-        <div className="fixed inset-0 bg-[#193D47] bg-opacity-70 flex justify-center items-center z-50">
+        <div 
+          className="fixed inset-0 bg-[#193D47] bg-opacity-70 flex justify-center items-center z-50"
+          onClick={handleOverlayClick}
+        >
           <div
             ref={modalRef}
             className="bg-[#64B0C5] w-[500px] p-2 h-[450px] rounded-3xl shadow-lg relative focus:outline-none"
+            onClick={(e: MouseEvent) => e.stopPropagation()}
           >
             <div className="relative w-full">
               <span className="absolute top-[7px] left-0 flex items-center pl-3">🔍</span>
@@ -99,6 +117,7 @@ const [showSearch, setShowSearch] = useState(false);
                   setSearchQuery((e.target as HTMLInputElement).value)
                 }
                 spellCheck={false}
+                autoFocus
               />
             </div>
 
