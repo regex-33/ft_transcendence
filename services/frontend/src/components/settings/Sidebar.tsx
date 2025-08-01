@@ -6,11 +6,9 @@ import { useEffect } from '../../hooks/useEffect';
 
 
 export const Sidebar: ComponentFunction = () => {
-
-
     return (
     <aside className="w-[32%] h-full   p-2  border-r border-black">
-    <div class="w-[340px] h-[740px] bg-[#5E9CAB]  rounded-xl  bg-opacity-75 text-white  p-3 shadow-lg relative ml-9 mt-10">
+    <div class="w-[340px] h-[740px] bg-[#5E9CAB]  rounded-xl  bg-opacity-35 text-white  p-3 shadow-lg relative ml-9 mt-10">
 
         <div class="flex flex-col items-center text-center w-full  pr-20">
 
@@ -47,23 +45,33 @@ export const Sidebar: ComponentFunction = () => {
 
         <div class="mt-16 space-y-4 pl-7">
             <h3 class="text-lg font-bold mb-2">About me</h3>
-            <p class="text-sm text-gray-200">
-            Embark on a virtual journey with Rayven, the adventurous gamer who finds
-            solace and excitement in exploring the vast landscapes of online gaming.
-            Known as Raymond in the real world.ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+            <p class="text-sm text-gray-200 break-words">
+            I am a 1337 student, passionate about coding and always eager
+             to learn new technologies. I love working on challenging projects
+              and collaborating with others to create innovative solutions.
             </p>
         </div>
 
 
-        <div class="mt-6 space-y-3 text-sm pl-7">
+        <div class="mt-6 space-y-2 text-sm pl-5">
             <div class="flex items-center gap-2">
-            <span class="text-blue-400">📅</span>
-            <span>20/08/2006</span>
+                <img
+                src="/images/setting-assests/birthday.svg"
+                alt="Add"
+                class="w-8 h-8"
+                />
+                <span className="text-white">20/08/2006</span>
             </div>
+
             <div class="flex items-center gap-2">
-            <span class="text-blue-400">📍</span>
-            <span>Morocco</span>
+                <img
+                src="/images/setting-assests/location.svg"
+                alt="Add"
+                class="w-8 h-8"
+                />
+            <span className="text-white">Morocco</span>
             </div>
+            
         </div>
         </div>
 

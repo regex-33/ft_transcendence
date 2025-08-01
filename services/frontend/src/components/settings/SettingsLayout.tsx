@@ -27,9 +27,7 @@ export const SettingsLayout: ComponentFunction = () => {
 
   return (
     <div className="flex h-[calc(100vh-72px)]">
-      {/* Sidebar for navigation */}
       <Sidebar/>
-
       <main className="w-full flex flex-col items-center justify-center relative px-3 sm:px-6 md:px-8 mx-auto">
         <div className="hidden sm:flex items-center justify-around w-1/2  md:px-2 h-[64px] relative left-12 top-1">
       <nav className="w-1/4 bg-gray-100 p-4">
