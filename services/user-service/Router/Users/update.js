@@ -42,9 +42,9 @@ const validation = (res, ...inputs) => {
 * update user info
 */
 const updateUser = async (req, res) => {
-  const check = checkAuthJWT(req, res);
-  if (check) return check;
-
+    const { check, payload } = await checkAuthJWT(req, reply);
+    if (check) return check;
+    req.user = payload;
   const { id } = req.user;
   try {
     const body = await multer(req)

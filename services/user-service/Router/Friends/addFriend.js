@@ -27,9 +27,9 @@ const validate = (reply, ...ids) => {
 };
 
 const addFriend = async (request, reply) => {
-  let check = checkAuthJWT(request, reply);
+  let { check, payload } = await checkAuthJWT(req, reply);
   if (check) return check;
-
+  req.user = payload;
   const id = request.user.id;
   const fid = request.body.id;
 

@@ -5,7 +5,9 @@ const unblockFriendRequest = require("./unblock");
 const blockUser = require("./block");
 
 const actionsHandler = async (req, reply) => {
-  let check = checkauthjwt(req, reply);
+  const { check, payload } = await checkAuthJWT(req, reply);
+  if (check) return check;
+  req.user = payload;
   const { action, id } = req.body;
   const userId = req.user.id;
 

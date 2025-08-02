@@ -1,9 +1,8 @@
 const checkAuthJWT = require("../../util/checkauthjwt");
 module.exports = async (req, res) => {
-    const authError = checkAuthJWT(req, res);
-    if (authError) {
-        return res.status(401).send(authError);
-    }
+    const { check, payload } = await checkAuthJWT(req, reply);
+    if (check) return check;
+    req.user = payload;
     const { username } = req.user;
     const user = await User.findOne({ where: { username } });
     if (!user) {

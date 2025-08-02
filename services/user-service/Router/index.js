@@ -1,5 +1,5 @@
 const {
-  login, getbyusername, getbyId, getUsers, register, updateUser, logout, online
+  login, getbyusername, getbyId, getUsers, register, updateUser, logout, online,getme
 } = require("./Users");
 const {
   addFriend, getFriends, actionsHandler
@@ -22,6 +22,7 @@ async function UserRoutes(fastify, options) {
   fastify.get("/:username", getbyusername);
   fastify.get("/id/:id", getbyId);
   fastify.get("/", getUsers);
+  fastify.get("/get/me", getme);
   fastify.get("/online/:username", online.isOnline);
   fastify.put("/online", online.setOnline);
 }

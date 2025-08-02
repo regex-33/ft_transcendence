@@ -1,6 +1,8 @@
 const { base64urlEncode, base64urlDecode } = require("./base64");
 const crypto = require("crypto");
 const { JWT_SECRET } = process.env;
+const db = require('../models');
+
 
 const sign = (payload, secret, options = {}) => {
     const header = {
@@ -31,40 +33,36 @@ const verify = async (token, secret, callback) => {
     const data = `${headerEncoded}.${payloadEncoded}`;
     let new_token;
     const expectedSignature = crypto
-        .createHmac("sha256", secret)
+        .createHmac("sha256", secret || process.env.JWT_SECRET || "my_secret")
         .update(data)
         .digest("base64")
         .replace(/=/g, "")
         .replace(/\+/g, "-")
         .replace(/\//g, "_");
 
+    const payload = JSON.parse(base64urlDecode(payloadEncoded));
     if (signature !== expectedSignature) {
         await callback("invalid token", payload);
         return;
     }
 
-    const payload = JSON.parse(base64urlDecode(payloadEncoded));
     const header = JSON.parse(base64urlDecode(headerEncoded));
     const { username } = payload;
 
-    const user = await global.db.User.findOne({ where: { username } });
+    const user = await db.User.findOne({ where: { username } });
 
     if (!user) {
-        await callback("user not found", payload);
-        return;
+        return await callback("user not found", payload);
     }
 
     if (user.valid === false) {
-        await callback("token expired", payload);
-        return;
+        return await callback("token expired", payload);
     }
 
     if (header.exp && header.exp < Math.floor(Date.now() / 1000)) {
         new_token = sign(payload, JWT_SECRET, { expiresIn: TIME_TOKEN_EXPIRATION });
     }
-
-    await callback(null, { payload, new_token });
-    return { payload, new_token };
+    return await callback(null, { payload, new_token });
 }
 
 module.exports = {

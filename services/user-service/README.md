@@ -19,6 +19,7 @@ These routes manage user accounts and all begin with `/api/users/...`
 | [GET](#get-username)   | [/:username](#get-username) | -                   | username param                         |    Yes     |
 | [GET](#get-id-id)      | [/id/:id](#get-id-id)       | -                   | id param                               |    Yes     |
 | [GET](#get-users)      | [/](#get-users)             | -                   | -                                      |    Yes     |
+| [GET](#me)      | [/me](#me)             | -                   | -                                      |    Yes     |
 | [POST](#post-logout)   | [/logout](#post-logout)     | -                   | -                                      |    Yes     |
 | [GET](#get-online)     | [/online](#get-online)      | -                   | username as param if not the same user |    Yes     |
 | [PUT](#put-online)     | [/online](#put-online)      | application/json    | online (bool: is online or is not)     |    Yes     |
@@ -107,6 +108,9 @@ return { id ,username,email,image,name,bio}
 #### <a name="get-users"></a>GET /
 Lists all users; requires authentication.
 return like array of getById
+
+#### <a name="me"></a>GET /me
+get by info base on token in cookies
 
 ### <a name="post-logout"></a> POST /logout
 Logout by deleting cookies

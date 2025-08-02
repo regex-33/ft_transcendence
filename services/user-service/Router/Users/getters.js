@@ -3,10 +3,10 @@ const jsonwebtoken = require("../../util/jwt");
 const checkAuthJWT = require("../../util/checkauthjwt");
 const { fillObject } = require("../../util/logger");
 
-  /**
-     * return user obj,
-     * get user by username
-     */
+/**
+   * return user obj,
+   * get user by username
+   */
 const getbyusername = async (request, reply) => {
   const check = checkAuthJWT(request, reply);
   if (check) return check;
@@ -47,31 +47,31 @@ const getbyusername = async (request, reply) => {
 };
 
 
-  /**
-     * return user obj,
-     * get user by id
-     */
+/**
+   * return user obj,
+   * get user by id
+   */
 const getbyId = (request, reply) => {
   const check = checkAuthJWT(request, reply);
   if (check) return check;
   let { id } = request.params;
   if (!id) {
-    fillObject(req, "WARNING", "getbyId", "unknown", false, "User ID is required.", req.cookies?.token || null);
+    fillObject(request, "WARNING", "getbyId", "unknown", false, "User ID is required.", request.cookies?.token || null);
     return reply.status(400).send({ error: "User ID is required." });
   }
 
   if (!/^\d+$/.test(id)) {
-    fillObject(req, "WARNING", "getbyId", "unknown", false, "Invalid user ID format.", req.cookies?.token || null);
+    fillObject(request, "WARNING", "getbyId", "unknown", false, "Invalid user ID format.", request.cookies?.token || null);
     return reply.status(400).send({ error: "Invalid user ID format." });
   }
 
   db.User.findByPk(id)
     .then((user) => {
       if (!user) {
-        fillObject(req, "WARNING", "getbyId", id, false, "User not found.", req.cookies?.token || null);
+        fillObject(request, "WARNING", "getbyId", id, false, "User not found.", request.cookies?.token || null);
         return reply.status(404).send({ error: "User not found." });
       }
-      fillObject(req, "INFO", "getbyId", user.id, true, "", req.cookies?.token || null);
+      fillObject(request, "INFO", "getbyId", user.id, true, "", request.cookies?.token || null);
       return reply.send({
         id: user.id,
         username: user.username,
@@ -81,7 +81,7 @@ const getbyId = (request, reply) => {
       });
     })
     .catch((err) => {
-      fillObject(req, "ERROR", "getbyId", id, false, err.message, req.cookies?.token || null);
+      fillObject(request, "ERROR", "getbyId", id, false, err.message, request.cookies?.token || null);
       console.error("Error fetching user by ID:", err);
       reply.status(500).send({ error: "Internal server error." });
     });
@@ -89,13 +89,41 @@ const getbyId = (request, reply) => {
 
 
 
-  /**
-     * return  all users objs,
-     * 
-     */
-const getUsers = async (request, reply) => {
-  const check = checkAuthJWT(request, reply);
+const getme = async (request, reply) => {
+  const { check, payload } = await checkAuthJWT(request, reply);
   if (check) return check;
+  request.user = payload;
+  let { id } = request.user;
+  try {
+    const user = await db.User.findByPk(id)
+    if (!user) {
+      fillObject(request, "WARNING", "getbyId", id, false, "User not found.", request.cookies?.token || null);
+      return reply.status(404).send({ error: "User not found." });
+    }
+    fillObject(request, "INFO", "getbyId", user.id, true, "", request.cookies?.token || null);
+    return reply.send({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      image: user.image,
+      bio: user.bio,
+    });
+  }
+  catch (err) {
+    fillObject(request, "ERROR", "getbyId", id, false, err.message, request.cookies?.token || null);
+    console.error("Error fetching user by ID:", err);
+    reply.status(500).send({ error: "Internal server error." });
+  };
+};
+
+/**
+   * return  all users objs,
+   * 
+   */
+const getUsers = async (request, reply) => {
+  const { check, payload } = await checkAuthJWT(request, reply);
+  if (check) return check;
+  request.user = payload;
   try {
     const users = await db.User.findAll();
     if (!users || users.length === 0) {
@@ -123,5 +151,5 @@ const getUsers = async (request, reply) => {
 module.exports = {
   getbyusername,
   getbyId,
-  getUsers,
+  getUsers, getme
 };
