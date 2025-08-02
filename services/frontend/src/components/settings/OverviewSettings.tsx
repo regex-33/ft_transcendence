@@ -12,7 +12,7 @@ import { ComponentFunction } from "../../types/global";
 export const OverviewSettings: ComponentFunction = () => {
   return (
     <div>
-      <h2>Overview</h2>
+      <h2></h2>
     </div>
   );
 };

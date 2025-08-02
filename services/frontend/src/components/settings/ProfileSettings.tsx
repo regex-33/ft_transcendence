@@ -9,7 +9,7 @@ import { useEffect } from '../../hooks/useEffect';
 export const ProfileSettings: ComponentFunction = () => {
   return (
     <div>
-      <h2>Edit Profile</h2>
+      <h2></h2>
     </div>
   );
 };

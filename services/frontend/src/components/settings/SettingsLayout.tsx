@@ -12,7 +12,7 @@ import { Sidebar } from "./Sidebar";
 
 
 export const SettingsLayout: ComponentFunction = () => {
-  const [activeTab, setActiveTab] = useState<'profile'|'friends'|'achievements'|'matchHistory'|'overview'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile'|'friends'|'achievements'|'matchHistory'|'overview'>('overview');
 
   const renderTab = () => {
     switch (activeTab) {
@@ -28,21 +28,47 @@ export const SettingsLayout: ComponentFunction = () => {
   return (
     <div className="flex h-[calc(100vh-72px)]">
       <Sidebar/>
-      <main className="w-full flex flex-col items-center justify-center relative px-3 sm:px-6 md:px-8 mx-auto">
-        <div className="hidden sm:flex items-center justify-around w-1/2  md:px-2 h-[64px] relative left-12 top-1">
-      <nav className="w-1/4 bg-gray-100 p-4">
-        <button onClick={() => setActiveTab('profile')}     className="block w-full text-left py-2">Edit Profile</button>
+    <main className="w-full flex flex-col  items-center justify-center  px-2 mr-28 pr-56">
 
-        <button onClick={() => setActiveTab('friends')}     className="block w-full text-left py-2">Friends</button>
+  <nav className="flex gap-3 md:gap-5 flex-none justify-between min-w-0 -mt-[720px]">
+ <button
+           onClick={() => setActiveTab('overview')}
+           style={{ backgroundImage: `url('/images/setting-assests/${activeTab === 'overview' ? 'bg-active.svg' : 'bg-noactive.svg'}')` }}
+           className="mt-2 flex items-center justify-between px-6 py-1 w-[180px] text-white bg-no-repeat bg-contain bg-center"
+       >
+                <span className="font-luckiest text-base pt-2 whitespace-nowrap">Overview</span>
+  </button>
+   <button
+            onClick={() => setActiveTab('friends')}
+            style={{ backgroundImage: `url('/images/setting-assests/${activeTab === 'friends' ? 'bg-active.svg' : 'bg-noactive.svg'}')` }}
+                class="mt-2 flex items-center justify-between px-6 py-1 w-[180px] text-white bg-no-repeat bg-contain bg-center"
+            >
+                <span class="font-luckiest text-base pt-2 whitespace-nowrap">Friends</span>
+  </button>
+  <button
+                onClick={() => setActiveTab('achievements')}
+                className="mt-2 flex items-center justify-between px-6 py-1 w-[180px] text-white bg-no-repeat bg-contain bg-center"
+                style={{ backgroundImage: `url('/images/setting-assests/${activeTab === 'achievements' ? 'bg-active.svg' : 'bg-noactive.svg'}')` }}
+            >
+                <span className="font-luckiest text-base pt-2 whitespace-nowrap">Achievements</span>
+  </button>
 
-        <button onClick={() => setActiveTab('achievements')}className="block w-full text-left py-2">Achievements</button>
+  <button
+                onClick={() => setActiveTab('matchHistory')}
+                className="mt-2 flex items-center justify-between px-6 py-1 w-[180px] text-white bg-no-repeat bg-contain bg-center"
+                style={{ backgroundImage: `url('/images/setting-assests/${activeTab === 'matchHistory' ? 'bg-active.svg' : 'bg-noactive.svg'}')` }}
+            >
+                <span className="font-luckiest text-base pt-2 whitespace-nowrap">Match History</span>
+  </button>
 
-        <button onClick={() => setActiveTab('matchHistory')} className="block w-full text-left py-2">Match History</button>
-
-        <button onClick={() => setActiveTab('overview')} className="block w-full text-left py-2">Overview</button>
-        
-      </nav>
-      </div>
+ <button
+                onClick={() => setActiveTab('profile')}
+                className="mt-2 flex items-center justify-between px-6 py-1 w-[180px] text-white bg-no-repeat bg-contain bg-center"
+                style={{ backgroundImage: `url('/images/setting-assests/${activeTab === 'profile' ? 'bg-active.svg' : 'bg-noactive.svg'}')` }}
+            >
+                <span className="font-luckiest text-base pt-2 whitespace-nowrap">Edit Profile</span>
+  </button>
+</nav>
         {renderTab()}
       </main>
     </div>
