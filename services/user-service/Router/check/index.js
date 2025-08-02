@@ -1,4 +1,4 @@
-const checkAuthJWT = require("../util/checkauthjwt");
+const checkAuthJWT = require("../../util/checkauthjwt");
 
 module.exports = (req,res) => {
     const check = checkAuthJWT(req, res);
