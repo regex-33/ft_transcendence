@@ -32,9 +32,8 @@ export interface VNodeProps {
   // ref?: (element: HTMLElement | null) => void;
 }
 
-export type ComponentFunction = (props: VNodeProps) => VNode;
-
-
+// Make ComponentFunction generic to accept different prop types
+export type ComponentFunction<P = VNodeProps> = (props?: P) => VNode;
 
 declare const process: {
   env: {
@@ -69,4 +68,3 @@ export interface ApiResponse<T = any> {
   data?: T;
   error?: string;
 }
-

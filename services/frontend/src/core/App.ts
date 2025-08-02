@@ -191,9 +191,9 @@ private createClassComponent<P extends ComponentProps>(
  *  ENHANCED: Creates a functional component wrapper with Virtual DOM support
  * This gives functional components the same benefits as class components
  */
-private createFunctionalComponent(
-  componentFn: ComponentFunction,
-  props: any = {}
+private createFunctionalComponent<P = any>(
+  componentFn: ComponentFunction<P>,
+  props: P = {} as P
 ): Component {
   const appRenderer = this.renderer;
   const hooksManager = this.hooksManager;
@@ -271,16 +271,29 @@ private setupRoutes(): void {
 //   this.createClassComponent(CounterClassComponent, { initialCount: 1 })
 // );
 
-this.router.addRoute('/settings', () =>
-  this.createFunctionalComponent(SettingsPage)
+// Router configuration
+this.router.addRoute('/settings', () => 
+  this.createFunctionalComponent(SettingsPage, { defaultTab: 'overview' })
 );
 
-// if you want a distinct URL for each tab, you could add them too:
 this.router.addRoute('/settings/profile', () => 
   this.createFunctionalComponent(SettingsPage, { defaultTab: 'profile' })
 );
+
 this.router.addRoute('/settings/friends', () => 
   this.createFunctionalComponent(SettingsPage, { defaultTab: 'friends' })
+);
+
+this.router.addRoute('/settings/achievements', () => 
+  this.createFunctionalComponent(SettingsPage, { defaultTab: 'achievements' })
+);
+
+this.router.addRoute('/settings/matchHistory', () => 
+  this.createFunctionalComponent(SettingsPage, { defaultTab: 'matchHistory' })
+);
+
+this.router.addRoute('/settings/overview', () => 
+  this.createFunctionalComponent(SettingsPage, { defaultTab: 'overview' })
 );
 
 
