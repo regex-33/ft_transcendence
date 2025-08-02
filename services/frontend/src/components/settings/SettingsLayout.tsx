@@ -37,7 +37,7 @@ export const SettingsLayout: ComponentFunction<SettingsLayoutProps> = (props) =>
       <Sidebar/>
       <main className="w-full flex flex-col ">
         {/* Navigation at the top */}
-        <nav className="flex  flex-none gap-8 min-w-0 pt-20  pl-16">
+        <nav className="flex  flex-none gap-8 min-w-0 pt-16  pl-5">
           <button
             onClick={() => setActiveTab('overview')}
             style={{ backgroundImage: `url('/images/setting-assests/${activeTab === 'overview' ? 'bg-active.svg' : 'bg-noactive.svg'}')` }}

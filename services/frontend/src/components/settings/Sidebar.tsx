@@ -7,8 +7,8 @@ import { useEffect } from '../../hooks/useEffect';
 
 export const Sidebar: ComponentFunction = () => {
     return (
-    <aside className="w-[30%] h-full   p-2  border-r border-black">
-    <div class="w-[340px] h-[740px] bg-[#5E9CAB]  rounded-xl  bg-opacity-35 text-white  p-3 shadow-lg relative ml-9 mt-10">
+    <aside className="w-[30%] h-full   p-2  ">
+    <div class="w-[310px] h-[740px] bg-[#5E9CAB]  rounded-xl  bg-opacity-35 text-white  p-3 shadow-lg relative ml-9 mt-10">
 
         <div class="flex flex-col items-center text-center w-full  pr-20">
 

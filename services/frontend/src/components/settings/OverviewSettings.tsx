@@ -11,9 +11,10 @@ import { ComponentFunction } from "../../types/global";
 
 export const OverviewSettings: ComponentFunction = () => {
   return (
-    <div  className="flex flex-row  h-[300px] px-20 gap-20">
+    <div className="">
+    <div  className="flex flex-row  h-[300px] px-5 gap-14 pb-4">
          <button
-                className=" flex flex-col justify-center items-center w-[195px] text-white bg-no-repeat bg-contain bg-center"
+                className=" flex flex-col justify-center items-center w-[180px] text-white bg-no-repeat bg-contain bg-center"
                 style={{ backgroundImage: `url('/images/setting-assests/bg-greenOve.svg')` }}>
                 <img
                 src="/images/setting-assests/gagne.svg"
@@ -23,9 +24,8 @@ export const OverviewSettings: ComponentFunction = () => {
                 <span className="font-luckiest text-3xl pt-2 whitespace-nowrap">320</span>
                <span className=" text-sm  whitespace-nowrap">Matches Won</span>
             </button>
-
           <button
-                className=" flex flex-col justify-center items-center w-[195px] text-white bg-no-repeat bg-contain bg-center"
+                className=" flex flex-col justify-center items-center w-[180px] text-white bg-no-repeat bg-contain bg-center"
                 style={{ backgroundImage: `url('/images/setting-assests/bg-greenOve.svg')` }}>
                 <img
                 src="/images/setting-assests/star.svg"
@@ -36,7 +36,7 @@ export const OverviewSettings: ComponentFunction = () => {
                <span className=" text-sm  whitespace-nowrap">Leader board Position</span>
             </button>
             <button
-                className=" flex flex-col justify-center items-center w-[195px] text-white bg-no-repeat bg-contain bg-center"
+                className=" flex flex-col justify-center items-center w-[180px] text-white bg-no-repeat bg-contain bg-center"
                 style={{ backgroundImage: `url('/images/setting-assests/bg-greenOve.svg')` }}>
                 <img
                 src="/images/setting-assests/unlucky.svg"
@@ -47,7 +47,7 @@ export const OverviewSettings: ComponentFunction = () => {
                <span className=" text-sm  whitespace-nowrap">Matches Losses</span>
             </button>
             <button
-                className=" flex flex-col justify-center items-center w-[195px] text-white bg-no-repeat bg-contain bg-center"
+                className=" flex flex-col justify-center items-center w-[180px] text-white bg-no-repeat bg-contain bg-center"
                 style={{ backgroundImage: `url('/images/setting-assests/bg-greenOve.svg')` }}>
                 <img
                 src="/images/setting-assests/unlocked.svg"
@@ -58,7 +58,7 @@ export const OverviewSettings: ComponentFunction = () => {
                <span className=" text-sm  whitespace-nowrap break-words">Unlocked Achievements</span>
             </button>
             <button
-                className=" flex flex-col justify-center items-center w-[195px] text-white bg-no-repeat bg-contain bg-center"
+                className=" flex flex-col justify-center items-center w-[180px] text-white bg-no-repeat bg-contain bg-center"
                 style={{ backgroundImage: `url('/images/setting-assests/bg-greenOve.svg')` }}>
                 <img
                 src="/images/setting-assests/sales.svg"
@@ -68,6 +68,12 @@ export const OverviewSettings: ComponentFunction = () => {
                 <span className="font-luckiest text-3xl pt-2 whitespace-nowrap">450</span>
                <span className=" text-sm  whitespace-nowrap">Total Pts</span>
             </button>
+    </div>
+    <div className="-mt-10 pl-9 -space-y-4 ">
+            <h1 className="font-luckiest text-lg pt-2 whitespace-nowrap text-white">HIGHLIGHTED MATCHES</h1>
+            <h3 className=" pt-2 text-sm text-gray-200">Best matches played</h3>
+
+      </div>
     </div>
   );
 };
