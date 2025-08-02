@@ -69,8 +69,32 @@ services:
       - redis
     profiles: ["user-service", "backend", "dev"]
     restart: unless-stopped
+    
+  chat-service:
+    build:
+      context: ./services/chat-service
+      dockerfile: Dockerfile
+    container_name: transcendence-chat-service
+    ports:
+      - "${CHAT_SERVICE_PORT:-8002}:${CHAT_SERVICE_PORT:-8002}"
+    networks:
+      - transcendence-network
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${CHAT_SERVICE_PORT:-8002}
+      - JWT_SECRET=${JWT_SECRET} 
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
+    depends_on:
+      - postgres
+    profiles: ["chat-service", "backend", "dev"]
+    restart: unless-stopped
 
   # Nginx as Reverse Proxy
+
   nginx:
     build: ./services/devops/nginx
     container_name: transcendence-nginx
