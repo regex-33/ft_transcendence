@@ -28,10 +28,9 @@ const friends = [
   { id: 19, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
 ];
 
-const FriendItem: ComponentFunction = (props) => {
+const FriendItem: ComponentFunction = (props = {}) => {
   const friend = props.friend as typeof friends[0];
   const cadreBg = friend.online ? "/images/home-assests/cir-online.svg" : "/images/home-assests/cir-offline.svg";
-
   return h('div', { className: "flex flex-row items-center w-16 translate-y-14" },
     h('div', { 
       className: "w-20 h-20 relative flex items-center justify-center bg-no-repeat bg-contain",
