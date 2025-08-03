@@ -4,12 +4,16 @@ import { h } from '../../vdom/createElement';
 import { useState } from '../../hooks/useState';
 import { ComponentFunction } from "../../types/global";
 import { Classic } from "./gameMode/Classic";
+import { Speed } from "./gameMode/Speed";
+import { Gold } from "./gameMode/Gold";
+import { Vanish } from "./gameMode/Vanish";
 
 export const OverviewSettings: ComponentFunction = () => {
   const highlightedMatches = [
     {
       id: 1,
       time: "12:30",
+      type: 'SPEED',
       player1: {
         name: "YOUSSEF",
         avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
@@ -24,6 +28,7 @@ export const OverviewSettings: ComponentFunction = () => {
     {
       id: 2,
       time: "14:45",
+      type: 'GOLD',
       player1: {
         name: "ALI",
         avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
@@ -38,6 +43,7 @@ export const OverviewSettings: ComponentFunction = () => {
     {
       id: 3,
       time: "16:20",
+      type: 'CLASSIC',
       player1: {
         name: "najib",
         avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
@@ -167,8 +173,13 @@ export const OverviewSettings: ComponentFunction = () => {
                 <span className="text-lg font-bold ml-auto pr-4 text-white">{loser.score}</span>
               </div>
             <div className="w-14  h-14  absolute top-1 left-10 flex flex-col items-center ">
-
-                <Classic/>   
+              {(() => {
+                const GameModeComponent = match.type === 'SPEED' ? Speed :
+                  match.type === 'GOLD' ? Gold :
+                  match.type === 'CLASSIC' ? Classic :
+                  match.type === 'VANISH' ? Vanish : null;
+                return GameModeComponent ? <GameModeComponent /> : null;
+              })()}
             </div>
             </button>
           );

@@ -4,16 +4,6 @@ import { useState } from "../../../hooks/useState";
 import { ComponentFunction } from "../../../types/global";
 
 export const Classic: ComponentFunction = () => {
-  const [starActive, setStarActive] = useState(true);
-  let point = 100;
-  
-  useEffect(() => {
-    if (point === 150)
-      setStarActive(true);
-    else
-      setStarActive(false);
-  }, [point]);
-
   return (
     <div className="flex flex-col items-center text-center w-full max-w-[100px]">
       <div className="relative w-[40px] h-[40px] rounded-full flex items-center justify-center">

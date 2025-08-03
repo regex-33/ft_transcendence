@@ -15,7 +15,7 @@ interface SettingsLayoutProps {
 }
 
 export const SettingsLayout: ComponentFunction<SettingsLayoutProps> = (props) => {
-  const { defaultTab = 'overview' } = props || {};
+  const { defaultTab = 'matchHistory' } = props || {};
   const [activeTab, setActiveTab] = useState<'profile'|'friends'|'achievements'|'matchHistory'|'overview'>(defaultTab);
   useEffect(() => {
     setActiveTab(defaultTab);

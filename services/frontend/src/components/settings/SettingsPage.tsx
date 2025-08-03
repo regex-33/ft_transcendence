@@ -9,7 +9,7 @@ interface SettingsPageProps {
 }
 
 export const SettingsPage: ComponentFunction<SettingsPageProps> = (props) => {
-  const { defaultTab = 'overview' } = props || {};
+  const { defaultTab = 'matchHistory' } = props || {};
 
   return (
     <div
