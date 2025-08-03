@@ -24,9 +24,9 @@ const createArray = async (array, id) => {
 }
 
 const getFriends = async (request, reply) => {
-    const check = checkAuthJWT(request, reply);
-    if (check)
-        return check;
+    const { check, payload } = await checkAuthJWT(request, reply);
+    if (check) return check;
+    request.user = payload;
     const userId = request.user.id;
     
     try {

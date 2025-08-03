@@ -1,10 +1,9 @@
 const db = require("../../models");
 const checkAuthJWT = require("../../util/checkauthjwt");
 const isOnline = async (req, res) => {
-    const authError = checkAuthJWT(req, res);
-    if (authError) {
-        return res.status(401).send(authError);
-    }
+    const { check, payload } = await checkAuthJWT(req, reply);
+    if (check) return check;
+    req.user = payload;
     const { username } = req.user;
     const user = await db.User.findOne({ where: { username } });
     if (user) {
@@ -16,10 +15,9 @@ const isOnline = async (req, res) => {
 };
 
 const setOnline = async (req, res) => {
-    const authError = checkAuthJWT(req, res);
-    if (authError) {
-        return res.status(401).send(authError);
-    }
+    const { check, payload } = await checkAuthJWT(req, reply);
+    if (check) return check;
+    req.user = payload;
     let username;
     if (req.body.username) {
         username = req.params.username;

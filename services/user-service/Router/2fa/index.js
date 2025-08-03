@@ -4,13 +4,12 @@ const db = require("../../models");
 const checkAuthJWT = require("../../util/checkauthjwt");
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
 const jwt = require("../../util/jwt");
-const {log,fillObject} = require('../../util/logger');
+const { log, fillObject } = require('../../util/logger');
 
 const create2fa = async (req, res) => {
-    const authError = checkAuthJWT(req, res);
-    if (authError) {
-        return res.status(401).send(authError);
-    }
+    const { check, payload } = await checkAuthJWT(req, reply);
+    if (check) return check;
+    req.user = payload;
     const { username } = req.user;
     const secret = speakeasy.generateSecret({
         name: `ft_transcendence (${username})`,
@@ -31,23 +30,22 @@ const create2fa = async (req, res) => {
         obj.secret = secret.base32;
         await obj.save();
     }
-    fillObject(req,"INFO", "create2fa", username,true,"",req.cookies?.token || null);
-    res.send({qrCodeUrl});
+    fillObject(req, "INFO", "create2fa", username, true, "", req.cookies?.token || null);
+    res.send({ qrCodeUrl });
 };
 
 const disable2fa = async (req, res) => {
-    const authError = checkAuthJWT(req, res);
-    if (authError) {
-        return res.status(401).send(authError);
-    }
+    const { check, payload } = await checkAuthJWT(req, reply);
+    if (check) return check;
+    req.user = payload;
     const { username } = req.user;
     const twoFA = await db.TwoFA.findOne({ where: { username } });
     if (!twoFA) {
-        fillObject(req,"WARNING", "disable2fa", username,false,"2FA not enabled",req.cookies?.token || null);
+        fillObject(req, "WARNING", "disable2fa", username, false, "2FA not enabled", req.cookies?.token || null);
         return res.status(404).send("2FA not enabled for this user");
     }
     await db.TwoFA.destroy({ where: { username } });
-    fillObject(req,"INFO", "disable2fa", username,true,"",req.cookies?.token || null);
+    fillObject(req, "INFO", "disable2fa", username, true, "", req.cookies?.token || null);
     res.status(200).send("2FA disabled successfully");
 };
 
@@ -74,10 +72,10 @@ const verify2fa = async (req, res) => {
         if (!token) {
             return res.status(500).send({ error: "Failed to generate token" });
         }
-        fillObject(req,"INFO", "verify2fa", username,true,"",req.cookies?.token || null);
+        fillObject(req, "INFO", "verify2fa", username, true, "", req.cookies?.token || null);
         return Cookies(reply, token).redirect(process.env.HOME_PAGE);
     } else {
-        fillObject(req,"WARNING", "verify2fa", username,false,"invalid token",req.cookies?.token || null);
+        fillObject(req, "WARNING", "verify2fa", username, false, "invalid token", req.cookies?.token || null);
         return res.status(401).send("Invalid token");
     }
 };
