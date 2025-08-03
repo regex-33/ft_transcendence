@@ -1,0 +1,175 @@
+version: '3.8'
+services:
+  frontend:
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile
+    container_name: transcendence-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - HOST=0.0.0.0
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - UV_THREADPOOL_SIZE=128
+      # - REACT_APP_API_URL=http://localhost:${NGINX_PORT:-8080}/api
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      - nginx
+    networks:
+      - transcendence-network
+    profiles: ["frontend", "dev"]
+
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: transcendence-user-service
+    ports:
+      - "${USER_SERVICE_PORT:-8001}:${USER_SERVICE_PORT:-8001}"
+    networks:
+      - transcendence-network
+    volumes:
+      - ./services/user-service:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${USER_SERVICE_PORT:-8001}
+      - JWT_SECRET=${JWT_SECRET}
+      - TIME_TOKEN_EXPIRATION=${TIME_TOKEN_EXPIRATION:-3600}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - INTRA_CALLBACK_URL=${INTRA_CALLBACK_URL:-http://localhost:8080/api/auth/intra/callback}
+      - HOME_PAGE=${HOME_PAGE:-/home}
+      # - DB_NAME=${POSTGRES_DB}
+      # - DB_USER=${POSTGRES_USER}
+      # - DB_PASSWORD=${POSTGRES_PASSWORD}
+
+      - DB_PASSWORD=1234
+      - DB_USER=aghlimi
+      - DB_NAME=db
+
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      - INTRA_CLIENT_ID=${INTRA_CLIENT_ID}
+      - INTRA_CLIENT_SECRET=${INTRA_CLIENT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
+      - GMAIL_APP_EMAIL=${GMAIL_APP_EMAIL}
+      - TIME_BTWN_REQUESTS=${TIME_BTWN_REQUESTS:-1000}
+      - NUMBER_OF_REQUESTS_TO_BAN=${NUMBER_OF_REQUESTS_TO_BAN:-10}
+      - CLEANUP_INTERVAL=${CLEANUP_INTERVAL:-300000}
+    depends_on:
+      - postgres
+      - redis
+    profiles: ["user-service", "backend", "dev"]
+    restart: unless-stopped
+    
+  chat-service:
+    build:
+      context: ./services/chat-service
+      dockerfile: Dockerfile
+    container_name: transcendence-chat-service
+    ports:
+      - "${CHAT_SERVICE_PORT:-8002}:${CHAT_SERVICE_PORT:-8002}"
+    networks:
+      - transcendence-network
+    volumes:
+      - ./services/chat-service:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${CHAT_SERVICE_PORT:-8002}
+      - JWT_SECRET=${JWT_SECRET} 
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
+      - USER_SERVICE_URL=http://user-service:${USER_SERVICE_PORT:-8001}
+    depends_on:
+      - postgres
+      - user-service
+    profiles: ["chat-service", "backend", "dev"]
+    restart: unless-stopped
+
+  # Nginx as Reverse Proxy
+  nginx:
+    build: ./services/devops/nginx
+    container_name: transcendence-nginx
+    ports:
+      - "${NGINX_PORT:-80}:80"
+    depends_on:
+      - user-service
+      - chat-service
+    networks:
+      - transcendence-network
+    volumes:
+      - ./services/devops/nginx/config/nginx.conf:/etc/nginx/nginx.conf
+      # don't forget logs for elk
+      # - ./services/devops/nginx/conf.d:/etc/nginx/conf.d
+    profiles: ["nginx", "dev"]
+    restart: unless-stopped
+
+  # PostgreSQL Database
+  postgres:
+    build:
+      context: ./services/devops/databases/postgres
+      dockerfile: Dockerfile
+    container_name: transcendence-postgres
+    restart: unless-stopped
+    environment:
+      # - POSTGRES_DB=${POSTGRES_DB}
+      # - POSTGRES_USER=${POSTGRES_USER}
+      # - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=aghlimi
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_DB=db
+    volumes:
+      - postgresql_logs:/var/log/postgresql
+      - postgresql_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    networks:
+      - transcendence-network
+      # - elk-network
+    profiles: ["database", "dev"]
+
+  redis:
+    build:
+      context: ./services/devops/databases/redis
+      dockerfile: Dockerfile
+    container_name: redis
+    restart: unless-stopped
+    volumes:
+      - redis_logs:/var/log/redis
+      - redis_data:/data
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - transcendence-network
+      # - elk-network
+    profiles: ["database", "dev"]
+
+volumes:
+  ## DATABASES
+  redis_data:
+    driver: local
+  redis_logs:
+    driver: local
+  postgresql_logs:
+    driver: local
+  postgresql_data:
+    driver: local
+
+networks:
+  transcendence-network:
+    driver: bridge
