@@ -68,6 +68,8 @@ services:
       - postgres
       - redis
     profiles: ["user-service", "backend", "dev"]
+    volumes:
+      - ./services/user-service:/app
     restart: unless-stopped
     
   chat-service:
