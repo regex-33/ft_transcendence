@@ -25,7 +25,6 @@ services:
       - transcendence-network
     profiles: ["frontend", "dev"]
 
-
   user-service:
     build:
       context: ./services/user-service
@@ -35,6 +34,9 @@ services:
       - "${USER_SERVICE_PORT:-8001}:${USER_SERVICE_PORT:-8001}"
     networks:
       - transcendence-network
+    volumes:
+      - ./services/user-service:/app
+      - /app/node_modules
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - PORT=${USER_SERVICE_PORT:-8001}
@@ -51,7 +53,6 @@ services:
       - DB_PASSWORD=1234
       - DB_USER=aghlimi
       - DB_NAME=db
-
 
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
       - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
@@ -79,6 +80,9 @@ services:
       - "${CHAT_SERVICE_PORT:-8002}:${CHAT_SERVICE_PORT:-8002}"
     networks:
       - transcendence-network
+    volumes:
+      - ./services/chat-service:/usr/src/app
+      - /usr/src/app/node_modules
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - PORT=${CHAT_SERVICE_PORT:-8002}
@@ -88,13 +92,14 @@ services:
       - DB_USER=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_NAME=${POSTGRES_DB}
+      - USER_SERVICE_URL=http://user-service:${USER_SERVICE_PORT:-8001}
     depends_on:
       - postgres
+      - user-service
     profiles: ["chat-service", "backend", "dev"]
     restart: unless-stopped
 
   # Nginx as Reverse Proxy
-
   nginx:
     build: ./services/devops/nginx
     container_name: transcendence-nginx
@@ -102,6 +107,7 @@ services:
       - "${NGINX_PORT:-80}:80"
     depends_on:
       - user-service
+      - chat-service
     networks:
       - transcendence-network
     volumes:
