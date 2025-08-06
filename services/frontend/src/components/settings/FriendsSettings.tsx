@@ -55,24 +55,24 @@ export const FriendsSettings: ComponentFunction = () => {
   function getActionButtons(friend: { id: number; name: string; avatar: string; status: string; }) {
     if (friend.status === 'accepted') {
       return (
-        <button className="bg-red-500 text-sm text-white px-3 py-1 w-24 h-[28px] rounded-full hover:bg-red-600 transition">
+        <button className="bg-red-500  bg-opacity-75 text-sm text-white px-3 py-1 w-24 h-[28px] rounded-full hover:bg-red-600 transition">
           Block
         </button>
       );
     } else if (friend.status === 'pending') {
       return (
         <div className="flex gap-2">
-          <button className="bg-[#4BC98A] text-white px-3 py-1 rounded-full w-24 h-[28px]  hover:bg-[#4BC98A] transition">
+          <button className="bg-[#4BC98A] bg-opacity-75 text-white px-3 py-1 rounded-full w-24 h-[28px]  hover:bg-[#4BC98A] transition">
             Accept
           </button>
-          <button className="bg-[#39A4C7] text-white px-3 py-1 rounded-full w-24 h-[28px]  hover:bg-gray-500 transition">
+          <button className="bg-[#39A4C7] bg-opacity-75 text-white px-3 py-1 rounded-full w-24 h-[28px]  hover:bg-gray-500 transition">
             Decline
           </button>
         </div>
       );
     } else if (friend.status === 'blocked') {
       return (
-        <button className="bg-[#858895] text-white px-3 py-1 rounded-full w-24 h-[28px]  hover:bg-blue-600 transition">
+        <button className="bg-[#858895] bg-opacity-75 text-white px-3 py-1 rounded-full w-24 h-[28px]  hover:bg-blue-600 transition">
           Unblock
         </button>
       );
@@ -85,18 +85,32 @@ export const FriendsSettings: ComponentFunction = () => {
       style={{
         scrollbarWidth: 'thin',
         scrollbarColor: '#64B0C5 transparent',
+        scrollbarHeight: 'hidden',
       }}>
-         <select
-           value={sortBy}
-           onChange={(e: Event) => setSortBy((e.target as HTMLSelectElement).value as Friend['status'] | 'all')}
-           className=" fixed px-6 py-2 -mt-9 text-white font-luckiest text-base pt-3 appearance-none  bg-no-repeat bg-cover  bg-center w-[100px] h-[40px]"
-           style={{ backgroundImage: "url('/images/setting-assests/bg-SortBy.svg')", }}
-         >
-           <option value="all">All</option>
-           <option value="pending">Pending</option>
-           <option value="accepted">Accepted</option>
-           <option value="blocked">Blocked</option>
-         </select>
+ <div className="fixed -mt-9 w-[120px] h-[30px]"
+     style={{
+       backgroundImage: "url('/images/setting-assests/bg-SortBy.svg')",
+       backgroundSize: 'cover',
+       backgroundRepeat: 'no-repeat',
+       borderRadius: '10px',
+     }}>
+  <select
+    value={sortBy}
+    onChange={(e: Event) => setSortBy((e.target as HTMLSelectElement).value as Friend['status'] | 'all')}
+    className="w-full h-full bg-transparent text-white font-luckiest text-base appearance-none pl-6 pt-1 focus:outline-none cursor-pointer"
+    style={{
+      border: 'none',
+      backgroundColor: 'transparent',
+      WebkitAppearance: 'none',
+      MozAppearance: 'none',
+    }}
+  >
+    <option value="all" className="bg-[#5E9CAB] text-white rounded-2xl">All</option>
+    <option value="pending" className="bg-[#5E9CAB] text-white rounded-2xl">Pending</option>
+    <option value="accepted" className="bg-[#5E9CAB] text-white rounded-2xl">Accepted</option>
+    <option value="blocked" className="bg-[#5E9CAB] text-white rounded-2xl">Blocked</option>
+  </select>
+</div>
       <div className="grid grid-cols-4 gap-4">
         <div className="flex gap-7 p-4" style={{ minWidth: 'max-content' }}>
           {friendColumns.map((group, idx) => (
@@ -106,7 +120,7 @@ export const FriendsSettings: ComponentFunction = () => {
               {group.map((friend, friendIdx) => 
                     <div
                     key={friend.id}
-                    className="w-[340px] h-[300px] bg-no-repeat bg-center  p-4 relative"
+                    className="w-[340px] h-[285px] bg-no-repeat bg-center  p-4 relative"
                     style={{ backgroundImage: "url('/images/setting-assests/bg-friends.svg')" }}
                   >
             <div className="flex flex-col items-center justify-center h-full">
@@ -119,7 +133,7 @@ export const FriendsSettings: ComponentFunction = () => {
                   </div>
               <h3 className="text-lg font-bold text-white mb-2">{friend.name}</h3>
               <div className="flex flex-row items-center gap-2">
-                <button className={`text-sm text-white px-3 py-1 rounded-full w-24 h-[28px] ${getStatusColor(friend.status)}`}>
+                <button className={`text-sm text-white px-3 py-1 bg-opacity-75 rounded-full w-24 h-[28px] ${getStatusColor(friend.status)}`}>
                   {friend.status}
                 </button>
                 <div className="">
