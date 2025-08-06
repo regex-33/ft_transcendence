@@ -4,7 +4,14 @@ import { ComponentFunction } from "../../types/global";
 import { useEffect } from '../../hooks/useEffect';
 
 
-const friends = [
+type Friend = {
+  id: number;
+  name: string;
+  avatar: string;
+  status: 'accepted' | 'pending' | 'blocked';
+};
+
+const friends: Friend[] = [
      { id: 1, name: 'yous', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'blocked' },
     { id: 2, name: 'ssef', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'accepted' },
     { id: 3, name: 'ANDE', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'blocked' },
@@ -18,31 +25,20 @@ const friends = [
     { id: 11, name: 'ZARA', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'pending' },
     { id: 12, name: 'NOAH', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'blocked' }
 ];
-const FriendItem: ComponentFunction = (props = {}) => {
-  const friend = props.friend as typeof friends[0];
-  return (
-    <div>
-      <div className="flex flex-col items-center">
-        <img
-          src={friend.avatar}
-          alt={friend.name}
-          className="w-16 h-16 rounded-full mb-2"
-      />
-      <span className="text-sm font-semibold">{friend.name}</span>
-      <span className={`text-xs ${friend.status === 'accepted' ? 'text-green-500' : friend.status === 'pending' ? 'text-yellow-500' : 'text-red-500'}`}>
-        {friend.status}
-      </span>
-    </div>
-    </div>
-  );
-}
 function chunk<T>(arr: T[], size: number): T[][] {
   return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
     arr.slice(i * size, i * size + size)
   );
 }
 export const FriendsSettings: ComponentFunction = () => {
-const friendColumns = chunk(friends, 2);
+  const [sortBy, setSortBy] = useState<'all' | 'accepted' | 'pending' | 'blocked'>('all');
+  const filteredFriends =
+    sortBy === 'all'
+      ? friends
+      : friends.filter(f => f.status === sortBy);
+  const friendColumns = chunk(filteredFriends, 2);
+ 
+
 
   function getStatusColor(status: string) {
     switch (status) {
@@ -90,6 +86,17 @@ const friendColumns = chunk(friends, 2);
         scrollbarWidth: 'thin',
         scrollbarColor: '#64B0C5 transparent',
       }}>
+         <select
+           value={sortBy}
+           onChange={(e: Event) => setSortBy((e.target as HTMLSelectElement).value as Friend['status'] | 'all')}
+           className=" fixed px-6 py-2 -mt-9 text-white font-luckiest text-base pt-3 appearance-none  bg-no-repeat bg-cover  bg-center w-[100px] h-[40px]"
+           style={{ backgroundImage: "url('/images/setting-assests/bg-SortBy.svg')", }}
+         >
+           <option value="all">All</option>
+           <option value="pending">Pending</option>
+           <option value="accepted">Accepted</option>
+           <option value="blocked">Blocked</option>
+         </select>
       <div className="grid grid-cols-4 gap-4">
         <div className="flex gap-7 p-4" style={{ minWidth: 'max-content' }}>
           {friendColumns.map((group, idx) => (
