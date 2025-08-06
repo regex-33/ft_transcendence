@@ -22,7 +22,7 @@ These routes manage user accounts and all begin with `/api/users/...`
 | [GET](#me)      | [/me](#me)             | -                   | -                                      |    Yes     |
 | [POST](#post-logout)   | [/logout](#post-logout)     | -                   | -                                      |    Yes     |
 | [GET](#get-online)     | [/online](#get-online)      | -                   | username as param if not the same user |    Yes     |
-| [PUT](#put-online)     | [/online](#put-online)      | application/json    | online (bool: is online or is not)     |    Yes     |
+| [PUT](#put-online)     | [/online](#put-online)      | application/json    | isOnline (bool: is online or is not)     |    Yes     |
 
 ---
 

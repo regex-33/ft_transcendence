@@ -37,8 +37,8 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: 0,
       },
       online: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
       },
       valid:{
         type: DataTypes.BOOLEAN,
