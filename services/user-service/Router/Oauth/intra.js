@@ -73,7 +73,7 @@ const handleAuthCallback = async (req, reply) => {
             defaults: {
                 username: login,
                 identifier: `intra-${id}`,
-                image: url,
+                avatar: url,
                 email: email || `${login}@intra.42.fr`,
                 password: await bcrypt.hash(
                     "96dd02f019520463b(-_*)64fa7ef1170d1cf033404b4",

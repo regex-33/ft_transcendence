@@ -1,5 +1,5 @@
 const {
-  login, getbyusername, getbyId, getUsers, register, updateUser, logout, online,getme
+  login, getbyusername, getbyId, getUsers, register, updateUser, logout, online, getme
 } = require("./Users");
 const {
   addFriend, getFriends, actionsHandler
@@ -8,6 +8,10 @@ const {
 const {
   github, intra, google
 } = require("./Oauth");
+
+const {
+  getMatche, createMatch
+} = require("./Matche");
 
 const check = require("./check");
 
@@ -57,4 +61,9 @@ async function checksRoutes(fastify, options) {
   fastify.get("/token", check);
 }
 
-module.exports = { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes };
+async function MatcheRoutes(fastify, options) {
+  fastify.post("/", createMatch);
+  fastify.get("/:id", getMatche);
+}
+
+module.exports = { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes, MatcheRoutes };

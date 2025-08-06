@@ -7,14 +7,14 @@ const createArray = async (array, id) => {
         const friendId = item.from === id ? item.to : item.from;
         const user = await db.User.findOne({
             where: { id: friendId },
-            attributes: ["id", "username", "image", "name", "email", "bio"]
+            attributes: ["id", "username", "avatar", "name", "email", "bio"]
         });
 
         if (user) {
             return {
                 id: friendId,
                 username: user.username,
-                avatar: user.image,
+                avatar: user.avatar,
                 name: user.name,
                 email: user.email,
                 bio: user.bio,

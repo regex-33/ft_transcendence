@@ -80,7 +80,7 @@ const handleAuthCallback = async (req, reply) => {
       defaults: {
         username,
         identifier: `github-${id}`,
-        image: avatarUrl,
+        avatar: avatarUrl,
         email: email || `${username}@github.com`,
         password: await bcrypt.hash(
           "96dd02f019520463b(-_*)64fa7ef1170d1cf033404b4",

@@ -35,7 +35,7 @@ const getbyusername = async (request, reply) => {
       id: user.id,
       username: user.username,
       email: user.email,
-      image: user.image,
+      avatar: user.avatar,
       bio: user.bio,
       online: user.online,
     });
@@ -77,7 +77,7 @@ const getbyId = (request, reply) => {
         id: user.id,
         username: user.username,
         email: user.email,
-        image: user.image,
+        avatar: user.avatar,
         bio: user.bio,
         online: user.online,
       });
@@ -107,7 +107,7 @@ const getme = async (request, reply) => {
       id: user.id,
       username: user.username,
       email: user.email,
-      image: user.image,
+      avatar: user.avatar,
       bio: user.bio,
       online: user.online,
     });
@@ -140,7 +140,7 @@ const getUsers = async (request, reply) => {
             id: user.id,
             username: user.username,
             email: user.email,
-            image: user.image,
+            avatar: user.avatar,
             bio: user.bio,
             online: user.online,
           });

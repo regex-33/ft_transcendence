@@ -66,8 +66,8 @@ const register = async (request, reply) => {
       return validationError;
     }
 
-    const { username, password, email, image } = request.body;
-    let path = image ? image.path : `${request.protocol}://${request.headers.host}/uploads/default_profile_picture.png`;
+    const { username, password, email, avatar } = request.body;
+    let path = avatar ? avatar.path : `${request.protocol}://${request.headers.host}/uploads/default_profile_picture.png`;
 
     const ret = await checkUserExisting(reply, username, email, request);
     if (ret) return ret;
@@ -76,7 +76,7 @@ const register = async (request, reply) => {
       username,
       password: bcrypt.hashSync(password, 10),
       email,
-      image: path || null
+      avatar: path || null
     });
 
   } catch (error) {
