@@ -1,3 +1,4 @@
+const { time } = require('speakeasy');
 const db = require('../../models');
 const checkAuthJWT = require('../../util/checkauthjwt');
 const { fillObject } = require('../../util/logger');
@@ -15,7 +16,7 @@ const createMatch = async (request, reply) => {
         const playersList = await checkPlayers(players);
         let match;
         try {
-            match = await db.Matche.create({ type });
+            match = await db.Matche.create({ type, time: new Date() });
             playersList.forEach((player, index) => {
                 match.addUser(player, { through: { team: players[index].team || 'RED' } });
             });

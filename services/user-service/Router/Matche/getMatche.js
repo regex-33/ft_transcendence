@@ -14,7 +14,11 @@ const getMatche = async (request, reply) => {
         }
 
         const match = await db.Matche.findByPk(id, {
-            include: [{ model: db.User, attributes: { exclude: ['password', 'isValid', 'identifier', 'friends', 'bio', 'createdAt', 'updatedAt'] }, through: { attributes: ['team'] } }]
+            include: [{
+                model: db.User,
+                attributes:  ['username', 'email', 'avatar', 'id'],
+                through: { attributes: ['team'] }
+            }]
         });
 
         if (!match) {
@@ -23,7 +27,29 @@ const getMatche = async (request, reply) => {
         }
 
         fillObject(request, "INFO", "getMatche", match.id, true, "", request.cookies?.token || null);
-        return reply.status(200).send(match);
+        return reply.status(200).send(
+            {
+                id: match.id,
+                type: match.type,
+                score: `${match.redscore}-${match.bluescore}`,
+                time: match.time,
+                status: match.status,
+                users: {
+                    red: match.Users.filter(user => user.MatcheUser.team === 'RED').map(user => ({
+                        id: user.id,
+                        username: user.username,
+                        email: user.email,
+                        avatar: user.avatar
+                    })),
+                    blue: match.Users.filter(user => user.MatcheUser.team === 'BLUE').map(user => ({
+                        id: user.id,
+                        username: user.username,
+                        email: user.email,
+                        avatar: user.avatar
+                    }))
+                }
+            }
+        );
     } catch (error) {
         fillObject(request, "ERROR", "getMatche", "unknown", false, error.message, request.cookies?.token || null);
         console.error("Error fetching match:", error);

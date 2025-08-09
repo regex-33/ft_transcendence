@@ -23,6 +23,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: "without",
       },
+      leveltype: {
+        type: DataTypes.ENUM("CLASSIC", "VANISH", "SPEED", "GOLD"),
+        allowNull: false,
+        defaultValue: "CLASSIC",
+      },
       password: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -40,7 +45,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
-      valid:{
+      valid: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
       },
