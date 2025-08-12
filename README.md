@@ -32,10 +32,6 @@ ft_transcendence/
     └── devops/                     # DevOps Infrastructure
         ├── monitoring/             # Prometheus + Grafana
         ├── logging/                # ELK Stack
-        ├── agents/                 # Go Monitoring Agents
         ├── nginx/                  # Load Balancer & Reverse Proxy
-        ├── message-broker/         # RabbitMQ/Redis
         ├── databases/              # Database Configurations
-        ├── scripts/                # Automation Scripts
-        └── configs/                # Configuration Files
 ```
