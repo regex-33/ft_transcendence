@@ -42,7 +42,7 @@ const getbyusername = async (request, reply) => {
   catch (err) {
     fillObject(request, "ERROR", "getbyusername", "unknown", false, err.message, request.cookies?.token || null);
     console.error("Error fetching user by username:", err);
-    reply.status(500).send({ error: "Internal server error." });
+    reply.status(500).send({ error: "Internal server error.1" });
   };
 };
 
@@ -83,7 +83,7 @@ const getbyId = (request, reply) => {
     .catch((err) => {
       fillObject(request, "ERROR", "getbyId", id, false, err.message, request.cookies?.token || null);
       console.error("Error fetching user by ID:", err);
-      reply.status(500).send({ error: "Internal server error." });
+      reply.status(500).send({ error: "Internal server error.2" });
     });
 };
 
@@ -112,7 +112,7 @@ const getme = async (request, reply) => {
   catch (err) {
     fillObject(request, "ERROR", "getbyId", id, false, err.message, request.cookies?.token || null);
     console.error("Error fetching user by ID:", err);
-    reply.status(500).send({ error: "Internal server error." });
+    reply.status(500).send({ error: "Internal server error.3" });
   };
 };
 
@@ -144,7 +144,7 @@ const getUsers = async (request, reply) => {
   catch (err) {
     fillObject(request, "ERROR", "getUsers", "unknown", false, err.message, request.cookies?.token || null);
     console.error("Error fetching users:", err);
-    reply.status(500).send({ error: "Internal server error." });
+    reply.status(500).send({ error: "Internal server error.4" });
   };
 };
 

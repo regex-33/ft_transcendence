@@ -85,12 +85,12 @@ const login = async (request, reply) => {
     } catch (err) {
       fillObject(request, "ERROR", "login", "unknown", false, "Error during login", request.cookies?.token || null);
       console.error("Error during login:", err);
-      reply.status(500).send({ error: "Internal server error." });
+      reply.status(500).send({ error: "Internal server error.6" });
     }
   } catch (error) {
     fillObject(request, "ERROR", "login", "unknown", false, error.message, request.cookies?.token || null);
     console.error("Unexpected error during login:", error);
-    return reply.status(500).send({ error: "Internal server error." });
+    return reply.status(500).send({ error: "Internal server error.5" });
   }
 };
 

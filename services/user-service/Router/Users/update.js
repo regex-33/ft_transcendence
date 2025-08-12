@@ -91,19 +91,19 @@ const updateUser = async (req, res) => {
       catch (err) {
         fillObject(req, "ERROR", "updateUser", id, false, err.message, req.cookies?.token || null);
         console.error("Error updating user:", err);
-        res.status(500).send({ error: "Internal server error." });
+        res.status(500).send({ error: "Internal server error.7" });
       };
     }
     catch (err) {
       fillObject(req, "ERROR", "updateUser", id, false, err.message, req.cookies?.token || null);
       console.error("Error fetching user:", err);
-      res.status(500).send({ error: "Internal server error." });
+      res.status(500).send({ error: "Internal server error.8" });
     };
   }
   catch (err) {
     fillObject(req, "ERROR", "updateUser", "unknown", false, err.message, req.cookies?.token || null);
     console.error("Error processing multipart request:", err);
-    res.status(500).send({ error: "Internal server error." });
+    res.status(500).send({ error: "Internal server error.9" });
   };
 };
 

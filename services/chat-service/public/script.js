@@ -4,7 +4,8 @@ const messageInput = document.getElementById('data');
 const sendButton = document.getElementById('send');
 
 const ws = new WebSocket('ws://localhost:8002/ws/chat');
-
+const data = fetch("http://localhost:8080/api/users/get/me")
+console.log("data is----------------------- ",data)
 let time_out;
 ws.onopen = () => {
     statusDiv.textContent = 'Online';
