@@ -49,6 +49,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
       },
+      type: {
+        type: DataTypes.ENUM("CLASSIC", "VANISH", "SPEED", "GOLD"),
+        allowNull: false,
+        defaultValue: "CLASSIC",
+      },
       bio: {
         type: DataTypes.TEXT,
         allowNull: true,

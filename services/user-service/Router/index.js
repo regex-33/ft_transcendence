@@ -10,7 +10,7 @@ const {
 } = require("./Oauth");
 
 const {
-  getMatche, createMatch, MatchFinish, getMatches
+  getMatch, create, getMatchs, finish, addscore
 } = require("./Matche");
 
 const check = require("./check");
@@ -62,10 +62,11 @@ async function checksRoutes(fastify, options) {
 }
 
 async function MatcheRoutes(fastify, options) {
-  fastify.post("/", createMatch);
-  fastify.get("/:id", getMatche);
-  fastify.put("/finish", MatchFinish);
-  fastify.get("/user/:username", getMatches);
+  fastify.post("/", create);
+  fastify.get("/:id", getMatch);
+  fastify.get('/user/:username', getMatchs);
+  fastify.put("/finish", finish);
+  fastify.get("/score-edit", addscore);
 }
 
 module.exports = { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes, MatcheRoutes };

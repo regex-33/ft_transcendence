@@ -3,12 +3,12 @@ const { time } = require("speakeasy");
 
 module.exports = (sequelize, DataTypes) => {
     const Matche = sequelize.define("Matche", {
-        redscore: {
+        score1: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
         },
-        bluescore: {
+        score2: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
