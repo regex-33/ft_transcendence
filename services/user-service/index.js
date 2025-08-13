@@ -67,10 +67,7 @@ function connect() {
       console.log(`Server is running on port ${PORT}`);
     })
     .catch((err) => {
-      console.error("Unable to connect to the database:", err);
-      // setTimeout(() => {
-      //   connect();
-      // }, 1000);
+      console.error("Unable to connect to the database");
     });
 }
 connect();

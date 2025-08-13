@@ -66,7 +66,7 @@ async function MatcheRoutes(fastify, options) {
   fastify.get("/:id", getMatch);
   fastify.get('/user/:username', getMatchs);
   fastify.put("/finish", finish);
-  fastify.get("/score-edit", addscore);
+  fastify.put("/score-edit", addscore);
 }
 
 module.exports = { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes, MatcheRoutes };

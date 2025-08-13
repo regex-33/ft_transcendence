@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+
 <body>
     <form action="/api/users/register" method="post">
         <input type="text" name="username" placeholder="Username" required>
@@ -13,11 +15,7 @@
         <button type="submit">Register</button>
     </form>
     <script>
-        document.querySelector('form').onsubmit = function(event) {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            const data = Object.fromEntries(formData.entries());
-
+        function end(data) {
             fetch('/api/users/register', {
                 method: 'POST',
                 headers: {
@@ -25,20 +23,40 @@
                 },
                 body: JSON.stringify(data)
             })
-            .then(response => {
-                console.log('Response status:', response);
+                .then(response => {
+                    console.log('Response status:', response);
 
-                return response.json();
-            })
-            .then(data => {
-                console.log('Registration successful:', data);
-                document.body.innerHTML = `<h1>Registration successful: ${data.message}</h1>`;
-            })
-            .catch(error => {
-                console.error('There was a problem with the fetch operation:', error);
-                document.body.innerHTML = `<h1>Error: ${error.message}</h1>`;
-            });
-        };
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Registration successful:', data);
+                    document.body.innerHTML = `<h1>Registration successful: ${data.message}</h1>`;
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                    document.body.innerHTML = `<h1>Error: ${error.message}</h1>`;
+                });
+        }
+        end({
+            "username": 'aghlimi1',
+            'email': 'd@f1',
+            'password': '12345678'
+        });
+        end({
+            "username": 'aghlimi2',
+            'email': 'd@f2',
+            'password': '12345678'
+        }); end({
+            "username": 'aghlimi3',
+            'email': 'd@f3',
+            'password': '12345678'
+        });
+        end({
+            "username": 'aghlimi4',
+            'email': 'd@f4',
+            'password': '12345678'
+        });
     </script>
 </body>
+
 </html>
