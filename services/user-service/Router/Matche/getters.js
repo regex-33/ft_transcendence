@@ -4,15 +4,14 @@ const { fillObject } = require('../../util/logger');
 
 const getMatch = async (req, res) => {
     try {
-        const { check, payload } = checkAuthJWT(req, res);
-        if (!check) {
-            fillObject(req, "WARNING", 'GETMATCH', 'unknown', false, 'unauthorized', req.cookies?.token || null);
-            return res.status(401).send({ error: 'Unauthorized' });
+        const { check, payload } = await checkAuthJWT(req, res);
+        if (check) {
+            return check;
         }
 
-        const matchId = req.params.id;
-        const match = await db.Match.findOne({
-            where: { id: matchId },
+        const { id } = req.params;
+        const [match] = await db.Matche.findAll({
+            where: { id },
             include: [
                 {
                     model: db.User,
@@ -23,7 +22,7 @@ const getMatch = async (req, res) => {
         });
 
         if (!match) {
-            fillObject(req, "WARNING", 'GETMATCH', payload.username, false, 'match not found', matchId);
+            fillObject(req, "WARNING", 'GETMATCH', payload.username, false, 'match not found', req.cookies?.token || null);
             return res.status(404).send({ error: 'Match not found' });
         }
 
@@ -33,23 +32,23 @@ const getMatch = async (req, res) => {
             username: u.username,
             avatar: u.avatar
         }));
-        fillObject(req, "INFO", 'GETMATCH', payload.username, true, 'match found', matchId);
+        fillObject(req, "INFO", 'GETMATCH', payload.username, true, 'match found', req.cookies?.token || null);
         return res.status(200).send({ ...matchData, users });
     } catch (error) {
-        fillObject(req, "ERROR", 'GETMATCH', payload.username, false, error.message, error);
+        fillObject(req, "ERROR", 'GETMATCH', 'unknown', false, error.message, error);
+        console.log(error);
         return res.status(500).send({ error: 'Internal server error' });
     }
 }
 
 const getMatchs = async (req, res) => {
-    const { check } = checkAuthJWT(req, res);
-    if (!check) {
-        fillObject(req, "WARNING", 'GETMATCH', 'unknown', false, 'unauthorized', req.cookies?.token || null);
-        return res.status(401).send({ error: 'Unauthorized' });
+    const { check } = await checkAuthJWT(req, res);
+    if (check) {
+        return check;
     }
     const { username } = req.params;
     try {
-        const matchs = await db.Match.findAll({
+        const matchs = await db.Matche.findAll({
             include: [
                 {
                     model: db.User,

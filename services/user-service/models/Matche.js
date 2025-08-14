@@ -19,19 +19,21 @@ module.exports = (sequelize, DataTypes) => {
             defaultValue: new Date(),
         },
         type: {
-            type: DataTypes.ENUM("CLASSIC", "VANISH", "SPEED","GOLD"),
+            type: DataTypes.ENUM("CLASSIC", "VANISH", "SPEED", "GOLD"),
             allowNull: false,
             defaultValue: "CLASSIC",
         },
-        status:{
+        status: {
             type: DataTypes.ENUM("LIVE", "LOCKED"),
             allowNull: false,
             defaultValue: "LIVE",
         }
     });
     Matche.associate = (models) => {
-        models.User.belongsToMany(Matche, { through: 'MatchUser' });
-        Matche.belongsToMany(models.User, { through: 'MatchUser' });
+        models.User.belongsToMany(Matche, { through: models.MatchUser });
+        Matche.belongsToMany(models.User, { through: models.MatchUser });
     };
+
+
     return Matche;
 };
