@@ -44,7 +44,7 @@ const addFriend = async (request, reply) => {
         request,
         "WARNING",
         "addFriend",
-        id,
+        payload.username,
         false,
         "User not found.",
         request.cookies?.token || null
@@ -60,7 +60,7 @@ const addFriend = async (request, reply) => {
       request,
       "ERROR",
       "addFriend",
-      id,
+      payload.username,
       false,
       error.message,
       request.cookies?.token || null

@@ -2,7 +2,7 @@ const {
   login, getbyusername, getbyId, getUsers, register, updateUser, logout, online, getme
 } = require("./Users");
 const {
-  addFriend, getFriends, actionsHandler
+  addFriend, getFriends, actionsHandler, getPendingFriends, getRequestedFriends, getBlockedUsers
 } = require("./Friends");
 
 const {
@@ -17,6 +17,9 @@ const check = require("./check");
 
 const checkcode = require("./emailconfirm");
 const _2fa = require("./2fa");
+const {
+  create: createNotification, getNotifications
+} = require("./Notification");
 
 async function UserRoutes(fastify) {
   fastify.post("/register", register);
@@ -34,7 +37,10 @@ async function UserRoutes(fastify) {
 async function FriendRoutes(fastify) {
   fastify.post("/add", addFriend);
   fastify.post("/actions", actionsHandler);
-  fastify.get("/", getFriends);
+  fastify.get("/my-friends", getFriends);
+  fastify.get("/my-pending-friends", getPendingFriends);
+  fastify.get("/my-requested-friends", getRequestedFriends);
+  fastify.get("/my-blocked-users", getBlockedUsers);
 }
 
 async function OauthRoutes(fastify) {
@@ -69,4 +75,9 @@ async function MatcheRoutes(fastify) {
   fastify.put("/score-edit", addscore);
 }
 
-module.exports = { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes, MatcheRoutes };
+async function NotificationRoutes(fastify) {
+  fastify.post("/create", createNotification);
+  fastify.get("/user/:username", getNotifications);
+}
+
+module.exports = { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes, MatcheRoutes, NotificationRoutes };

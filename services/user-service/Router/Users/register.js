@@ -49,7 +49,6 @@ const register = async (request, reply) => {
   try {
     try {
       if (!request.body) {
-        console.error("No data received in request request.body");
         return reply.status(400).send({ error: "No data received" });
       }
     } catch (error) {
@@ -69,10 +68,9 @@ const register = async (request, reply) => {
     const { username, password, email, avatar } = request.body;
     let path = avatar ? avatar.path : `${request.protocol}://${request.headers.host}/uploads/default_profile_picture.png`;
 
-    const ret = await checkUserExisting(reply, username, email, request);
-    if (ret) return ret;
+    if (await checkUserExisting(reply, username, email, request)) return;
 
-    return await createUser(request,reply, {
+    return await createUser(request, reply, {
       username,
       password: bcrypt.hashSync(password, 10),
       email,
@@ -87,7 +85,7 @@ const register = async (request, reply) => {
 };
 
 
-async function createUser(request,reply, userInfo) {
+async function createUser(request, reply, userInfo) {
   try {
     const user = await db.User.create(userInfo);
     const token = await jsonwebtoken.sign(
@@ -103,7 +101,7 @@ async function createUser(request,reply, userInfo) {
     return Cookies(reply, token).redirect(process.env.HOME_PAGE);
   } catch (error) {
     fillObject(request, "ERROR", "register", "unknown", false, error.message, request.cookies?.token || null);
-    console.error("Error creating user:", error.message);
+    console.log("Error creating user:", error.message);
     return reply.status(500).send({ message: "Internal server error" });
   }
 }
@@ -122,10 +120,10 @@ async function checkUserExisting(reply, username, email, request) {
         error: `${user.username === username ? "Username" : "Email"} already exists`,
       });
     }
-    return undefined;
+    return;
   } catch (error) {
     fillObject(request, "ERROR", "register", "unknown", false, error.message, request.cookies?.token || null);
-    console.error("Error checking user existence:", error.message);
+    console.log("Error checking user existence:", error.message);
     return reply.status(500).send({ message: "Internal server error" });
   }
 }

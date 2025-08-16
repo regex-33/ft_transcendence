@@ -37,7 +37,7 @@ const create = async (req, res) => {
         });
         for (let i = 0; i < valid_users.length; i++) {
             const user = valid_users[i];
-            await match.addUser(user, { through: { team: players[i].team } });
+            await match.addUser(user, { through: { team: players[i].team, name: players[i].name } });
         }
         await match.save();
     }
@@ -59,7 +59,7 @@ const checkPlayers = async (players, type) => {
         }
         const matche = await db.Matche.findAll({
             where: { status: 'LIVE' }, include: [
-                { model: db.User, where: { id: user.id ,type }, attributes: ['id'] }
+                { model: db.User, where: { id: user.id, type }, attributes: ['id'] }
             ]
         });
         if (matche.length) {

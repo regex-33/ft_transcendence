@@ -59,11 +59,15 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
   User.associate = (models) => {
-    User.belongsToMany(User,{
-      through:models.Relationship,
-      as:'other',
+    User.belongsToMany(User, {
+      through: models.Relationship,
+      as: 'other',
       foreignKey: 'userId',
       otherKey: 'otherId'
+    });
+    User.hasMany(models.Notification, {
+      foreignKey: 'userId',
+      as: 'notifications'
     });
   }
 

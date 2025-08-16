@@ -3,7 +3,7 @@ const db = require("./models");
 const {v4: uuidv4} = require("uuid");
 const path = require("path");
 const fastifyStatic = require("@fastify/static");
-const { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes ,MatcheRoutes } = require("./Router");
+const { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes ,MatcheRoutes, NotificationRoutes } = require("./Router");
 const logger = require("./util/logger_request");
 
 fastify.addHook("onResponse", (req, res, done) => {
@@ -43,6 +43,7 @@ fastify.register(checkCodeRoutes, { prefix: "/api" });
 fastify.register(_2faRoutes, { prefix: "/api/2fa" });
 fastify.register(checksRoutes, { prefix: "/api/check" });
 fastify.register(MatcheRoutes, { prefix: "/api/matches" });
+fastify.register(NotificationRoutes, { prefix: "/api/notifications" });
 
 fastify.register(fastifyStatic, {
   root: path.join(__dirname, "uploads"),
