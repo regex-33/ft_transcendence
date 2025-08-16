@@ -93,7 +93,7 @@ const getbyId = (request, reply) => {
 
 const getme = async (request, reply) => {
   const { check, payload } = await checkAuthJWT(request, reply);
-  if (check) return check;
+  if (check) return;
   request.user = payload;
   let { id } = request.user;
   try {

@@ -1,65 +1,24 @@
 const db = require("../../models");
 const checkAuthJWT = require("../../util/checkauthjwt");
-const { User, Relationship } = db;
+const { fillObject } = require("../../util/logger");
 
-const blockUser = async (reply, userId, action, id) => {
-  let users;
+const blockUser = async (req, reply, payload, userId, username) => {
   try {
-    users = await User.findAll({
-      where: {
-        id: [id, userId],
-      },
-    });
-    if (users.length !== 2) {
-      fillObject(req, "WARNING", "blockUser", userId, false, "users not found", req.cookies?.token || null);
-      return reply.status(404).send({
-        error: "User not found.",
-      });
+    const users = await Promise.all([
+      db.User.findOne({ where: { username } }),
+      db.User.findByPk(userId)
+    ]);
+    if (users.filter(user => user).length != 2) {
+      fillObject(req, 'WARNING', 'block', payload.username, false, 'user not found', req.cookies?.token || null);
+      return reply.stats(404).send({ 'message': 'user not found' });
     }
-    const rel = await Relationship.findOne({
-      where: {
-        [db.Sequelize.Op.or]: [
-          { from: id, to: userId },
-          { from: userId, to: id },
-        ],
-      },
-    });
-    if (!rel) {
-      const block = await Relationship.create({
-        from: userId,
-        to: id,
-        creator: userId,
-        status: "blocked",
-      });
-      if (!block) {
-        fillObject(req, "ERROR", "blockUser", userId, false, "Error creating block relationship", req.cookies?.token || null);
-        return reply.status(500).send({
-          error: "An error occurred while blocking the user.",
-        });
-      }
-      fillObject(req, "INFO", "blockUser", userId, true, "", req.cookies?.token || null);
-      return reply.status(202).send({ blocked: true });
-    } else {
-      if (rel.status === "friend") {
-        await Promise.all(users.map((user) => user.update({ friends: user.friends - 1 })));
-      }
-      rel.creator = userId;
-      if (rel.status === "blocked") {
-        fillObject(req, "WARNING", "blockUser", userId, false, "user is already blocked", req.cookies?.token || null);
-        return reply.status(400).send({
-          error: "User is already blocked.",
-        });
-      }
-      await rel.update({ status: "blocked" });
-      fillObject(req, "INFO", "blockUser", userId, true, "", req.cookies?.token || null);
-      return reply.status(202).send({ blocked: true });
-    }
+    await users[1].addOther(users[0], { through: { status: 'blocked' } });
+    fillObject(req, 'INFO', 'block', payload.username, true, null, req.cookies?.token || null);
+    return reply.send({ 'message': 'success' });
   } catch (error) {
-    console.error("Error blocking user:", error);
-    fillObject(req, "ERROR", "blockUser", userId, false, error.message, req.cookies?.token || null);
-    return reply.status(500).send({
-      error: "An error occurred while blocking the user.",
-    });
+    fillObject(req, 'ERROR', 'block', payload.username, false, error.message, req.cookies?.token || null);
+    console.log('block crash:', error);
+    return reply.stats(500).send({ error: 'internal server error' })
   }
 };
 

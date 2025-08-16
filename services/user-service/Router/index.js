@@ -18,7 +18,7 @@ const check = require("./check");
 const checkcode = require("./emailconfirm");
 const _2fa = require("./2fa");
 
-async function UserRoutes(fastify, options) {
+async function UserRoutes(fastify) {
   fastify.post("/register", register);
   fastify.post("/login", login);
   fastify.post("/logout", logout);
@@ -31,13 +31,13 @@ async function UserRoutes(fastify, options) {
   fastify.put("/online", online.setOnline);
 }
 
-async function FriendRoutes(fastify, options) {
+async function FriendRoutes(fastify) {
   fastify.post("/add", addFriend);
   fastify.post("/actions", actionsHandler);
   fastify.get("/", getFriends);
 }
 
-async function OauthRoutes(fastify, options) {
+async function OauthRoutes(fastify) {
   fastify.get("/github", github.redirect);
   fastify.get("/github/callback", github.handleAuthCallback);
   fastify.get("/intra", intra.redirect);
@@ -46,22 +46,22 @@ async function OauthRoutes(fastify, options) {
   fastify.get("/google/callback", google.handleAuthCallback);
 }
 
-async function checkCodeRoutes(fastify, options) {
+async function checkCodeRoutes(fastify) {
   fastify.post("/sendcode", checkcode.send_code);
   fastify.post("/checkcode", checkcode.check_code);
 }
 
-async function _2faRoutes(fastify, options) {
+async function _2faRoutes(fastify) {
   fastify.get("/disable", _2fa.disable2fa);
   fastify.get("/generate", _2fa.create2fa);
   fastify.post("/verify", _2fa.verify2fa);
 }
 
-async function checksRoutes(fastify, options) {
+async function checksRoutes(fastify) {
   fastify.get("/token", check);
 }
 
-async function MatcheRoutes(fastify, options) {
+async function MatcheRoutes(fastify) {
   fastify.post("/", create);
   fastify.get("/:id", getMatch);
   fastify.get('/user/:username', getMatchs);

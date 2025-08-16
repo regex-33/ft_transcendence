@@ -58,8 +58,8 @@ const HOST = process.env.HOST || "0.0.0.0";
 
 function connect() {
   db.sequelize
-    .sync()
-    .then(() => {
+  .sync()
+  .then(() => {
       console.log("Database connected successfully");
       return fastify.listen({ port: PORT, host: HOST });
     })
