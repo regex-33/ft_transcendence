@@ -3,22 +3,22 @@ const checkAuthJWT = require("../../util/checkauthjwt");
 const { fillObject } = require("../../util/logger");
 const { User, Relationship } = db;
 
-const validate = (reply, ...ids) => {
+const validate = (request,reply, ...ids) => {
   const [userId, friendId] = ids.map((id) => parseInt(id, 10));
 
   if (!friendId || !userId) {
-    fillObject(req, "WARNING", "addFriend", userId, false, "User ID and friend ID are required.", req.cookies?.token || null);
+    fillObject(request, "WARNING", "addFriend", userId, false, "User ID and friend ID are required.", request.cookies?.token || null);
     return reply
       .status(400)
       .send({ error: "User ID and friend ID are required." });
   }
   if (!friendId || !/^\d+$/.test(friendId)) {
-    fillObject(req, "WARNING", "addFriend", userId, false, "Invalid friend ID format.", req.cookies?.token || null);
+    fillObject(request, "WARNING", "addFriend", userId, false, "Invalid friend ID format.", request.cookies?.token || null);
     return reply.status(400).send({ error: "Invalid friend ID format." });
   }
 
   if (userId === parseInt(friendId, 10)) {
-    fillObject(req, "WARNING", "addFriend", userId, false, "Cannot add yourself as a friend.", req.cookies?.token || null);
+    fillObject(request, "WARNING", "addFriend", userId, false, "Cannot add yourself as a friend.", request.cookies?.token || null);
     return reply
       .status(400)
       .send({ error: "You cannot add yourself as a friend." });
@@ -27,13 +27,13 @@ const validate = (reply, ...ids) => {
 };
 
 const addFriend = async (request, reply) => {
-  let { check, payload } = await checkAuthJWT(req, reply);
+  let { check, payload } = await checkAuthJWT(request, reply);
   if (check) return check;
-  req.user = payload;
+  request.user = payload;
   const id = request.user.id;
   const fid = request.body.id;
-
-  check = validate(reply, id, fid);
+  console.log(id,fid);
+  check = validate(request,reply, id, fid);
   if (check) {
     fillObject(request, "WARNING", "addFriend", id, false, "invalid request", request.cookies?.token || null);
     return check;
@@ -86,7 +86,7 @@ const addFriend = async (request, reply) => {
   }
 
   try {
-    const rel = await Relationship.create({
+    await Relationship.create({
       from: id,
       to: fid,
       creator: id,
@@ -101,5 +101,6 @@ const addFriend = async (request, reply) => {
     });
   }
 };
+
 
 module.exports = addFriend;

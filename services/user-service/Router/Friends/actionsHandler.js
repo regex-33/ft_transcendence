@@ -3,14 +3,14 @@ const acceptFriendRequest = require("./accept");
 const cancelFriendRequest = require("./cancel");
 const unblockFriendRequest = require("./unblock");
 const blockUser = require("./block");
-
+const {fillObject} = require('../../util/logger');
 const actionsHandler = async (req, reply) => {
-  const { check, payload } = await checkAuthJWT(req, reply);
+  const { check, payload } = await checkauthjwt(req, reply);
   if (check) return check;
   req.user = payload;
   const { action, id } = req.body;
   const userId = req.user.id;
-
+console.log(userId)
   if (!action || (!id)) {
     fillObject(req, "WARNING", "actionsHandler", userId, false, "action or id not provided", req.cookies?.token || null);
     return reply.status(400).send({ error: "Action and ID are required." });
@@ -23,7 +23,7 @@ const actionsHandler = async (req, reply) => {
   switch (action) {
     case "accept":
       try {
-        const result = await acceptFriendRequest(reply, userId, action, id);
+        const result = await acceptFriendRequest(req,reply, userId, action, id);
         if (result) return result;
       } catch (error) {
         fillObject(req, "ERROR", "acceptFriendRequest", userId, false, error.message, req.cookies?.token || null);

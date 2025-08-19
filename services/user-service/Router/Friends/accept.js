@@ -1,6 +1,6 @@
 const { User, Relationship } = require("../../models");
 const { fillObject } = require("../../util/logger");
-const acceptFriendRequest = async (reply, ...inputs) => {
+const acceptFriendRequest = async (req,reply, ...inputs) => {
   const [userId, action, id] = inputs;
   const rel = await Relationship.findOne({
     where: {

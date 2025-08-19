@@ -7,7 +7,7 @@ const createArray = async (array, id) => {
         const friendId = item.from === id ? item.to : item.from;
         const user = await db.User.findOne({
             where: { id: friendId },
-            attributes: ["id", "username", "image", "name", "email", "bio"]
+            attributes: ["id", "username", "image", "email"]
         });
 
         if (user) {
@@ -15,7 +15,6 @@ const createArray = async (array, id) => {
                 id: friendId,
                 username: user.username,
                 avatar: user.image,
-                name: user.name,
                 email: user.email,
                 bio: user.bio,
             };
@@ -28,7 +27,7 @@ const getFriends = async (request, reply) => {
     if (check) return check;
     request.user = payload;
     const userId = request.user.id;
-    
+
     try {
         const friends = await db.Relationship.findAll({
             where: {
