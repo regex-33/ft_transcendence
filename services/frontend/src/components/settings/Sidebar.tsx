@@ -27,8 +27,6 @@ export const Sidebar: ComponentFunction = () => {
                 </div>
                 <h2 class="text-2xl font-bold truncate max-w-[120px]">YOUSSEF</h2>
             </div>
-
-
             <button
                 class="mt-2 flex items-center justify-between px-6 py-1 w-[180px] text-white bg-no-repeat bg-contain bg-center"
                 style="background-image: url('/images/setting-assests/bg-add-friends.svg')"
@@ -41,8 +39,6 @@ export const Sidebar: ComponentFunction = () => {
                 />
             </button>
         </div>
-
-
         <div class="mt-16 space-y-4 pl-7">
             <h3 class="text-lg font-bold mb-2">About me</h3>
             <p class="text-sm text-gray-200 break-words">
@@ -51,8 +47,6 @@ export const Sidebar: ComponentFunction = () => {
               and collaborating with others to create innovative solutions.
             </p>
         </div>
-
-
         <div class="mt-6 space-y-2 text-sm pl-5">
             <div class="flex items-center gap-2">
                 <img
@@ -70,11 +64,9 @@ export const Sidebar: ComponentFunction = () => {
                 class="w-8 h-8"
                 />
             <span className="text-white">Morocco</span>
-            </div>
-            
+            </div>  
         </div>
         </div>
-
         </aside>
     );
 

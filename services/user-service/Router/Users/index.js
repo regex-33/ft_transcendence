@@ -5,4 +5,4 @@ module.exports = {
   updateUser:require("./update"),
   online:require("./online"),
   ...require("./getters")
-}; 
+};

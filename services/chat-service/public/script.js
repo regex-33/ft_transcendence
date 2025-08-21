@@ -4,7 +4,14 @@ const messageInput = document.getElementById('data');
 const sendButton = document.getElementById('send');
 
 const ws = new WebSocket('ws://localhost:8002/ws/chat');
-
+async function get(){
+    const data = await fetch("http://localhost:8080/api/users/get/me",{
+        method:"GET",
+        credentials:"include"
+    })
+    console.table(await data.json())
+}
+get();
 let time_out;
 ws.onopen = () => {
     statusDiv.textContent = 'Online';

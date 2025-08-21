@@ -96,8 +96,8 @@ function formatProps(props: any, indent: number): string {
  * Enhanced console logging function for VNodes
  */
 export function logVNode(vnode: VNode | null, label: string = 'VNode'): void {
-  console.log(`// ${label.toUpperCase()}`);
-  console.log(`const ${label.toLowerCase().replace(/\s+/g, '')} = ${formatVNode(vnode)};`);
+  // console.log(`// ${label.toUpperCase()}`);
+  // console.log(`const ${label.toLowerCase().replace(/\s+/g, '')} = ${formatVNode(vnode)};`);
 }
 
 /**
