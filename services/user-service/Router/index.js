@@ -9,10 +9,6 @@ const {
   github, intra, google
 } = require("./Oauth");
 
-const {
-  getMatch, create, getMatchs, finish, addscore
-} = require("./Matche");
-
 const check = require("./check");
 
 const checkcode = require("./emailconfirm");
@@ -37,10 +33,10 @@ async function UserRoutes(fastify) {
 async function FriendRoutes(fastify) {
   fastify.post("/add", addFriend);
   fastify.post("/actions", actionsHandler);
-  fastify.get("/my-friends", getFriends);
-  fastify.get("/my-pending-friends", getPendingFriends);
-  fastify.get("/my-requested-friends", getRequestedFriends);
-  fastify.get("/my-blocked-users", getBlockedUsers);
+  fastify.get("/friends", getFriends);
+  fastify.get("/pending-friends", getPendingFriends);
+  fastify.get("/requested-friends", getRequestedFriends);
+  fastify.get("/blocked-users", getBlockedUsers);
 }
 
 async function OauthRoutes(fastify) {
@@ -67,17 +63,9 @@ async function checksRoutes(fastify) {
   fastify.get("/token", check);
 }
 
-async function MatcheRoutes(fastify) {
-  fastify.post("/", create);
-  fastify.get("/:id", getMatch);
-  fastify.get('/user/:username', getMatchs);
-  fastify.put("/finish", finish);
-  fastify.put("/score-edit", addscore);
-}
-
 async function NotificationRoutes(fastify) {
   fastify.post("/create", createNotification);
   fastify.get("/user/:username", getNotifications);
 }
 
-module.exports = { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes, MatcheRoutes, NotificationRoutes };
+module.exports = { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes, NotificationRoutes };

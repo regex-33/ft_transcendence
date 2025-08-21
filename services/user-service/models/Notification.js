@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     type: {
-      type: DataTypes.ENUM('MESSAGE', 'FRIEND_REQUEST'),
+      type: DataTypes.ENUM('MESSAGE', 'FRIEND_REQUEST', 'MATCH_NOTIFICATION'),
       allowNull: false,
     },
     readed: {

@@ -16,7 +16,7 @@ const getNotifications = async (req, reply) => {
         }
         const notifications = await db.Notification.findAll({
             where: readed ? { userId: user.id, readed } : { userId: user.id },
-            attributes: ['id', 'type', 'readed', 'createdAt'] // Ensure 'id' is included
+            attributes: ['id', 'type', 'readed', 'createdAt'] 
         });
         await Promise.all(notifications
             .filter(notification => !notification.readed)

@@ -1,23 +1,23 @@
 {
   "test": {
-    "username": "aghlimi",
-    "password": "1234",
-    "database": "db",
-    "host": "postgres",
+    "username": "",
+    "password": "",
+    "database": "",
+    "host": "",
     "dialect": "postgres"
   },
   "development": {
-    "username": "aghlimi",
-    "password": "1234",
-    "database": "db",
-    "host": "localhost",
+    "username": "",
+    "password": "",
+    "database": "",
+    "host": "",
     "dialect": "postgres"
   },
   "production": {
-    "username": "root",
-    "password": null,
-    "database": "database_production",
-    "host": "postgres",
-    "dialect": "mysql"
+    "username": "",
+    "password": "",
+    "database": "",
+    "host": "",
+    "dialect": ""
   }
 }
