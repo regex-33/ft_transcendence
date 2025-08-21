@@ -3,7 +3,7 @@ const db = require("./models");
 const {v4: uuidv4} = require("uuid");
 const path = require("path");
 const fastifyStatic = require("@fastify/static");
-const { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes } = require("./Router");
+const { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes , NotificationRoutes } = require("./Router");
 const logger = require("./util/logger_request");
 
 fastify.addHook("onResponse", (req, res, done) => {
@@ -42,11 +42,13 @@ fastify.register(OauthRoutes, { prefix: "/api/auth" });
 fastify.register(checkCodeRoutes, { prefix: "/api" });
 fastify.register(_2faRoutes, { prefix: "/api/2fa" });
 fastify.register(checksRoutes, { prefix: "/api/check" });
+fastify.register(NotificationRoutes, { prefix: "/api/notifications" });
 
 fastify.register(fastifyStatic, {
   root: path.join(__dirname, "uploads"),
   prefix: "/uploads/",
 });
+
 
 fastify.get("/", (req, reply) => {
   reply.type("text/html").sendFile("oauth.html");
@@ -57,19 +59,14 @@ const HOST = process.env.HOST || "0.0.0.0";
 
 function connect() {
   db.sequelize
-    .sync()
-    .then(() => {
+  .sync()
+  .then(() => {
       console.log("Database connected successfully");
       return fastify.listen({ port: PORT, host: HOST });
     })
     .then(() => {
       console.log(`Server is running on port ${PORT}`);
-    })
-    .catch((err) => {
-      console.error("Unable to connect to the database:", err);
-      setTimeout(() => {
-        connect();
-      }, 1000);
     });
+
 }
 connect();

@@ -6,12 +6,12 @@ const bcrypt = require("bcrypt");
 
 
 const validation = (res, ...inputs) => {
-  const [id, email, password, image, username] = inputs;
+  const [id, email, password, avatar, username] = inputs;
 
   if (
     email === undefined &&
     password === undefined &&
-    image === undefined &&
+    avatar === undefined &&
     username === undefined
   ) {
     return res
@@ -48,7 +48,7 @@ const updateUser = async (req, res) => {
   const { id } = req.user;
   try {
     const body = await multer(req)
-    const { username, email, password, image } = body;
+    const { username, email, password, avatar } = body;
     if (id != req.user.id) {
       return res
         .status(403)
@@ -60,7 +60,7 @@ const updateUser = async (req, res) => {
       id,
       email,
       password,
-      image ? image.path : undefined,
+      avatar ? avatar.path : undefined,
       username
     );
 
@@ -79,7 +79,7 @@ const updateUser = async (req, res) => {
       const updatedData = {};
       if (email) updatedData.email = email;
       if (password) updatedData.password = bcrypt.hashSync(password, 10);
-      if (image) updatedData.image = image.path ? image.path : null;
+      if (avatar) updatedData.avatar = avatar.path ? avatar.path : null;
       if (username) updatedData.username = username;
       try {
         await user

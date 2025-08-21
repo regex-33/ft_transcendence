@@ -1,4 +1,3 @@
-const { on } = require("nodemailer/lib/xoauth2");
 
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
@@ -27,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      image: {
+      avatar: {
         type: DataTypes.STRING,
         allowNull: true,
       },
@@ -37,12 +36,17 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: 0,
       },
       online: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
       },
-      valid:{
+      valid: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
+      },
+      type: {
+        type: DataTypes.ENUM("CLASSIC", "VANISH", "SPEED", "GOLD"),
+        allowNull: false,
+        defaultValue: "CLASSIC",
       },
       bio: {
         type: DataTypes.TEXT,
@@ -54,6 +58,20 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "users",
     }
   );
+  User.associate = (models) => {
+    User.belongsToMany(User, {
+      through: models.Relationship,
+      as: 'other',
+      foreignKey: 'userId',
+      otherKey: 'otherId'
+    });
+    User.hasMany(models.Notification, {
+      foreignKey: 'userId',
+      as: 'notifications'
+    });
+  }
 
   return User;
 };
+
+

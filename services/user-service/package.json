@@ -28,6 +28,7 @@
     "fastify": "^5.4.0",
     "fastify-express": "^0.4.0",
     "fastify-postgres": "^3.7.0",
+    "inquirer": "^12.9.3",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^7.0.5",
     "nodemon": "^3.1.10",
@@ -38,5 +39,10 @@
     "sequelize": "^6.37.7",
     "speakeasy": "^2.0.0",
     "undici": "^5.28.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "eslint": "^9.33.0",
+    "globals": "^16.3.0"
   }
 }

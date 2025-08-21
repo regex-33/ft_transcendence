@@ -8,6 +8,12 @@ const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/config.json')[env];
 const db = {};
+// console.log(config.dialect);
+if (process.env.POSTGRES_DB) config.database = process.env.POSTGRES_DB;
+if (process.env.POSTGRES_USER) config.username = process.env.POSTGRES_USER;
+if (process.env.POSTGRES_PASSWORD) config.password = process.env.POSTGRES_PASSWORD;
+if (process.env.POSTGRES_HOST) config.host = process.env.POSTGRES_HOST;
+if (process.env.DB_DIALECT) config.dialect = process.env.DB_DIALECT;
 
 let sequelize;
 if (config.use_env_variable) {

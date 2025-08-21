@@ -26,7 +26,7 @@ const getbyusername = async (request, reply) => {
   try {
 
     const user = await db.User.findOne({ where: { username } });
-    if (!user) {
+    if (!user || !user.valid) {
       fillObject(request, "WARNING", "getbyusername", "unknown", false, "User not found.", request.cookies?.token || null);
       return reply.status(404).send({ error: "User not found." });
     }
@@ -35,8 +35,9 @@ const getbyusername = async (request, reply) => {
       id: user.id,
       username: user.username,
       email: user.email,
-      image: user.image,
+      avatar: user.avatar,
       bio: user.bio,
+      online: user.online,
     });
   }
   catch (err) {
@@ -67,7 +68,7 @@ const getbyId = (request, reply) => {
 
   db.User.findByPk(id)
     .then((user) => {
-      if (!user) {
+      if (!user || !user.valid) {
         fillObject(request, "WARNING", "getbyId", id, false, "User not found.", request.cookies?.token || null);
         return reply.status(404).send({ error: "User not found." });
       }
@@ -76,8 +77,9 @@ const getbyId = (request, reply) => {
         id: user.id,
         username: user.username,
         email: user.email,
-        image: user.image,
+        avatar: user.avatar,
         bio: user.bio,
+        online: user.online,
       });
     })
     .catch((err) => {
@@ -91,12 +93,12 @@ const getbyId = (request, reply) => {
 
 const getme = async (request, reply) => {
   const { check, payload } = await checkAuthJWT(request, reply);
-  if (check) return check;
+  if (check) return;
   request.user = payload;
   let { id } = request.user;
   try {
     const user = await db.User.findByPk(id)
-    if (!user) {
+    if (!user || !user.valid) {
       fillObject(request, "WARNING", "getbyId", id, false, "User not found.", request.cookies?.token || null);
       return reply.status(404).send({ error: "User not found." });
     }
@@ -105,8 +107,9 @@ const getme = async (request, reply) => {
       id: user.id,
       username: user.username,
       email: user.email,
-      image: user.image,
+      avatar: user.avatar,
       bio: user.bio,
+      online: user.online,
     });
   }
   catch (err) {
@@ -121,9 +124,8 @@ const getme = async (request, reply) => {
    * 
    */
 const getUsers = async (request, reply) => {
-  const { check, payload } = await checkAuthJWT(request, reply);
+  const { check } = await checkAuthJWT(request, reply);
   if (check) return check;
-  request.user = payload;
   try {
     const users = await db.User.findAll();
     if (!users || users.length === 0) {
@@ -132,13 +134,17 @@ const getUsers = async (request, reply) => {
     }
     fillObject(request, "INFO", "getUsers", "unknown", true, "", request.cookies?.token || null);
     return reply.send(
-      users.map((user) => ({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        image: user.image,
-        bio: user.bio,
-      }))
+      users.map((user) => {
+        if (user.valid)
+          return ({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            avatar: user.avatar,
+            bio: user.bio,
+            online: user.online,
+          });
+      })
     );
   }
   catch (err) {

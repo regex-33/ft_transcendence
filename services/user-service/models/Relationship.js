@@ -4,27 +4,22 @@ module.exports = (sequelize, DataTypes) => {
     {
       id: {
         type: DataTypes.INTEGER,
-        primaryKey: true,
         autoIncrement: true,
-      },
-      creator:{
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      }
-      ,
-      from: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      to: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
+        primaryKey: true,
       },
       status: {
         type: DataTypes.ENUM("pending", "friend", "blocked"),
         allowNull: false,
         defaultValue: "pending",
       },
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      otherId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      }
     }
   );
   return Relationship;

@@ -1,31 +1,36 @@
 const { User, Relationship } = require("../../models");
 const { fillObject } = require("../../util/logger");
 
-const unblockFriendRequest = async (reply, ...inputs) => {
-  const [userId, action, id] = inputs;
-  const rel = await Relationship.findOne({
-    where: {
-      to: id,
-      creator: userId, 
-      status: "blocked",
-    },
-  });
+const unblockAction = async (req, reply, payload, ...inputs) => {
 
-  if (!rel) {
-    fillObject(req, "WARNING", "unblockFriendRequest", userId, false, "relationship not found", req.cookies?.token || null);
-    return reply.status(404).send({ error: "Relationship not found." });
+  const [userId, username] = inputs;
+  try {
+    const blocked = await User.findOne({ where: { username } });
+    if (blocked) {
+      await Relationship.destroy({
+        where: {
+          userId: userId,
+          otherId: blocked.id,
+        },
+      });
+      fillObject(
+        req,
+        "INFO",
+        "unblockAction",
+        payload.username,
+        true,
+        "",
+        req.cookies?.token || null
+      );
+      return reply.status(204).send();
+    }
+    fillObject(req, 'WARNING', 'unblockAction', payload.username, false, 'user not found', req.cookies?.token || null);
+    return reply.status(404).send({ message: 'not found' });
+  } catch (error) {
+    fillObject(req, 'ERROR', 'unblockAction', payload.username, false, error.message, req.cookies?.token || null);
+    console.log(error.message);
+    return reply.status(500).send('internal server error');
   }
-
-  if (rel.from !== userId && rel.to !== userId) {
-    fillObject(req, "WARNING", "unblockFriendRequest", userId, false, "not authorized to unblock this request", req.cookies?.token || null);
-    return reply
-      .status(403)
-      .send({ error: "You are not authorized to unblock this request." });
-  }
-
-  await rel.destroy();
-  fillObject(req, "INFO", "unblockFriendRequest", userId, true, "", req.cookies?.token || null);
-  return reply.status(204).send();
 };
 
-module.exports = unblockFriendRequest;
+module.exports = unblockAction;

@@ -1,5 +1,5 @@
 module.exports = {
   addFriend:require("./addFriend"),
-  getFriends:require("./getFriends"),
+  ...require("./getFriends"),
   actionsHandler:require("./actionsHandler"),
 }  
