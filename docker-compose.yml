@@ -42,13 +42,12 @@ services:
       - PORT=${USER_SERVICE_PORT:-8001}
       - JWT_SECRET=${JWT_SECRET}
       - TIME_TOKEN_EXPIRATION=${TIME_TOKEN_EXPIRATION:-3600}
-      - DB_HOST=postgres
-      - DB_PORT=5432
+      - POSTGRES_HOST=${POSTGRES_HOST}
       - INTRA_CALLBACK_URL=${INTRA_CALLBACK_URL:-http://localhost:8080/api/auth/intra/callback}
       - HOME_PAGE=${HOME_PAGE:-/home}
-      - DB_NAME=${POSTGRES_DB}
-      - DB_USER=${POSTGRES_USER}
-      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
       # - DB_PASSWORD=1234
       # - DB_USER=aghlimi
@@ -135,7 +134,7 @@ services:
       - postgresql_logs:/var/log/postgresql
       - postgresql_data:/var/lib/postgresql/data
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "5432:5432"
     networks:
       - transcendence-network
       # - elk-network
