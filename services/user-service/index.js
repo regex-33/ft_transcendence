@@ -66,7 +66,10 @@ function connect() {
     })
     .then(() => {
       console.log(`Server is running on port ${PORT}`);
-    });
-
+    })
+    // .catch((err) => {
+    //   console.error('unable to connect to database:', err);
+      
+    // });
 }
 connect();

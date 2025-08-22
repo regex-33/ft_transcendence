@@ -8,7 +8,9 @@ const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/config.json')[env];
 const db = {};
-// console.log(config.dialect);
+
+
+config.logging = false;
 if (process.env.POSTGRES_DB) config.database = process.env.POSTGRES_DB;
 if (process.env.POSTGRES_USER) config.username = process.env.POSTGRES_USER;
 if (process.env.POSTGRES_PASSWORD) config.password = process.env.POSTGRES_PASSWORD;

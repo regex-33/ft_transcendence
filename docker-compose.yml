@@ -68,8 +68,8 @@ services:
       - postgres
       - redis
     profiles: ["user-service", "backend", "dev"]
-    restart: unless-stopped
-    
+    restart: always
+
   chat-service:
     build:
       context: ./services/chat-service
