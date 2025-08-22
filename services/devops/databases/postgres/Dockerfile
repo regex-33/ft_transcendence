@@ -20,14 +20,12 @@ RUN mkdir -p /docker-entrypoint-initdb.d
 # Expose port
 EXPOSE 5432
 
-ENV POSTGRES_INITDB_ARGS="--auth-host=scram-sha-256"
-ENV PGDATA=/var/lib/postgresql/data
+# ENV POSTGRES_INITDB_ARGS="--auth-host=scram-sha-256"
+# ENV PGDATA=/var/lib/postgresql/data
 
-# Start PostgreSQL with logging configuration
 CMD ["postgres", \
      "-c", "log_destination=stderr,csvlog", \
      "-c", "logging_collector=on", \
-     "-c", "log_directory=/var/log/postgresql", \
      "-c", "log_filename=postgresql-%Y-%m-%d_%H%M%S.log", \
      "-c", "log_rotation_age=1d", \
      "-c", "log_rotation_size=100MB", \
@@ -41,3 +39,22 @@ CMD ["postgres", \
      "-c", "maintenance_work_mem=64MB", \
      "-c", "checkpoint_completion_target=0.9", \
      "-c", "wal_buffers=16MB"]
+
+# # Start PostgreSQL with logging configuration
+# CMD ["postgres", \
+#      "-c", "log_destination=stderr,csvlog", \
+#      "-c", "logging_collector=on", \
+#      "-c", "log_directory=/var/log/postgresql", \
+#      "-c", "log_filename=postgresql-%Y-%m-%d_%H%M%S.log", \
+#      "-c", "log_rotation_age=1d", \
+#      "-c", "log_rotation_size=100MB", \
+#      "-c", "log_min_duration_statement=1000", \
+#      "-c", "log_line_prefix=%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h ", \
+#      "-c", "log_statement=all", \
+#      "-c", "log_connections=on", \
+#      "-c", "log_disconnections=on", \
+#      "-c", "shared_buffers=128MB", \
+#      "-c", "effective_cache_size=512MB", \
+#      "-c", "maintenance_work_mem=64MB", \
+#      "-c", "checkpoint_completion_target=0.9", \
+#      "-c", "wal_buffers=16MB"]
