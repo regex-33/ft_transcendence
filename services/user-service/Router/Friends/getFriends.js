@@ -17,7 +17,7 @@ const getFriends = async (request, reply) => {
       include: [
         {
           model: db.User,
-          as: "friends",
+          as: "other",
           attributes: ["id", "username", "avatar", "online"],
           through: {
             where: { status: "friend" },
@@ -34,13 +34,17 @@ const getFriends = async (request, reply) => {
       "",
       request.cookies?.token || null
     );
-    friends = friends.map(friend => {
+    console.log("Fetched friends:", friends.other.id);
+    const new_friends = friends.other.map(friend => {
       return ({
-        ...friend,
+        id: friend.id,
+        username: friend.username,
+        avatar: friend.avatar,
         online: !!friend.online
       });
     });
-    reply.send(friends || { friends: [] });
+    console.log("Mapped friends:", new_friends);
+    reply.send(new_friends || { new_friends: [] });
   } catch (error) {
     fillObject(
       request,
@@ -64,22 +68,27 @@ const getPendingFriends = async (request, reply) => {
   const userId = request.user.id;
 
   try {
-    const friends = await db.User.findOne({
+    const pendingFriends = await db.Relationship.findAll({
       where: {
-        id: userId,
-      },
-      attributes: [],
-      include: [
-        {
-          model: db.User,
-          as: "friends",
-          attributes: ["id", "username", "avatar", "email", "bio"],
-          through: {
-            where: { status: "pending", otherId: userId },
-          },
-        },
-      ],
+        status: "pending",
+        otherId: userId
+      }
     });
+    if (!pendingFriends || pendingFriends.length === 0) {
+      return reply.send([]);
+    }
+    const friends = await Promise.all(pendingFriends.map(async (relation) => {
+      const user = await db.User.findOne({
+        where: {
+          id: relation.userId
+        },
+        attributes: ["id", "username", "avatar", "online"]
+      });
+      return {
+        ...user.toJSON(),
+        online: !!user.online
+      };
+    }));
     fillObject(
       request,
       "INFO",
@@ -121,8 +130,8 @@ const getRequestedFriends = async (request, reply) => {
       include: [
         {
           model: db.User,
-          as: "friends",
-          attributes: ["id", "username", "avatar", "email", "bio"],
+          as: "other",
+          attributes: ["id", "username", "avatar", "online"],
           through: {
             where: { status: "pending", userId },
           },
@@ -138,7 +147,15 @@ const getRequestedFriends = async (request, reply) => {
       "",
       request.cookies?.token || null
     );
-    reply.send(friends || { friends: [] });
+    const new_friends = friends.other.map(friend => {
+      return ({
+        id: friend.id,
+        username: friend.username,
+        avatar: friend.avatar,
+        online: !!friend.online
+      });
+    });
+    reply.send(new_friends || { new_friends: [] });
   } catch (error) {
     fillObject(
       request,
@@ -169,8 +186,8 @@ const getBlockedUsers = async (request, reply) => {
       include: [
         {
           model: db.User,
-          as: "friends",
-          attributes: ["id", "username", "avatar", "email", "bio"],
+          as: "other",
+          attributes: ["id", "username", "avatar", "online"],
           through: {
             where: { status: "blocked", userId: userId },
           },
@@ -186,7 +203,15 @@ const getBlockedUsers = async (request, reply) => {
       "",
       request.cookies?.token || null
     );
-    reply.send(friends || { friends: [] });
+    const new_friends = friends.other.map(friend => {
+      return ({
+        id: friend.id,
+        username: friend.username,
+        avatar: friend.avatar,
+        online: !!friend.online
+      });
+    });
+    reply.send(new_friends || { new_friends: [] });
   } catch (error) {
     fillObject(
       request,
