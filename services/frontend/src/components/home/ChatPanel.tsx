@@ -36,14 +36,9 @@ function chunk<T>(arr: T[], size: number): T[][] {
 
 export const ChatPanel: ComponentFunction = () => {
   const [friends, setFriends] = useState<Friend[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-        setLoading(true);
-        setError(null);
         
         const response = await fetch('/api/friends/friends');
         
@@ -55,15 +50,11 @@ export const ChatPanel: ComponentFunction = () => {
         setFriends(data);
       } catch (err) {
         console.error('Error fetching friends:', err);
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      } finally {
-        setLoading(false);
       }
     };
-
     fetchFriends();
   }, []);
-  
+
   const friendColumns = chunk(friends, 2);  
   if (friends.length === 0) {
     return (

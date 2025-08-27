@@ -41,7 +41,7 @@ fastify.register(FriendRoutes, { prefix: "/api/friends" });
 fastify.register(OauthRoutes, { prefix: "/api/auth" });
 fastify.register(checkCodeRoutes, { prefix: "/api" });
 fastify.register(_2faRoutes, { prefix: "/api/2fa" });
-fastify.register(checksRoutes, { prefix: "/api/check" });
+fastify.register(checksRoutes, { prefix: "/api/check" });// /api/check/token
 fastify.register(NotificationRoutes, { prefix: "/api/notifications" });
 
 fastify.register(fastifyStatic, {
