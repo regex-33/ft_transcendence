@@ -8,7 +8,7 @@ const getNotifications = async (req, reply) => {
     const { readed } = req.query;
     try {
         const user = await db.User.findOne({
-            where: { username } 
+            where: { username }
         })
         if (!user) {
             fillObject(req, 'WARNING', 'getNotifications', payload.username, false, 'user not found', req.cookies?.token || null);
@@ -16,15 +16,15 @@ const getNotifications = async (req, reply) => {
         }
         const notifications = await db.Notification.findAll({
             where: readed ? { userId: user.id, readed } : { userId: user.id },
-            attributes: ['id', 'type', 'readed', 'createdAt'] 
+            attributes: ['userId', 'type', 'notid', 'readed', 'createdAt']
         });
         await Promise.all(notifications
             .filter(notification => !notification.readed)
             .map(async notification => {
-                if (notification.id) {
+                if (notification.userId) {
                     await db.Notification.update(
                         { readed: true },
-                        { where: { id: notification.id } }
+                        { where: { userId: notification.userId } }
                     );
                 }
             })

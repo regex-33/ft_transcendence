@@ -3,7 +3,7 @@ const fs = require("fs");
 const util = require("util");
 const stream = util.promisify(require("stream").pipeline);
 
-const getBody = async (request) => {
+const multer = async (request) => {
   try {
     if (request.isMultipart()) {
       const parts = request.parts();
@@ -42,4 +42,4 @@ const getBody = async (request) => {
   return request.body;
 };
 
-module.exports = getBody;
+module.exports = multer;

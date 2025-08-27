@@ -1,6 +1,9 @@
 const checkAuthJWT = require("../../util/checkauthjwt");
+const { User } = require("../../models");
+const { fillObject } = require("../../util/logger");
+
 module.exports = async (req, res) => {
-    const { check, payload } = await checkAuthJWT(req, reply);
+    const { check, payload } = await checkAuthJWT(req, res);
     if (check) return check;
     req.user = payload;
     const { username } = req.user;

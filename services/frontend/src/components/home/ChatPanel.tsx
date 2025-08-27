@@ -1,18 +1,35 @@
 import { useEffect } from "../../hooks/useEffect";
 import { useRef } from "../../hooks/useRef";
-import { useState } from "../../hooks/useState";
 import { h } from '../../vdom/createElement';
 import { ComponentFunction } from "../../types/global";
 
-interface Friend {
-  id?: number;
-  avatar: string;
-  online: boolean;
-  name?: string;
-}
+const friends = [
+  { avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 1, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 2, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 3, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 4, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 5, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 6, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 7, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 8, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 9, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 10, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 11, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+   { id: 12, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 13 , avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 14, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 15, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 16, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 17, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 18, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 19, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+];
 
 const FriendItem: ComponentFunction = (props = {}) => {
-  const friend = props.friend as Friend;
+  const friend = props.friend as typeof friends[0];
   const cadreBg = friend.online ? "/images/home-assests/cir-online.svg" : "/images/home-assests/cir-offline.svg";
   return h('div', { className: "flex flex-row items-center w-16 translate-y-14" },
     h('div', { 
@@ -35,6 +52,7 @@ function chunk<T>(arr: T[], size: number): T[][] {
 }
 
 export const ChatPanel: ComponentFunction = () => {
+<<<<<<< HEAD
   const [friends, setFriends] = useState<Friend[]>([]);
   useEffect(() => {
     const fetchFriends = async () => {
@@ -83,6 +101,9 @@ export const ChatPanel: ComponentFunction = () => {
       </aside>
     );
   }
+=======
+  const friendColumns = chunk(friends, 2);
+>>>>>>> b6285614a456514e00527552496dc076c999670c
   return (
     <aside className="w-[25%] p-2 flex flex-col gap-4">
       <div className="relative w-full">

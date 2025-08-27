@@ -4,10 +4,11 @@ const db = require("../../models");
 const checkAuthJWT = require("../../util/checkauthjwt");
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
 const jwt = require("../../util/jwt");
-const { log, fillObject } = require('../../util/logger');
+const { fillObject } = require('../../util/logger');
+const Cookies = require("../../util/cookie");
 
 const create2fa = async (req, res) => {
-    const { check, payload } = await checkAuthJWT(req, reply);
+    const { check, payload } = await checkAuthJWT(req, res);
     if (check) return check;
     req.user = payload;
     const { username } = req.user;
@@ -35,7 +36,7 @@ const create2fa = async (req, res) => {
 };
 
 const disable2fa = async (req, res) => {
-    const { check, payload } = await checkAuthJWT(req, reply);
+    const { check, payload } = await checkAuthJWT(req, res);
     if (check) return check;
     req.user = payload;
     const { username } = req.user;
@@ -73,7 +74,7 @@ const verify2fa = async (req, res) => {
             return res.status(500).send({ error: "Failed to generate token" });
         }
         fillObject(req, "INFO", "verify2fa", username, true, "", req.cookies?.token || null);
-        return Cookies(reply, token).redirect(process.env.HOME_PAGE);
+        return Cookies(res, token).redirect(process.env.HOME_PAGE);
     } else {
         fillObject(req, "WARNING", "verify2fa", username, false, "invalid token", req.cookies?.token || null);
         return res.status(401).send("Invalid token");

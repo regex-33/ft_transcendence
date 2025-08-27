@@ -7,7 +7,7 @@ const { fillObject } = require("../../util/logger");
 const jwt_secret = process.env.JWT_SECRET || "your_jwt_secret";
 const time_token_expiration = process.env.TIME_TOKEN_EXPIRATION || "10h";
 
-const validation = (body, reply) => {
+const validation = (request,body, reply) => {
   if (!body) {
     return reply.status(400).send({ error: "Request body is required" });
   }
@@ -58,11 +58,10 @@ const register = async (request, reply) => {
         .status(500)
         .send({ message: "Failed to process multipart request" });
     }
-    const validationError = validation(request.body, reply);
 
-    if (validationError) {
+    if (validation(request,request.body, reply)) {
       fillObject(request, "WARNING", "register", "unknown", false, validationError.message, request.cookies?.token || null);
-      return validationError;
+      return ;
     }
 
     const { username, password, email, avatar } = request.body;

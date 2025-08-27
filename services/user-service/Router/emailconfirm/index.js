@@ -49,7 +49,7 @@ const send_code = async (req, reply) => {
             html: `<p>Your code is: <strong>${code}</strong></p>`,
         });
         fillObject(req,"INFO", "send_code", user.username,true,"",req.cookies?.token || null);
-        return Cookies(reply, token).status(200).send({});
+        return Cookie(reply, token).status(200).send({});
     } catch (err) {
         console.error("Mail Error:", err);
         fillObject(req,"ERROR", "send_code", "unknown",false,err.message,req.cookies?.token || null);

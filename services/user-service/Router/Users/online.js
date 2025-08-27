@@ -46,9 +46,8 @@ const setOnline = async (req, res) => {
             return res.status(400).send({"message": "isOnline must be boolean"});
         }
 
-        r = setUserOnline(username, isOnline,res,req)
-        if (r !== false)
-            return r;
+        if (setUserOnline(username, isOnline,res,req))
+            return ;
 
         fillObject(req, "WARNING", "setOnline", username, false, "User not found", req.cookies?.token || null);
         return res.status(404).send({"message": "User not found"});
