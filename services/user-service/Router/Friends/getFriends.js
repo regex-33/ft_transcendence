@@ -1,6 +1,7 @@
 const db = require("../../models");
 const checkAuthJWT = require("../../util/checkauthjwt");
 const { fillObject } = require("../../util/logger");
+const { online } = require("../Users");
 
 const getFriends = async (request, reply) => {
   const { check, payload } = await checkAuthJWT(request, reply);
@@ -18,7 +19,7 @@ const getFriends = async (request, reply) => {
         {
           model: db.User,
           as: "friends",
-          attributes: ["id", "username", "avatar", "email", "bio"],
+          attributes: ["id", "username", "avatar", "email", "bio", "online"],
           through: {
             where: { status: "friend" },
           },
@@ -34,6 +35,10 @@ const getFriends = async (request, reply) => {
       "",
       request.cookies?.token || null
     );
+    friends.friends = friends.friends.map((user) => ({
+      ...user,
+      online: !!user.online,
+    }));
     reply.send(friends || { friends: [] });
   } catch (error) {
     fillObject(
