@@ -37,7 +37,7 @@ const getbyusername = async (request, reply) => {
       email: user.email,
       avatar: user.avatar,
       bio: user.bio,
-      online: user.online,
+      online: !!user.online,
     });
   }
   catch (err) {
@@ -79,7 +79,7 @@ const getbyId = (request, reply) => {
         email: user.email,
         avatar: user.avatar,
         bio: user.bio,
-        online: user.online,
+        online: !!user.online,
       });
     })
     .catch((err) => {
@@ -109,7 +109,7 @@ const getme = async (request, reply) => {
       email: user.email,
       avatar: user.avatar,
       bio: user.bio,
-      online: user.online,
+      online: !!user.online,
     });
   }
   catch (err) {
@@ -142,7 +142,7 @@ const getUsers = async (request, reply) => {
             email: user.email,
             avatar: user.avatar,
             bio: user.bio,
-            online: user.online,
+            online: !!user.online,
           });
       })
     );
