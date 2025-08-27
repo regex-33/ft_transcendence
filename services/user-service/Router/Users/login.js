@@ -6,7 +6,7 @@ const Cookies = require("../../util/cookie");
 const { fillObject } = require("../../util/logger");
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
 
-const validateInputs = (username, password) => {
+const validateInputs = (req,username, password) => {
   if (!username || !password) {
     fillObject(req, "WARNING", "login", "unknown", false, "Username and password are required.", req.cookies?.token || null);
     return { valid: false, message: "Username and password are required." };
@@ -32,7 +32,7 @@ const login = async (request, reply) => {
     }
 
     const { username, password } = request.body;
-    const validation = validateInputs(username, password);
+    const validation = validateInputs(request, username, password);
 
     if (!validation.valid) {
       fillObject(request, "WARNING", "login", "unknown", false, validation.message, request.cookies?.token || null);

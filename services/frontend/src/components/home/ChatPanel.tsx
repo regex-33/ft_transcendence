@@ -1,18 +1,35 @@
 import { useEffect } from "../../hooks/useEffect";
 import { useRef } from "../../hooks/useRef";
-import { useState } from "../../hooks/useState";
 import { h } from '../../vdom/createElement';
 import { ComponentFunction } from "../../types/global";
 
-interface Friend {
-  id?: number;
-  avatar: string;
-  online: boolean;
-  name?: string;
-}
+const friends = [
+  { avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 1, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 2, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 3, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 4, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 5, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 6, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 7, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 8, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 9, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 10, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 11, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+   { id: 12, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 13 , avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 14, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 15, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 16, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 17, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+  { id: 18, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
+  { id: 19, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
+];
 
 const FriendItem: ComponentFunction = (props = {}) => {
-  const friend = props.friend as Friend;
+  const friend = props.friend as typeof friends[0];
   const cadreBg = friend.online ? "/images/home-assests/cir-online.svg" : "/images/home-assests/cir-offline.svg";
   return h('div', { className: "flex flex-row items-center w-16 translate-y-14" },
     h('div', { 
@@ -35,63 +52,7 @@ function chunk<T>(arr: T[], size: number): T[][] {
 }
 
 export const ChatPanel: ComponentFunction = () => {
-  const [friends, setFriends] = useState<Friend[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchFriends = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const response = await fetch('/api/friends/friends');
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch friends: ${response.status} ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        setFriends(data);
-      } catch (err) {
-        console.error('Error fetching friends:', err);
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFriends();
-  }, []);
-  
-  const friendColumns = chunk(friends, 2);  
-  if (friends.length === 0) {
-    return (
-      <aside className="w-[25%] p-2 flex flex-col gap-4">
-        <div className="relative w-full">
-          <button
-            className="h-[50px] w-[260px] py-2 bg-no-repeat bg-contain 
-              bg-center text-white relative left-16 top-3"
-            style={{ backgroundImage: "url('/images/home-assests/bg-gameMode.svg')" }}
-          >
-            <span className="font-irish font-bold tracking-wide text-sm sm:text-base md:text-2xl">
-              No Friends Online
-            </span>
-          </button>
-          <div
-            className="relative rounded-lg h-[320px] w-[340px]
-              bg-no-repeat bg-center bg-[length:340px_330px] translate-x-7 overflow-hidden
-              flex items-center justify-center"
-            style={{ backgroundImage: "url('/images/home-assests/bg-online.svg')" }}
-          >
-            <div className="text-white text-center">
-              <p>No friends found</p>
-            </div>
-          </div>
-        </div>
-      </aside>
-    );
-  }
+  const friendColumns = chunk(friends, 2);
   return (
     <aside className="w-[25%] p-2 flex flex-col gap-4">
       <div className="relative w-full">

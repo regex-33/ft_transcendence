@@ -61,7 +61,12 @@ export const AuthForm: ComponentFunction = () => {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Authentication failed');
     }
-    window.location.href = '/home'; 
+
+    const data = await response.json();
+    const token = data.token;
+
+    console.log('successful:', data);
+    
     
   } 
   catch (error) 

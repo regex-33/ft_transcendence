@@ -3,7 +3,7 @@ const acceptFriendRequest = require("./accept");
 const cancelFriendRequest = require("./cancel");
 const unblockAction = require("./unblock");
 const blockUser = require("./block");
-
+const { fillObject } = require('../../util/logger');
 const actionsHandler = async (req, reply) => {
   try {
     const { check, payload } = await checkAuthJWT(req, reply);

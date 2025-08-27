@@ -19,75 +19,137 @@
                     body: JSON.stringify(data)
                 })
             }
-            async function addfriend(username) {
-                await fetch('/api/friends/add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username: username
-                    })
-                });
-            }
-            async function login(username) {
-                await fetch('/api/users/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        password: '12345678'
-                    })
-                })
-            }
-            async function accept(username) {
-                await fetch('/api/friends/actions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username,
-                        action: 'accept'
-                    })
-                })
-            }
+            
             await end({
                 "username": 'aghlimi1',
                 'email': 'd@f1',
                 'password': '12345678'
             });
-
+            
             await end({
                 "username": 'aghlimi2',
                 'email': 'd@f2',
                 'password': '12345678'
-            });
+            }); 
             await end({
                 "username": 'aghlimi3',
                 'email': 'd@ff3',
                 'password': '12345678'
             });
-
+            
             await end({
                 "username": 'aghlimi4',
                 'email': 'd@f7',
                 'password': '12345678'
             });
 
-            await login('aghlimi1');
-            await addfriend('aghlimi2');
-            await addfriend('aghlimi3');
-            await addfriend('aghlimi4');
-            await login('aghlimi2');
-            await accept('aghlimi1');
-            await login('aghlimi4');
-            await accept('aghlimi1');
-            await login('aghlimi3');
-            await accept('aghlimi1');
-            await login('aghlimi1');
+            await fetch('/api/users/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: 'aghlimi1',
+                    password: '12345678'
+                })
+            })
+            await fetch('/api/friends/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: 2
+                })
+            });
+            await fetch('/api/friends/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: 3
+                })
+            });
+            await fetch('/api/friends/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: 4
+                })
+            });
+            await fetch('/api/users/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: 'aghlimi2',
+                    password: '12345678'
+                })
+            })
+            await fetch('/api/friends/actions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: 1,
+                    action:'accept'
+                })
+            })
+            await fetch('/api/users/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: 'aghlimi3',
+                    password: '12345678'
+                })
+            })
+            await fetch('/api/friends/actions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: 1,
+                    action:'accept'
+                })
+            })
+            await fetch('/api/users/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: 'aghlimi4',
+                    password: '12345678'
+                })
+            })
+            await fetch('/api/friends/actions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: 1,
+                    action:'accept'
+                })
+            })
+            await fetch('/api/users/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: 'aghlimi1',
+                    password: '12345678'
+                })
+            })
         }
         name().then().catch();
     </script>
