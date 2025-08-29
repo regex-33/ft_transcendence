@@ -24,7 +24,7 @@ import { Home } from "../components/home/Home";
 
 import { SettingsPage } from '../components/settings/SettingsPage';
 import { isJSDocAuthorTag } from "typescript";
-
+import Xo from "../components/home/Xo/Xo";
 
 
 
@@ -274,6 +274,10 @@ private setupRoutes(): void {
 // Router configuration
 this.router.addRoute('/settings', () => 
   this.createFunctionalComponent(SettingsPage, { defaultTab: 'friends' })
+);
+
+this.router.addRoute('/xo', () => 
+  this.createFunctionalComponent(Xo)
 );
 
 this.router.addRoute('/settings/profile', () => 
