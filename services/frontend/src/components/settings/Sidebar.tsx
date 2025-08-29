@@ -42,9 +42,9 @@ export const Sidebar: ComponentFunction = () => {
           
           // Update profile data with fetched information
           setProfileData({
-            name: data.name || 'Unknown User',
+            name: data.username || 'Unknown User',
             email: data.email || '',
-            aboutMe: data.aboutMe || 'No bio available',
+            aboutMe: data.bio || 'No bio available',
             birthday: data.birthday || 'Not specified',
             location: data.location || 'Not specified',
             avatar: data.avatar || "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg"
