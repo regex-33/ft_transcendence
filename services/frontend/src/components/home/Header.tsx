@@ -6,7 +6,11 @@ import { useEffect } from "../../hooks/useEffect";
 
 
 export const Header: ComponentFunction = () => {
-
+  const handleSettingsClick = (e: Event) => {
+    e.preventDefault();
+    window.history.pushState({}, '', '/settings');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
   return (
     <header
       className="relative flex justify-between items-center  py-3 shadow-md text-white overflow-hidden"
@@ -39,9 +43,11 @@ export const Header: ComponentFunction = () => {
           <span className="absolute top-3 right-6 block h-[6px] w-[6px] rounded-full bg-red-500 transition-transform duration-200 hover:scale-95 "></span>
         </div>
 
-           <div className="min-w-0">
+        <div className="min-w-0" >
           <button className="flex items-center gap-2   md:px-3 py-1    overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95">
-            <img src="/images/home-assests/setting-icon.svg" alt="settings" className="w-6 h-6 md:w-10 md:h-10" />
+          <a  onClick={handleSettingsClick}>
+          <img src="/images/home-assests/setting-icon.svg" alt="settings" />
+        </a>
           </button>
         </div>
 
