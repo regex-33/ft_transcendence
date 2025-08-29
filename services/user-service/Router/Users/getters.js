@@ -38,6 +38,8 @@ const getbyusername = async (request, reply) => {
       avatar: user.avatar,
       bio: user.bio,
       online: !!user.online,
+      location: user.location,
+      birthday: user.birthday
     });
   }
   catch (err) {
@@ -80,6 +82,8 @@ const getbyId = (request, reply) => {
         avatar: user.avatar,
         bio: user.bio,
         online: !!user.online,
+        location: user.location,
+        birthday: user.birthday
       });
     })
     .catch((err) => {
@@ -110,6 +114,8 @@ const getme = async (request, reply) => {
       avatar: user.avatar,
       bio: user.bio,
       online: !!user.online,
+      location: user.location,
+      birthday: user.birthday
     });
   }
   catch (err) {
@@ -143,6 +149,8 @@ const getUsers = async (request, reply) => {
             avatar: user.avatar,
             bio: user.bio,
             online: !!user.online,
+            location: user.location,
+            birthday: user.birthday
           });
       })
     );
