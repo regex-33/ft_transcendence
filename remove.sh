@@ -20,8 +20,8 @@ echo "🔌 Removing all unused networks..."
 docker network prune -f
 
 # Optional: Remove all images
-# echo "🖼️ Removing all images..."
-# docker rmi $(docker images -q)
+echo "🖼️ Removing all images..."
+docker rmi $(docker images -q)
 
 echo "✅ Done. Docker is cleaned."
 
