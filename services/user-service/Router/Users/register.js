@@ -87,7 +87,7 @@ const register = async (request, reply) => {
 async function createUser(request, reply, userInfo) {
   try {
     const user = await db.User.create(userInfo);
-    const token = await jsonwebtoken.sign(
+    const token = jsonwebtoken.sign(
       { id: user.id, username: user.username, email: user.email },
       jwt_secret,
       { expiresIn: time_token_expiration }
@@ -115,9 +115,10 @@ async function checkUserExisting(reply, username, email, request) {
 
     if (user) {
       fillObject(request, "WARNING", "register", "unknown", false, `${user.username === username ? "Username" : "Email"} already exists`, request.cookies?.token || null);
-      return reply.status(400).send({
+      reply.status(400).send({
         error: `${user.username === username ? "Username" : "Email"} already exists`,
       });
+      return true;
     }
     return;
   } catch (error) {
