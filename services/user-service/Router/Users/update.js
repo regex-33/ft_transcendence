@@ -5,106 +5,69 @@ const multer = require("../../util/Multer");
 const bcrypt = require("bcrypt");
 const { fillObject } = require("../../util/logger");
 
-// const validation = (res, ...inputs) => {
-//   const [id, email, password, avatar, username] = inputs;
+const update = async (req, res) => {
+  const { username, email, location, bio, birthday, avatar } = await multer(req);
+  req.body = {
+    username,
+    email,
+    location,
+    bio,
+    birthday,
+    avatar
+  };
+  if (username)
+    await updateUser(req, res);
+  if (email)
+    await updateEmail(req, res);
+  if (location)
+    await updateLocation(req, res);
+  if (bio)
+    await updateBio(req, res);
+  if (birthday)
+    await updateBirthday(req, res);
+  if (avatar)
+    await updateAvatar(req, res);
+  res.send({ message: "User updated successfully." });
+}
 
-//   if (
-//     email === undefined &&
-//     password === undefined &&
-//     avatar === undefined &&
-//     username === undefined
-//   ) {
-//     return res
-//       .status(400)
-//       .send({ error: "At least one field must be provided for update." });
-//   }
+const updateLocation = async (req, res) => {
+  const { check, payload } = await checkAuthJWT(req, res);
+  if (check) return check;
+  const { id } = payload;
+  const { location } = req.body;
 
-//   if (!/^\d+$/.test(id)) {
-//     return res.status(400).send({ error: "Invalid user ID format." });
-//   }
+  try {
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).send({ error: "User not found." });
+    }
+    user.location = location;
 
-//   if (username && !/^[a-zA-Z_]+$/.test(username)) {
-//     return res.status(400).send({
-//       error: "Username must contain only letters, numbers, and underscores.",
-//     });
-//   }
+    await user.save();
+  } catch (err) {
+    console.error("Error updating user:", err);
+  }
+};
 
-//   if (email && !email.includes("@")) {
-//     return res.status(400).send({ error: "Invalid email format." });
-//   }
+const updateBirthday = async (req, res) => {
+  const { check, payload } = await checkAuthJWT(req, res);
+  if (check) return check;
+  const { id } = payload;
+  const { birthday } = req.body;
 
-//   return null;
-// };
+  try {
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).send({ error: "User not found." });
+    }
+    user.birthday = birthday;
 
-
-
-// // /**
-// // * update user info
-// const updateUser = async (req, res) => {
-//   const { check, payload } = await checkAuthJWT(req, res);
-//   if (check) return check;
-//   req.user = payload;
-//   const { id } = req.user;
-//   try {
-//     const body = await multer(req)
-//     const { username, email, password, avatar, bio } = body;
-//     if (id != req.user.id) {
-//       return res
-//         .status(403)
-//         .send({ error: "You are not authorized to update this user." });
-//     }
-
-//     const validationError = validation(
-//       res,
-//       id,
-//       email,
-//       password,
-//       avatar ? avatar.path : undefined,
-//       username
-//     );
-
-//     if (validationError) {
-//       fillObject(req, "WARNING", "updateUser", id, false, validationError.message, req.cookies?.token || null);
-//       return validationError;
-//     }
-
-//     try {
-//       const user = await User.findByPk(id)
-//       if (!user) {
-//         fillObject(req, "WARNING", "updateUser", id, false, "User not found.", req.cookies?.token || null);
-//         return res.status(404).send({ error: "User not found." });
-//       }
-
-//       const updatedData = {};
-//       if (email) updatedData.email = email;
-//       if (password) updatedData.password = bcrypt.hashSync(password, 10);
-//       if (avatar) updatedData.avatar = avatar.path ? avatar.path : null;
-//       if (username) updatedData.username = username;
-//       try {
-//         await user
-//           .update(updatedData);
-//         res.send({
-//           message: "User updated successfully.",
-//         });
-//       }
-//       catch (err) {
-//         fillObject(req, "ERROR", "updateUser", id, false, err.message, req.cookies?.token || null);
-//         console.error("Error updating user:", err);
-//         res.status(500).send({ error: "Internal server error." });
-//       };
-//     }
-//     catch (err) {
-//       fillObject(req, "ERROR", "updateUser", id, false, err.message, req.cookies?.token || null);
-//       console.error("Error fetching user:", err);
-//       res.status(500).send({ error: "Internal server error." });
-//     };
-//   }
-//   catch (err) {
-//     fillObject(req, "ERROR", "updateUser", "unknown", false, err.message, req.cookies?.token || null);
-//     console.error("Error processing multipart request:", err);
-//     res.status(500).send({ error: "Internal server error." });
-//   };
-// };
+    await user.save();
+  } catch (err) {
+    console.error("Error updating user:", err);
+    res.status(500).send({ error: "Internal server error." });
+  }
+}
 
 const updateUser = async (req, res) => {
   const { check, payload } = await checkAuthJWT(req, res);
@@ -124,12 +87,11 @@ const updateUser = async (req, res) => {
       return res.status(404).send({ error: "User not found." });
     }
     if (user2) {
-      return res.status(409).send({ error: "Username already taken." });
+      return res.status(409).send({ error: "Username already exists." });
     }
     user.username = username;
 
     await user.save();
-    res.send({ message: "User updated successfully." });
   } catch (err) {
     console.error("Error updating user:", err);
     res.status(500).send({ error: "Internal server error." });
@@ -149,16 +111,15 @@ const updateEmail = async (req, res) => {
   try {
     const user = await User.findByPk(id);
     const user2 = await User.findOne({ where: { email } });
-    if (!user) {  
+    if (!user) {
       return res.status(404).send({ error: "User not found." });
     }
     if (user2) {
-      return res.status(409).send({ error: "Email already taken." });
+      return res.status(409).send({ error: "Email already exist." });
     }
     user.email = email;
 
     await user.save();
-    res.send({ message: "User updated successfully." });
   } catch (err) {
     console.error("Error updating user:", err);
     res.status(500).send({ error: "Internal server error." });
@@ -196,8 +157,9 @@ const updateAvatar = async (req, res) => {
   if (check) return check;
   const { id } = payload;
   try {
-    const body = await multer(req)
-    const { avatar } = body;
+    // const body = await multer(req)
+    const { avatar } = req.body;
+    console.log(avatar);
     if (!avatar || !avatar.path) {
       return res.status(400).send({
         error: "Avatar file is required.",
@@ -211,7 +173,6 @@ const updateAvatar = async (req, res) => {
     user.avatar = avatar.path;
 
     await user.save();
-    res.send({ message: "User updated successfully." });
   } catch (err) {
     console.error("Error updating user:", err);
     res.status(500).send({ error: "Internal server error." });
@@ -237,11 +198,10 @@ const updateBio = async (req, res) => {
     user.bio = bio;
 
     await user.save();
-    res.send({ message: "User updated successfully." });
   } catch (err) {
     console.error("Error updating user:", err);
     res.status(500).send({ error: "Internal server error." });
   }
 };
 
-module.exports = { updateUser, updateEmail, updatePassword, updateAvatar, updateBio };
+module.exports = { updatePassword, update };

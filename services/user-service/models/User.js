@@ -48,6 +48,12 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: "CLASSIC",
       },
+      birthday: {
+        type: DataTypes.STRING,
+      },
+      location: {
+        type: DataTypes.STRING,
+      },
       bio: {
         type: DataTypes.TEXT,
         allowNull: true,

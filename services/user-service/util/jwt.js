@@ -47,9 +47,9 @@ const verify = async (token, secret, callback) => {
     }
 
     const header = JSON.parse(base64urlDecode(headerEncoded));
-    const { username } = payload;
+    const { id } = payload;
 
-    const user = await db.User.findOne({ where: { username } });
+    const user = await db.User.findOne({ where: { id } });
 
     if (!user) {
         return await callback("user not found", payload);
