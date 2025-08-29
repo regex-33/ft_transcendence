@@ -1,35 +1,19 @@
 import { useEffect } from "../../hooks/useEffect";
 import { useRef } from "../../hooks/useRef";
+import { useState } from "../../hooks/useState";
 import { h } from '../../vdom/createElement';
 import { ComponentFunction } from "../../types/global";
 
-const friends = [
-  { avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
-  { id: 1, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
-  { id: 2, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
-  { id: 3, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
-  { id: 4, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
-  { id: 5, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
-  { id: 6, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
-  { avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
-  { id: 7, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
-  { avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
-  { id: 8, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
-  { id: 9, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
-  { id: 10, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
-  { id: 11, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
-   { id: 12, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
-  { id: 13 , avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
-  { id: 14, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
-  { id: 15, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
-  { id: 16, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
-  { id: 17, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
-  { id: 18, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: true },
-  { id: 19, avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
-];
+
+interface Friend {
+  id?: number;
+  avatar: string;
+  online: boolean;
+  name?: string;
+}
 
 const FriendItem: ComponentFunction = (props = {}) => {
-  const friend = props.friend as typeof friends[0];
+  const friend = props.friend as Friend;
   const cadreBg = friend.online ? "/images/home-assests/cir-online.svg" : "/images/home-assests/cir-offline.svg";
   return h('div', { className: "flex flex-row items-center w-16 translate-y-14" },
     h('div', { 
@@ -52,14 +36,17 @@ function chunk<T>(arr: T[], size: number): T[][] {
 }
 
 export const ChatPanel: ComponentFunction = () => {
-<<<<<<< HEAD
   const [friends, setFriends] = useState<Friend[]>([]);
+  // const [loading, setLoading] = useState<boolean>(true);
+  // const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchFriends = async () => {
       try {
+        // setLoading(true);
+        // setError(null);
         
-        const response = await fetch('/api/friends/friends');
-        
+        const response = await fetch('http://localhost:5000/friends');
         if (!response.ok) {
           throw new Error(`Failed to fetch friends: ${response.status} ${response.statusText}`);
         }
@@ -68,13 +55,87 @@ export const ChatPanel: ComponentFunction = () => {
         setFriends(data);
       } catch (err) {
         console.error('Error fetching friends:', err);
-      }
+        // setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } 
+      // finally {
+      //   setLoading(false);
+      // }
     };
+
     fetchFriends();
   }, []);
 
-  const friendColumns = chunk(friends, 2);  
-  if (friends.length === 0) {
+  const friendColumns = chunk(friends, 2);
+
+
+  // if (loading) {
+  //   return (
+  //     <aside className="w-[25%] p-2 flex flex-col gap-4">
+  //       <div className="relative w-full">
+  //         <button
+  //           className="h-[50px] w-[260px] py-2 bg-no-repeat bg-contain 
+  //             bg-center text-white relative left-16 top-3"
+  //           style={{ backgroundImage: "url('/images/home-assests/bg-gameMode.svg')" }}
+  //         >
+  //           <span className="font-irish font-bold tracking-wide text-sm sm:text-base md:text-2xl">
+  //             Loading Friends...
+  //           </span>
+  //         </button>
+  //         <div
+  //           className="relative rounded-lg h-[320px] w-[340px]
+  //             bg-no-repeat bg-center bg-[length:340px_330px] translate-x-7 overflow-hidden
+  //             flex items-center justify-center"
+  //           style={{ backgroundImage: "url('/images/home-assests/bg-online.svg')" }}
+  //         >
+  //           <div className="text-white text-center">
+  //             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+  //             <p>Loading friends...</p>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </aside>
+  //   );
+  // }
+
+  
+  // if (error) {
+  //   return (
+  //     <aside className="w-[25%] p-2 flex flex-col gap-4">
+  //       <div className="relative w-full">
+  //         <button
+  //           className="h-[50px] w-[260px] py-2 bg-no-repeat bg-contain 
+  //             bg-center text-white relative left-16 top-3"
+  //           style={{ backgroundImage: "url('/images/home-assests/bg-gameMode.svg')" }}
+  //         >
+  //           <span className="font-irish font-bold tracking-wide text-sm sm:text-base md:text-2xl">
+  //             Friends Error
+  //           </span>
+  //         </button>
+  //         <div
+  //           className="relative rounded-lg h-[320px] w-[340px]
+  //             bg-no-repeat bg-center bg-[length:340px_330px] translate-x-7 overflow-hidden
+  //             flex items-center justify-center"
+  //           style={{ backgroundImage: "url('/images/home-assests/bg-online.svg')" }}
+  //         >
+  //           <div className="text-white text-center p-4">
+  //             <p className="text-red-300 mb-2">Failed to load friends</p>
+  //             <p className="text-sm">{error}</p>
+  //             <button 
+  //               className="mt-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded text-white text-sm"
+  //               onClick={() => window.location.reload()}
+  //             >
+  //               Retry
+  //             </button>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </aside>
+  //   );
+  // }
+
+
+  if (friends.length === 0) 
+    {
     return (
       <aside className="w-[25%] p-2 flex flex-col gap-4">
         <div className="relative w-full">
@@ -101,9 +162,8 @@ export const ChatPanel: ComponentFunction = () => {
       </aside>
     );
   }
-=======
-  const friendColumns = chunk(friends, 2);
->>>>>>> b6285614a456514e00527552496dc076c999670c
+
+
   return (
     <aside className="w-[25%] p-2 flex flex-col gap-4">
       <div className="relative w-full">
@@ -125,7 +185,8 @@ export const ChatPanel: ComponentFunction = () => {
             className="absolute inset-0 ml-4 pr-4 max-w-[300px] overflow-x-auto overflow-y-hidden "
             style={{
               scrollbarWidth: 'thin',
-              scrollbarColor: '#64B0C5 transparent'
+              scrollbarColor: '#64B0C5 transparent',
+              msOverflowStyle: 'auto',
             }}
           >
             <div className="flex gap-7 p-4" style={{ minWidth: 'max-content' }}>

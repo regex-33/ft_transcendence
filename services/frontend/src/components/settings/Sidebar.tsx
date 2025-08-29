@@ -1,5 +1,5 @@
 import { h } from '../../vdom/createElement';
-import { ComponentFunction } from "../../types/global";
+import { ComponentFunction, process } from "../../types/global";
 import { useEffect } from '../../hooks/useEffect';
 import { useState } from '../../hooks/useState';
 
@@ -23,13 +23,19 @@ export const Sidebar: ComponentFunction = () => {
       try {
         setIsLoading(true);
         setError('');
-        
-        const response = await fetch('/api/profile', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        // process.env.VITE_USER_SERVICE_HOST 
+        // console.log("host: -> ", process.env.VITE_USER_SERVICE_HOST);
+        // console.log("port: -> ", process.env.VITE_USER_SERVICE_PORT);
+
+        const response = await fetch(
+          `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();

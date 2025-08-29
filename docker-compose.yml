@@ -8,15 +8,19 @@ services:
     restart: unless-stopped
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
-    # volumes:
-    #   - .:/app
-    #   - /app/node_modules
+    volumes:
+      - ./services/frontend:/app
+      # - /app/node_modules
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - HOST=0.0.0.0
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
       - UV_THREADPOOL_SIZE=128
+      - VITE_USER_SERVICE_HOST=localhost
+      - VITE_USER_SERVICE_PORT=8080
+      
+
       # - REACT_APP_API_URL=http://localhost:${NGINX_PORT:-8080}/api
     command: sh -c "npm install && npm run dev"
     depends_on:

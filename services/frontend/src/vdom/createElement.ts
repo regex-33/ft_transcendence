@@ -9,7 +9,7 @@ export function createElement(
   if (typeof type === "function") {
     return type({ ...props, children }); // this triggers hook registration
   }
-  console.log('Creating element:', type, props, children);
+  // console.log('Creating element:', type, props, children);
     // .flat() => this flattens only one level, for deeply nested arrayes i use infinity
   const normalizedChildren: VNode[] = children
     .flat(Infinity)

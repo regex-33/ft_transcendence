@@ -1,0 +1,61 @@
+{
+  "profile": {
+    "id": 1,
+    "name": "Najib",
+    "email": "najib@example.com",
+    "birthday":"26/08/2002",
+    "location":"ben geurir",
+    "avatar":"https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
+    "aboutMe":"STUDENT 1337 CONDING SCHOOL"
+  },
+  "friends": [
+    {
+      "id": 1,
+      "name": "Alice",
+      "avatar": "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
+      "online": true
+    },
+    {
+      "id": 2,
+      "name": "Bob",
+      "avatar": "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
+      "online": false
+    },
+    {
+      "id": 3,
+      "name": "Charlie",
+      "avatar": "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
+      "online": true
+    },
+    {
+      "id": 4,
+      "name": "Charlie",
+      "avatar": "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
+      "online": true
+    },
+    {
+      "id": 5,
+      "name": "Charlie",
+      "avatar": "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
+      "online": true
+    },
+    {
+      "id": 6,
+      "name": "Charlie",
+      "avatar": "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
+      "online": true
+    },
+    {
+      "id": 7,
+      "name": "Charlie",
+      "avatar": "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
+      "online": true
+    },
+    {
+      "id": 8,
+      "name": "Charlie",
+      "avatar": "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
+      "online": false
+    }
+  ]
+}
