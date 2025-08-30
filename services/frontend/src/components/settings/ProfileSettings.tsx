@@ -211,11 +211,11 @@ export const ProfileSettings: ComponentFunction = () => {
         </div>
 
         {/* Profile Card */}
-        <div className="flex justify-center items-center w-[440px] h-[600px] p-2 -mt-10 shrink-0">
+        <div className="flex justify-center items-center w-[500px] h-[600px] p-2 -mt-10 shrink-0">
   <button className="w-full h-full   p-6 mr-4 flex flex-col items-center"
   style={{ backgroundImage: "url('/images/setting-assests/bg-card.png')" }}
   >
-    <div className="relative pt-[80px] z-10">
+    <div className="relative pt-[80px] pl-14 z-10">
       <div className="mt-7 w-44 h-44 ml-9 rounded-full ring-4 ring-[#08BECE] shadow-lg overflow-hidden grid place-items-center">
         <img
           src={previewAvatar}
@@ -228,7 +228,7 @@ export const ProfileSettings: ComponentFunction = () => {
         />
       </div>
       <div
-        className="mt-6 w-[260px] h-[130px] rounded-xl p-2 bg-[#91BFBF] backdrop-blur-sm border-4 border-[#08BECE] text-white text-left z-10 relative"
+        className="mt-6 w-[300px] h-[170px] rounded-xl p-2 bg-[#91BFBF] backdrop-blur-sm border-4 border-[#08BECE] text-white text-left z-10 relative"
       >
         <p className="font-medium mb-1">{profile.username || "User Name"}</p>
         <p className="text-white/80 text-sm mb-1">{profile.email || "—"}</p>
