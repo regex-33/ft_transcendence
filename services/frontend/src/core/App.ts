@@ -273,7 +273,7 @@ private setupRoutes(): void {
 
 // Router configuration
 this.router.addRoute('/settings', () => 
-  this.createFunctionalComponent(SettingsPage, { defaultTab: 'friends' })
+  this.createFunctionalComponent(SettingsPage, { defaultTab: 'profile' })
 );
 
 this.router.addRoute('/settings/profile', () => 

@@ -5,13 +5,14 @@ export default {
   ],
   theme: {
     extend: {
-     fontFamily: {
-          irish: ['"Irish Grover"', 'cursive'],
-          inria: ['"Inria Sans"', 'sans-serif'],
-          luckiest: ['"Luckiest Guy"', 'cursive'],
-          inconsolata: ['"Inconsolata"', 'monospace'],
-          rowdies: ['"Rowdies"', 'cursive'], 
-        },
+      fontFamily: {
+        irish: ['"Irish Grover"', 'cursive'],
+        inria: ['"Inria Sans"', 'sans-serif'],
+        luckiest: ['"Luckiest Guy"', 'cursive'],
+        inconsolata: ['"Inconsolata"', 'monospace'],
+        rowdies: ['"Rowdies"', 'cursive'],
+        poppins: ['"Poppins"', 'sans-serif'],
+      },
 
     },
   },
