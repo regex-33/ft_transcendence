@@ -211,21 +211,42 @@ export const ProfileSettings: ComponentFunction = () => {
         </div>
 
         {/* Profile Preview Card */}
-        {/* <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 flex-shrink-0 w-80">
-          <div className="text-center">
-            <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center overflow-hidden shadow-lg">
-              <img 
-                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='35' r='15' fill='%23FFF'/%3E%3Cpath d='M25 75 Q25 55 50 55 Q75 55 75 75 L75 85 L25 85 Z' fill='%23FFF'/%3E%3C/svg%3E"
-                alt="Profile Avatar"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <h2 className="text-white text-xl font-semibold mb-1">{profile.username || 'User Name'}</h2>
-            <p className="text-white/80 text-sm mb-1">{profile.email}</p>
-            <p className="text-white/70 text-xs mb-1">{profile.location}</p>
-            <p className="text-white/70 text-xs">{profile.birthday}</p>
-          </div>
-        </div> */}
+        <button
+  className="relative w-[400px] h-[600px] -top-8 shrink-0 rounded-3xl 
+             overflow-hidden shadow-xl bg-cover bg-center bg-no-repeat 
+             p-6 flex flex-col items-center"
+  style={{ backgroundImage: "url('/images/setting-assests/bg-card.png')" }}
+>
+    
+      <div className="pt-[80px]">
+      {/* avatar (centered) */}
+      <div className="mt-7 w-44 h-44 ml-9 rounded-full ring-4 ring-[#08BECE] shadow-lg overflow-hidden grid place-items-center">
+        <img
+          src={previewAvatar}
+          alt="Avatar"
+          className="w-full h-full object-cover"
+          onError={(e: any) => {
+            e.target.src =
+              "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg";
+          }}
+        />
+      </div>
+
+      {/* info panel (under avatar) */}
+      <div className="mt-6 w-[260px] h-[130px] rounded-xl p-2 
+                      bg-[#91BFBF] backdrop-blur-sm border-4  border-[#08BECE] text-white text-left">
+        <p className="font-medium mb-1">{profile.username || "User Name"}</p>
+        <p className="text-white/80 text-sm mb-1">{profile.email || "—"}</p>
+        <p className="text-white/70 text-xs mb-1">{profile.location || "—"}</p>
+        <p className="text-white/70 text-xs">{profile.birthday || "—"}</p>
+      </div>
+      </div>
+    </button>
+
+
+
+
+
       </div>
     </div>
   );
