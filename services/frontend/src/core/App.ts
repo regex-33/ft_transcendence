@@ -284,10 +284,6 @@ this.router.addRoute('/settings/friends', () =>
   this.createFunctionalComponent(SettingsPage, { defaultTab: 'friends' })
 );
 
-this.router.addRoute('/settings/achievements', () => 
-  this.createFunctionalComponent(SettingsPage, { defaultTab: 'achievements' })
-);
-
 this.router.addRoute('/settings/matchHistory', () => 
   this.createFunctionalComponent(SettingsPage, { defaultTab: 'matchHistory' })
 );

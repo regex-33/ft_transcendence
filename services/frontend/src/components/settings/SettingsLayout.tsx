@@ -25,7 +25,6 @@ export const SettingsLayout: ComponentFunction<SettingsLayoutProps> = (props) =>
     switch (activeTab) {
       case 'profile':      return <ProfileSettings />;
       case 'friends':      return <FriendsSettings />;
-      case 'achievements': return <AchievementSettings />;
       case 'matchHistory':  return <MatchHistory />;
       case 'overview':      return <OverviewSettings />;
       default:             return null;
@@ -53,15 +52,6 @@ export const SettingsLayout: ComponentFunction<SettingsLayoutProps> = (props) =>
           >
             <span className="font-luckiest text-sm pt-2 whitespace-nowrap">Friends</span>
           </button>
-          
-          <button
-            onClick={() => setActiveTab('achievements')}
-            className="flex items-center justify-between px-6 py-1 w-[130px] text-white bg-no-repeat bg-contain bg-center"
-            style={{ backgroundImage: `url('/images/setting-assests/${activeTab === 'achievements' ? 'bg-active.svg' : 'bg-noactive.svg'}')` }}
-          >
-            <span className="font-luckiest text-sm pt-2 whitespace-nowrap">Achievements</span>
-          </button>
-
           <button
             onClick={() => setActiveTab('matchHistory')}
             className="flex items-center justify-between px-6 py-1 w-[130px] text-white bg-no-repeat bg-contain bg-center"
