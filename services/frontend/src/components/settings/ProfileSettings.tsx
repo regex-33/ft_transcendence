@@ -89,6 +89,78 @@ export const ProfileSettings: ComponentFunction = () => {
 
   if (loading) return <div className="text-gray-500">Loading...</div>;
 
+
+
+
+  const [profileData, setProfileData] = useState({
+    name: 'Loading...',
+    email: '',
+    aboutMe: 'Loading profile information...',
+    birthday: '',
+    location: '',
+    avatar: '/images/default-avatar.png' // fallback avatar
+  });
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Fetch profile data from API on component mount
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        setIsLoading(true);
+        setError('');
+        // process.env.VITE_USER_SERVICE_HOST 
+        // console.log("host: -> ", process.env.VITE_USER_SERVICE_HOST);
+        // console.log("port: -> ", process.env.VITE_USER_SERVICE_PORT);
+
+        const response = await fetch(
+          `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Update profile data with fetched information
+          setProfileData({
+            name: data.username || 'Unknown User',
+            email: data.email || '',
+            aboutMe: data.bio || 'No bio available',
+            birthday: data.birthday || 'Not specified',
+            location: data.location || 'Not specified',
+            avatar: data.avatar || "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg"
+          });
+        } else {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+        setError('Failed to load profile data');
+        
+        // Set fallback data on error
+        setProfileData({
+          name: 'Error Loading',
+          email: '',
+          aboutMe: 'Could not load profile information. Please try refreshing the page.',
+          birthday: 'Not available',
+          location: 'Not available',
+          avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
+
+
   return (
     <div className="min-h-screen  ">
       <div className="flex gap-5  w-[700px] h-[550px] translate-y-40  ">
@@ -218,7 +290,7 @@ export const ProfileSettings: ComponentFunction = () => {
     <div className="relative pt-[80px] pl-14 z-10">
       <div className="mt-7 w-44 h-44 ml-9 rounded-full ring-4 ring-[#08BECE] shadow-lg overflow-hidden grid place-items-center">
         <img
-          src={previewAvatar}
+          src={profileData.avatar}
           alt="Avatar"
           className="w-full h-full object-cover"
           onError={(e: any) => {
@@ -228,12 +300,14 @@ export const ProfileSettings: ComponentFunction = () => {
         />
       </div>
       <div
-        className="mt-6 w-[300px] h-[170px] rounded-xl p-2 bg-[#91BFBF] backdrop-blur-sm border-4 border-[#08BECE] text-white text-left z-10 relative"
+        className="mt-6 w-[300px] pt-6 pl-3 h-[170px] rounded-xl p-2 bg-[#91BFBF] 
+        backdrop-blur-sm border-4 
+        border-[#08BECE] text-white text-left z-10 relative"
       >
-        <p className="font-medium mb-1">{profile.username || "User Name"}</p>
-        <p className="text-white/80 text-sm mb-1">{profile.email || "—"}</p>
-        <p className="text-white/70 text-xs mb-1">{profile.location || "—"}</p>
-        <p className="text-white/70 text-xs">{profile.birthday || "—"}</p>
+        <p className="font-medium mb-1">{profileData.name || "User Name"}</p>
+        <p className="text-white/80 text-sm mb-1">{profileData.email || "—"}</p>
+        <p className="text-white/70 text-xs mb-1">{profileData.location || "—"}</p>
+        <p className="text-white/70 text-xs">{profileData.birthday || "—"}</p>
       </div>
     </div>
   </button>
