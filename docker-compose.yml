@@ -111,6 +111,7 @@ services:
     depends_on:
       - user-service
       - chat-service
+      - xo-game
     networks:
       - transcendence-network
     volumes:
@@ -168,7 +169,7 @@ services:
     container_name: xo-game
     restart: unless-stopped
     ports:
-      - 8083:8083
+      - "8083:8083"
     networks:
       - transcendence-network
     volumes:
