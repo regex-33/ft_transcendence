@@ -12,5 +12,5 @@ RUN npm i nodemon -g
 
 RUN npm install
 
-EXPOSE 8001
+EXPOSE 8083
 CMD ["npm", "run" ,"dev"]
