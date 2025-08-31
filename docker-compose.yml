@@ -161,7 +161,33 @@ services:
       - transcendence-network
       # - elk-network
     profiles: ["database", "dev"]
-
+  xo-game:
+    build:
+      context: ./services/xo-game
+      dockerfile: Dockerfile
+    container_name: xo-game
+    restart: unless-stopped
+    ports:
+      - 8083:8083
+    networks:
+      - transcendence-network
+    volumes:
+      - ./services/xo-game:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${USER_SERVICE_PORT:-8001}
+      - JWT_SECRET=${JWT_SECRET}
+      - TIME_TOKEN_EXPIRATION=${TIME_TOKEN_EXPIRATION:-3600}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - INTRA_CALLBACK_URL=${INTRA_CALLBACK_URL:-http://localhost:8080/api/auth/intra/callback}
+      - HOME_PAGE=${HOME_PAGE:-/home}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      - postgres
+      - user-service
 volumes:
   ## DATABASES
   redis_data:

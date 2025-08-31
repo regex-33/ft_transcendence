@@ -50,9 +50,11 @@ module.exports = (sequelize, DataTypes) => {
       },
       birthday: {
         type: DataTypes.STRING,
+        defaultValue: "yamat landochin",
       },
       location: {
         type: DataTypes.STRING,
+        defaultValue: "agadi bo 3chiba",
       },
       bio: {
         type: DataTypes.TEXT,

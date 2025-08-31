@@ -1,0 +1,17 @@
+{
+  "name": "xo-game",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --exitcrash index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^5.5.0",
+    "sequelize": "^6.37.7"
+  }
+}
+
