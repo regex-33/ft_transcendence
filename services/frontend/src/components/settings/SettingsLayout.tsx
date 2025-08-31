@@ -30,15 +30,20 @@ export const SettingsLayout: ComponentFunction<SettingsLayoutProps> = (props) =>
       default:             return null;
     }
   };
+const handleTabClick = (tab: typeof activeTab, e: Event) => {
+  e.preventDefault();
+  setActiveTab(tab);
+  window.history.pushState({}, '', `/settings/${tab}`);
+  window.dispatchEvent(new PopStateEvent('popstate'));
+};
 
   return (
     <div className="flex h-[calc(100vh-72px)]">
       <Sidebar/>
       <main className="w-full flex flex-col ">
-        {/* Navigation at the top */}
         <nav className="flex  flex-none gap-8 min-w-0 pt-16  pl-5">
           <button
-            onClick={() => setActiveTab('overview')}
+            onClick={(e: Event) => handleTabClick('overview', e)}
             style={{ backgroundImage: `url('/images/setting-assests/${activeTab === 'overview' ? 'bg-active.svg' : 'bg-noactive.svg'}')` }}
             className="flex items-center justify-between px-6  w-[130px] text-white bg-no-repeat bg-contain bg-center"
           >
@@ -46,14 +51,14 @@ export const SettingsLayout: ComponentFunction<SettingsLayoutProps> = (props) =>
           </button>
           
           <button
-            onClick={() => setActiveTab('friends')}
+            onClick={(e: Event) => handleTabClick('friends', e)}
             style={{ backgroundImage: `url('/images/setting-assests/${activeTab === 'friends' ? 'bg-active.svg' : 'bg-noactive.svg'}')` }}
             className="flex items-center justify-between px-6 py-1 w-[130px] text-white bg-no-repeat bg-contain bg-center"
           >
             <span className="font-luckiest text-sm pt-2 whitespace-nowrap">Friends</span>
           </button>
           <button
-            onClick={() => setActiveTab('matchHistory')}
+            onClick={(e: Event) => handleTabClick('matchHistory', e)}
             className="flex items-center justify-between px-6 py-1 w-[130px] text-white bg-no-repeat bg-contain bg-center"
             style={{ backgroundImage: `url('/images/setting-assests/${activeTab === 'matchHistory' ? 'bg-active.svg' : 'bg-noactive.svg'}')` }}
           >
@@ -61,7 +66,7 @@ export const SettingsLayout: ComponentFunction<SettingsLayoutProps> = (props) =>
           </button>
 
           <button
-            onClick={() => setActiveTab('profile')}
+            onClick={(e: Event) => handleTabClick('profile', e)}
             className="flex items-center justify-between px-6 py-1 w-[130px] text-white bg-no-repeat bg-contain bg-center"
             style={{ backgroundImage: `url('/images/setting-assests/${activeTab === 'profile' ? 'bg-active.svg' : 'bg-noactive.svg'}')` }}
           >
