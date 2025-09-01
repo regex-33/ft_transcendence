@@ -5,7 +5,8 @@ const sendButton = document.getElementById('send');
 
 const ws = new WebSocket('ws://localhost:8002/ws/chat');
 async function get(){
-    const data = await fetch("http://localhost:8080/api/users/get/me",{
+    // const data = await fetch("http://localhost:8080/api/users/get/me",{
+    const data = await fetch("http://localhost/api/users/get/me",{
         method:"GET",
         credentials:"include"
     })
