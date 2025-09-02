@@ -53,7 +53,6 @@ export const ProfileSettings: ComponentFunction = () => {
       const formData = new FormData();
       
      
-      console.log("firstasssssssssss\n");
       // formData.append('id', profile.id.toString());
       formData.append('username', profile.username);
       formData.append('email', profile.email);
@@ -67,12 +66,10 @@ export const ProfileSettings: ComponentFunction = () => {
       }
       const res = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/update`, {
         method: "PUT",
-        // browser set it for FormData
         body: formData,
       });
       
-      // if (!res.ok) throw new Error("Failed to save profile");
-      console.log("seconddddddddddddd\n");
+      if (!res.ok) throw new Error("Failed to save profile");
       alert("Profile saved!");
       const updated = await res.json();
       setProfile(updated);
@@ -83,7 +80,6 @@ export const ProfileSettings: ComponentFunction = () => {
         setPreviewAvatar(updated.avatar);
       }
       
-      console.log("thereddddddddddddddd\n");
       setAvatarFile(null);
     } 
     catch (err) {
@@ -119,11 +115,9 @@ export const ProfileSettings: ComponentFunction = () => {
   };
 
   if (loading) return <div className="text-gray-500">Loading...</div>;
-
   const [profileData, setProfileData] = useState({
     name: 'Loading...',
     email: '',
-    aboutMe: 'Loading profile information...',
     birthday: '',
     location: '',
     avatar: '/images/default-avatar.png'
@@ -131,14 +125,11 @@ export const ProfileSettings: ComponentFunction = () => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // Fetch profile data from API on component mount
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
         setIsLoading(true);
         setError('');
-
         const response = await fetch(
           `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
           {
@@ -152,10 +143,10 @@ export const ProfileSettings: ComponentFunction = () => {
         if (response.ok) {
           const data = await response.json();
           
+          // Update profile data with fetched information
           setProfileData({
             name: data.username || 'Unknown User',
             email: data.email || '',
-            aboutMe: data.bio || 'No bio available',
             birthday: data.birthday || 'Not specified',
             location: data.location || 'Not specified',
             avatar: data.avatar || "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg"
@@ -166,11 +157,9 @@ export const ProfileSettings: ComponentFunction = () => {
       } catch (error) {
         console.error('Error fetching profile data:', error);
         setError('Failed to load profile data');
-        
         setProfileData({
           name: 'Error Loading',
           email: '',
-          aboutMe: 'Could not load profile information. Please try refreshing the page.',
           birthday: 'Not available',
           location: 'Not available',
           avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg"
@@ -182,6 +171,7 @@ export const ProfileSettings: ComponentFunction = () => {
 
     fetchProfileData();
   }, []);
+  
 
   return (
     <div className="min-h-screen">
@@ -192,7 +182,7 @@ export const ProfileSettings: ComponentFunction = () => {
             <div className="flex flex-col items-center mb-8">
               <div className="relative w-[140px] h-[140px] mb-1 rounded-full">
                 <img
-                  src={previewAvatar}
+                  src={profileData.avatar}
                   className="absolute w-32 h-32 rounded-full object-cover z-10"
                   alt="Avatar"
                   onError={(e: { target: HTMLImageElement; }) => {
@@ -308,7 +298,7 @@ export const ProfileSettings: ComponentFunction = () => {
             <div className="relative pt-[80px] z-10">
               <div className="mt-7 w-44 h-44 ml-9 rounded-full ring-4 ring-[#08BECE] shadow-lg overflow-hidden grid place-items-center">
                 <img
-                  src={previewAvatar || profileData.avatar}
+                  src={profileData.avatar}
                   alt="Avatar"
                   className="w-full h-full object-cover"
                   onError={(e: any) => {
@@ -317,10 +307,10 @@ export const ProfileSettings: ComponentFunction = () => {
                 />
               </div>
               <div className="mt-6 w-[260px] h-[130px] rounded-xl p-2 bg-[#91BFBF] backdrop-blur-sm border-4 border-[#08BECE] text-white text-left z-10 relative">
-                <p className="font-medium mb-1">{profile.username || "User Name"}</p>
-                <p className="text-white/80 text-sm mb-1">{profile.email || "—"}</p>
-                <p className="text-white/70 text-xs mb-1">{profile.location || "—"}</p>
-                <p className="text-white/70 text-xs">{profile.birthday || "—"}</p>
+                <p className="font-medium mb-1">{profileData.name || "User Name"}</p>
+                <p className="text-white/80 text-sm mb-1">{profileData.birthday|| "—"}</p>
+                <p className="text-white/70 text-xs mb-1">{profileData.email || "—"}</p>
+                <p className="text-white/70 text-xs">{profileData.location || "—"}</p>
               </div>
             </div>
           </div>

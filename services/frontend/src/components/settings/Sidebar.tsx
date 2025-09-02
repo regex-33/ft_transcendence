@@ -4,29 +4,22 @@ import { useEffect } from '../../hooks/useEffect';
 import { useState } from '../../hooks/useState';
 
 export const Sidebar: ComponentFunction = () => {
-  // Local state for profile data fetched from API
   const [profileData, setProfileData] = useState({
     name: 'Loading...',
     email: '',
     aboutMe: 'Loading profile information...',
     birthday: '',
     location: '',
-    avatar: '/images/default-avatar.png' // fallback avatar
+    avatar: '/images/default-avatar.png' 
   });
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // Fetch profile data from API on component mount
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
         setIsLoading(true);
         setError('');
-        // process.env.VITE_USER_SERVICE_HOST 
-        // console.log("host: -> ", process.env.VITE_USER_SERVICE_HOST);
-        // console.log("port: -> ", process.env.VITE_USER_SERVICE_PORT);
-
         const response = await fetch(
           `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
           {
@@ -39,8 +32,6 @@ export const Sidebar: ComponentFunction = () => {
 
         if (response.ok) {
           const data = await response.json();
-          
-          // Update profile data with fetched information
           setProfileData({
             name: data.username || 'Unknown User',
             email: data.email || '',
@@ -55,8 +46,6 @@ export const Sidebar: ComponentFunction = () => {
       } catch (error) {
         console.error('Error fetching profile data:', error);
         setError('Failed to load profile data');
-        
-        // Set fallback data on error
         setProfileData({
           name: 'Error Loading',
           email: '',
@@ -89,7 +78,6 @@ export const Sidebar: ComponentFunction = () => {
                 className="absolute inset-[10px] w-16 h-16 rounded-full object-cover z-10"
                 alt="Avatar"
                 onError={(e: { target: HTMLImageElement; }) => {
-                  // Fallback to default avatar if image fails to load
                   (e.target as HTMLImageElement).src = "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg";
                 }}
               />
@@ -107,6 +95,7 @@ export const Sidebar: ComponentFunction = () => {
               src="/images/setting-assests/plus-friends.svg"
               alt="Add"
               className="w-8 h-8 ml-4 transition-transform duration-200 hover:scale-95"
+              
             />
           </button>
         </div>
