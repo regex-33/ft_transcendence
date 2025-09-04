@@ -4,24 +4,33 @@ import { h } from "../../../vdom/createElement";
 let turn = 'X';
 let arr: Array<Array<Cell>> = [];
 let table = <table class="w-[300px] h-[300px] table-auto border-separate border-spacing-0"></table>;
-const editTurn = () => {
-    turn = turn === 'X' ? 'O' : 'X';
-};
-const click = (i: number, j: number,hok:[any,any]) => {
-    // console.log(turn);
-    // table.children[i].children[j].innerText = turn;
-    // const [count,setCount] = hok;
-    // const td = document.getElementById(`cell-${i}-${j}`);
-    // if (td && td.innerText === '') {
-    //     td.innerText = turn;
-    //     setCount(count + 1);
-    // }
-    fetch('/xo-game').then(res => res.json()).then(data => {
+const click = (i: number, j: number, hok: [any, any]) => {
+    const [count, setCount] = hok;
+    const td = document.getElementById(`cell-${i}-${j}`);
+    if (td && td.innerText === '') {
+        td.innerText = turn;
+        setCount(count + 1);
+    }
+    fetch('/xo-game/cell',
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ map: arr.map(r => r.map(c => ({ x: c.x, y: c.y, value: document.getElementById(`cell-${c.y}-${c.x}`)?.innerText }))) })
+        }
+    ).then(res => res.json()).then(data => {
+        arr.forEach((r, i) => {
+            r.forEach((c, j) => {
+                const el = document.getElementById(`cell-${c.y}-${c.x}`)
+                if (el?.innerText == '' )
+                    el!.innerText = data.map[i][j].value;
+            });
+        });
         console.log(data);
     }).catch(err => {
         console.log(err);
     });
-    editTurn();
 };
 
 type Cell = {
@@ -39,7 +48,7 @@ const Xo: ComponentFunction = () => {
         for (let j = 0; j < 3; j++) {
             const td = <td
                 id={`cell-${i}-${j}`}
-                onclick={() => click(i, j,[count,setCount])}
+                onclick={() => click(i, j, [count, setCount])}
                 class="w-[100px] h-[100px] border-4 border-black bg-green-500 text-center align-middle select-none leading-[100px] text-[50px] border-box font-bold"
             >
                 {' '}
