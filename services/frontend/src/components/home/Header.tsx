@@ -1,4 +1,5 @@
 import { Search } from "./Search";
+import { NotificationButton } from './Notif';
 import { h } from '../../vdom/createElement';
 import { ComponentFunction } from "../../types/global";
 import { useEffect } from "../../hooks/useEffect";
@@ -6,6 +7,28 @@ import { useEffect } from "../../hooks/useEffect";
 
 
 export const Header: ComponentFunction = () => {
+  
+  const handleLogout = async () => {
+    try {
+      await fetch(
+        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/logout`,
+        {
+          method: "POST", 
+          credentials: "include",
+        }
+      );
+        window.history.pushState({}, '', `/login`);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+    } 
+    catch (error) 
+    {
+      console.error("Logout failed:", error);
+      window.history.pushState({}, '', `/login`);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+  };
+
+
   const handleSettingsClick = (e: Event) => {
     e.preventDefault();
     window.history.pushState({}, '', '/settings');
@@ -36,12 +59,7 @@ export const Header: ComponentFunction = () => {
       <div className="hidden sm:flex items-center justify-around w-1/2  md:px-2 h-[64px] relative left-12 top-1">
         <nav className="flex gap-3 md:gap-3 flex-none justify-center mr-[180px] min-w-0">
 
-          <div className="relative min-w-0">
-          <button className="flex items-center gap-2 md:px-3 py-1 overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95">
-            <img src="/images/home-assests/notif-icon.svg" alt="notif" className="w-6 h-6 md:w-10 md:h-10" />
-          </button>
-          <span className="absolute top-3 right-6 block h-[6px] w-[6px] rounded-full bg-red-500 transition-transform duration-200 hover:scale-95 "></span>
-        </div>
+        {/* <NotificationButton /> */}
 
         <div className="min-w-0" >
           <button className="flex items-center gap-2   md:px-3 py-1    overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95">
@@ -60,7 +78,7 @@ export const Header: ComponentFunction = () => {
 
         <Search />
         
-          <div className="min-w-0">
+        <div className="min-w-0">
           <button className="flex items-center gap-2   md:px-3 py-1    overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95">
             <img src="/images/home-assests/game-icon.svg" alt="game" className="w-6 h-6 md:w-10 md:h-10" />
           </button>
@@ -68,7 +86,9 @@ export const Header: ComponentFunction = () => {
         </nav>
 
         <div className="min-w-0">
-          <button className="flex items-center gap-2    py-1   ml-28 overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95">
+          <button
+            onClick={handleLogout}
+           className="flex items-center gap-2    py-1   ml-28 overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95">
             <img src="/images/home-assests/logout-icon.svg" alt="logout" className="w-6 h-6 md:w-10 md:h-10" />
           </button>
         </div>

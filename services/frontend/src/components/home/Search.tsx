@@ -19,10 +19,11 @@ const players: Player[] = [
 
 export const Search: ComponentFunction = () => {
   const [showSearch, setShowSearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const modalRef = useRef<HTMLDivElement | null>(null);
-  
-  const trimmed = searchQuery.trim().toLowerCase();
+
+  console.log('type:', typeof searchQuery, searchQuery);
+  const trimmed = (typeof searchQuery === 'string' ? searchQuery : '').trim().toLowerCase();
   const isSearching = trimmed.length > 0;
 
   const defaultPlayers = players
@@ -50,7 +51,6 @@ export const Search: ComponentFunction = () => {
     setSearchQuery('');
   };
   
-  // Alternative approach - handle click on overlay directly
   const handleOverlayClick = (e: MouseEvent) => {
     // Check if the click was on the overlay (not the modal content)
     if (e.target === e.currentTarget) {
@@ -58,7 +58,6 @@ export const Search: ComponentFunction = () => {
     }
   };
 
-  // Backup useEffect approach with different event and timing
   useEffect(() => {
     if (!showSearch) return;
     
@@ -70,7 +69,7 @@ export const Search: ComponentFunction = () => {
       }
     };
   
-    // Use 'click' instead of 'mousedown' and add delay
+    
     const timeoutId = setTimeout(() => {
       document.addEventListener('click', handleClickOutside, true);
     }, 200);
@@ -81,7 +80,7 @@ export const Search: ComponentFunction = () => {
     };
   }, [showSearch]);
 
-  // Function to handle search button click
+
   const onSearchInput = () => {
     setShowSearch(true);
   };

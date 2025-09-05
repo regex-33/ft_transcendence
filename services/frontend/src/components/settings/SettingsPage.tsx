@@ -1,5 +1,6 @@
 import { h } from '../../vdom/createElement';
 import { Header } from '../home/Header';
+import { useState } from '../../hooks/useState';
 import { ComponentFunction } from "../../types/global";
 import { useEffect } from '../../hooks/useEffect';
 import { SettingsLayout } from './SettingsLayout';
@@ -9,7 +10,50 @@ interface SettingsPageProps {
 }
 
 export const SettingsPage: ComponentFunction<SettingsPageProps> = (props) => {
-  const { defaultTab = 'matchHistory' } = props || {};
+  const { defaultTab = "matchHistory" } = props || {};
+
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch(
+          `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`data : ${data}`);
+        } 
+        else 
+        {
+          console.log(`1111111111111111111111111111111111111111111111111111data`);
+          window.history.pushState({}, '', `/login`);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        }
+      } 
+      catch (err) 
+      {
+        console.log(`22222222222222222222222222222222222data `);
+        window.history.pushState({}, '', `/login`);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      } 
+    };
+    checkAuth();
+  });
+
+  // if (loading) {
+  //   return <div className="text-white p-4">Checking authentication...</div>;
+  // }
+
+  // if (!authenticated) {
+  //   return <div />; // redirecting already
+  // }
 
   return (
     <div
