@@ -96,9 +96,12 @@ const getPendingFriends = async (request, reply) => {
         ],
         attributes: ["id", "username", "avatar", "online"]
       });
+      let new_user = user.toJSON();
       return {
-        ...user.toJSON(),
-        online: user.sessions?.filter(session => session.counter > 0).length > 0
+        id: new_user.id,
+        username: new_user.username,
+        avatar: new_user.avatar,
+        online: new_user.sessions?.filter(session => session.counter > 0).length > 0
       };
     }));
     fillObject(

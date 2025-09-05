@@ -88,20 +88,27 @@
                 'email': 'd@f7',
                 'password': '12345678'
             });
+            await end({
+                "username": 'aghlimi5',
+                'email': 'd@f7d',
+                'password': '12345678'
+            });
 
             await login('aghlimi1');
-            await addfriend('aghlimi2');
             await addfriend('aghlimi3');
-            await addfriend('aghlimi4');
+            await addfriend('aghlimi5');
+            // await addfriend('aghlimi4');
             await login('aghlimi2');
             await accept('aghlimi1');
-            await login('aghlimi3');
-            await accept('aghlimi1');
+            // await login('aghlimi3');
+            // await accept('aghlimi1');
             await login('aghlimi4');
-            // await addfriend('aghlimi1');
+            await addfriend('aghlimi1');
+            // await accept('aghlimi1');
+            await login('aghlimi5');
             await accept('aghlimi1');
             await login('aghlimi1');
-            // await block('aghlimi2');
+            await block('aghlimi2');
         }
         name().then().catch();
     </script>
