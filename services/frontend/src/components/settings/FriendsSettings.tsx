@@ -47,11 +47,25 @@ export const FriendsSettings: ComponentFunction = () => {
     if (friend.status === "accepted") {
       return (
         <div className="flex gap-2">
-          <button className="flex items-center justify-center gap-2 bg-blue-500 text-white px-4 py-1 rounded-full h-[28px] hover:bg-blue-600 transition">
+          <button className="flex items-center justify-center gap-2
+           bg-blue-500 text-white px-4 py-1 rounded-full h-[28px]
+            hover:bg-blue-600 transition
+              rounded-tr-md
+              rounded-bl-md
+              rounded-tl-xl 
+              rounded-br-xl
+            ">
             <i className="fa-solid fa-user-xmark text-sm"></i>
             Unfriend
           </button>
-          <button className="flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-1 rounded-full h-[28px] hover:bg-red-600 transition">
+          <button className="flex items-center justify-center gap-2
+           bg-red-500 text-white px-4 py-1 rounded-full h-[28px]
+            hover:bg-red-600 transition
+              rounded-tr-md
+              rounded-bl-md
+              rounded-tl-xl 
+              rounded-br-xl
+            ">
             <i className="fa-solid fa-ban text-sm"></i>
             Block
           </button>
@@ -60,11 +74,26 @@ export const FriendsSettings: ComponentFunction = () => {
     } else if (friend.status === "pending") {
       return (
         <div className="flex gap-2">
-          <button className="flex items-center justify-center gap-2 bg-green-500 text-white px-4 py-1 rounded-full h-[28px] hover:bg-green-600 transition">
+          <button className="flex items-center justify-center gap-2
+           bg-green-500 text-white px-4 py-1 rounded-full 
+           h-[28px] hover:bg-green-600 transition
+              rounded-tr-md
+              rounded-bl-md
+              rounded-tl-xl 
+              rounded-br-xl
+           ">
             <i className="fa-solid fa-check text-sm"></i>
             Accept
           </button>
-          <button className="flex items-center justify-center gap-2 bg-cyan-500 text-white px-4 py-1 rounded-full h-[28px] hover:bg-cyan-600 transition">
+          <button className="flex items-center
+           justify-center gap-2 bg-cyan-500
+            text-white px-4 py-1 rounded-full h-[28px]
+             hover:bg-cyan-600 transition
+              rounded-tr-md
+              rounded-bl-md
+              rounded-tl-xl 
+              rounded-br-xl
+             ">
             <i className="fa-solid fa-xmark text-sm"></i>
             Decline
           </button>
@@ -72,10 +101,21 @@ export const FriendsSettings: ComponentFunction = () => {
       );
     } else if (friend.status === "blocked") {
       return (
-        <button className="flex items-center justify-center gap-2 bg-gray-500 text-white px-4 py-1 rounded-full h-[28px] hover:bg-gray-600 transition">
-          <i className="fa-solid fa-user-xmark text-sm"></i>
-          Unblock
-        </button>
+        <button className="flex items-center justify-center gap-1.5
+        bg-[#55646C] hover:bg-[#445257]
+        text-white text-sm font-medium
+        px-3 py-1 h-[28px]
+        rounded-tr-md
+        rounded-bl-md
+          rounded-tl-xl 
+          rounded-br-xl
+        ">
+        <i className="fa-solid fa-user-xmark text-xs"></i>
+        Unblock
+      </button>
+      // rounded-tr-lg
+      // rounded-bl-lg
+
       );
     }
     
