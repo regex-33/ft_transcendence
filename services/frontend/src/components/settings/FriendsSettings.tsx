@@ -14,16 +14,7 @@ type Friend = {
 const friends: Friend[] = [
      { id: 1, name: 'yous', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'blocked' },
     { id: 2, name: 'ssef', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'accepted' },
-    { id: 3, name: 'ANDE', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'blocked' },
-    { id: 4, name: 'GUY', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'pending' },
-    { id: 5, name: 'LUN', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'accepted' },
-    { id: 6, name: 'ANDE', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'pending' },
-    { id: 7, name: 'SARA', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'accepted' },
-    { id: 8, name: 'MIKE', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'blocked' },
-    { id: 9, name: 'EMMA', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'pending' },
-    { id: 10, name: 'ALEX', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'accepted' },
-    { id: 11, name: 'ZARA', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'pending' },
-    { id: 12, name: 'NOAH', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'blocked' }
+    { id: 3, name: 'GUY', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'pending' },
 ];
 function chunk<T>(arr: T[], size: number): T[][] {
   return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
@@ -53,30 +44,42 @@ export const FriendsSettings: ComponentFunction = () => {
     }
   }
   function getActionButtons(friend: { id: number; name: string; avatar: string; status: string; }) {
-    if (friend.status === 'accepted') {
-      return (
-        <button className="bg-red-500  bg-opacity-75 text-sm text-white px-3 py-1 w-24 h-[28px] rounded-full hover:bg-red-600 transition">
-          Block
-        </button>
-      );
-    } else if (friend.status === 'pending') {
+    if (friend.status === "accepted") {
       return (
         <div className="flex gap-2">
-          <button className="bg-[#4BC98A] bg-opacity-75 text-white px-3 py-1 rounded-full w-24 h-[28px]  hover:bg-[#4BC98A] transition">
+          <button className="flex items-center justify-center gap-2 bg-blue-500 text-white px-4 py-1 rounded-full h-[28px] hover:bg-blue-600 transition">
+            <i className="fa-solid fa-user-xmark text-sm"></i>
+            Unfriend
+          </button>
+          <button className="flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-1 rounded-full h-[28px] hover:bg-red-600 transition">
+            <i className="fa-solid fa-ban text-sm"></i>
+            Block
+          </button>
+        </div>
+      );
+    } else if (friend.status === "pending") {
+      return (
+        <div className="flex gap-2">
+          <button className="flex items-center justify-center gap-2 bg-green-500 text-white px-4 py-1 rounded-full h-[28px] hover:bg-green-600 transition">
+            <i className="fa-solid fa-check text-sm"></i>
             Accept
           </button>
-          <button className="bg-[#39A4C7] bg-opacity-75 text-white px-3 py-1 rounded-full w-24 h-[28px]  hover:bg-gray-500 transition">
+          <button className="flex items-center justify-center gap-2 bg-cyan-500 text-white px-4 py-1 rounded-full h-[28px] hover:bg-cyan-600 transition">
+            <i className="fa-solid fa-xmark text-sm"></i>
             Decline
           </button>
         </div>
       );
-    } else if (friend.status === 'blocked') {
+    } else if (friend.status === "blocked") {
       return (
-        <button className="bg-[#858895] bg-opacity-75 text-white px-3 py-1 rounded-full w-24 h-[28px]  hover:bg-blue-600 transition">
+        <button className="flex items-center justify-center gap-2 bg-gray-500 text-white px-4 py-1 rounded-full h-[28px] hover:bg-gray-600 transition">
+          <i className="fa-solid fa-user-xmark text-sm"></i>
           Unblock
         </button>
       );
     }
+    
+       
     return null;
   }
   return (
@@ -133,9 +136,9 @@ export const FriendsSettings: ComponentFunction = () => {
                   </div>
               <h3 className="text-lg font-bold text-white mb-2">{friend.name}</h3>
               <div className="flex flex-row items-center gap-2">
-                <button className={`text-sm text-white px-3 py-1 bg-opacity-75 rounded-full w-24 h-[28px] ${getStatusColor(friend.status)}`}>
+                {/* <button className={`text-sm text-white px-3 py-1 bg-opacity-75 rounded-full w-24 h-[28px] ${getStatusColor(friend.status)}`}>
                   {friend.status}
-                </button>
+                </button> */}
                 <div className="">
                   {getActionButtons(friend)}
                 </div>
