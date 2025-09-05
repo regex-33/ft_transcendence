@@ -1,10 +1,11 @@
 const fastify = require("fastify")();
 const db = require("./models");
-const {v4: uuidv4} = require("uuid");
+const { v4: uuidv4 } = require("uuid");
 const path = require("path");
 const fastifyStatic = require("@fastify/static");
-const { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes , NotificationRoutes } = require("./Router");
+const { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes, NotificationRoutes } = require("./Router");
 const logger = require("./util/logger_request");
+const websocket = require('@fastify/websocket')
 const { log } = require("./util/logger");
 fastify.addHook("onResponse", (req, res, done) => {
   logger(req, res);
@@ -19,10 +20,10 @@ fastify.addHook("onResponse", (req, res, done) => {
   });
   done();
 });
-fastify.addHook("onRequest", (req,res,done) => {
+fastify.addHook("onRequest", (req, res, done) => {
   req.object = {
     startTime: Date.now(),
-    request:{
+    request: {
       method: req.method,
       url: req.url,
       ip: req.ip,
@@ -35,8 +36,9 @@ const fastifyCookie = require('@fastify/cookie');
 
 fastify.register(fastifyCookie);
 fastify.register(require("@fastify/multipart"));
-
-fastify.register(UserRoutes, { prefix: "/api/users" });
+fastify.register(websocket).then(() => {
+  fastify.register(UserRoutes, { prefix: "/api/users" });
+})
 fastify.register(FriendRoutes, { prefix: "/api/friends" });
 fastify.register(OauthRoutes, { prefix: "/api/auth" });
 fastify.register(checkCodeRoutes, { prefix: "/api" });
@@ -54,17 +56,17 @@ const HOST = process.env.HOST || "0.0.0.0";
 
 function connect() {
   db.sequelize
-  .sync()
-  .then(() => {
+    .sync()
+    .then(() => {
       console.log("Database connected successfully");
       return fastify.listen({ port: PORT, host: HOST });
     })
     .then(() => {
       console.log(`Server is running on port ${PORT}`);
     })
-    // .catch((err) => {
-    //   console.error('unable to connect to database:', err);
-      
-    // });
+  // .catch((err) => {
+  //   console.error('unable to connect to database:', err);
+
+  // });
 }
 connect();

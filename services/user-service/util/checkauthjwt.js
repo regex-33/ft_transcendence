@@ -1,17 +1,18 @@
 const jwt = require("./jwt");
 const Cookie = require("./cookie");
 const { fillObject } = require("./logger");
+const db = require('../models');
 const checkAuthJWT = async (req, reply) => {
-  const token = req.cookies?.token;
+  const { token, session_id } = req.cookies;
 
-  if (!token) {
-    fillObject(req, "WARNING", "create2fa", "unknown", false, "no token", req.Cookies?.token || null);
+  if (!token || !session_id) {
+    fillObject(req, "WARNING", "checkjwt", "unknown", false, "no token", req.Cookies?.token || null);
     return { check: reply.status(401).send({ error: "No token provided" }) };
   }
-  return await jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
 
+  return await jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
     if (err) {
-      fillObject(req, "WARNING", "create2fa", "unknown", false, err, req.Cookies?.token || null);
+      fillObject(req, "WARNING", "checkjwt", "unknown", false, err, req.Cookies?.token || null);
 
       return {
         check: reply.status(401).send(
@@ -20,10 +21,26 @@ const checkAuthJWT = async (req, reply) => {
       };
     }
     req.user = decoded.payload;
-    if (decoded.token) {
-      return { check: Cookie(reply, decoded.token) };
+    const session = await db.Session.findOne({
+      where: {
+        SessionId: session_id,
+        userId: decoded.payload.id
+      }
+    });
+    if (!session) {
+      fillObject(req, "WARNING", "checkjwt", "unknown", false, err, req.Cookies?.token || null);
+
+      return {
+        check: reply.status(401).send(
+          { error: "Invalid session id" }
+        )
+      };
     }
-    return { payload: decoded.payload };
+    if (decoded.token) {
+      return { check: Cookie(reply, decoded.token, decoded.payload.id) };
+    }
+
+    return { payload: decoded.payload ,session};
   });
 }
 

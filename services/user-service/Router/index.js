@@ -20,7 +20,7 @@ const {
 async function UserRoutes(fastify) {
   fastify.post("/register", register);
   fastify.post("/login", login);
-  fastify.post("/logout", logout);
+  fastify.get("/logout", logout);
   fastify.put("/update", update);
   fastify.put("/update/password", updatePassword);
   fastify.get("/:username", getbyusername);
@@ -29,6 +29,7 @@ async function UserRoutes(fastify) {
   fastify.get("/get/me", getme);
   fastify.get("/online/:username", online.isOnline);
   fastify.put("/online", online.setOnline);
+  fastify.get('/online-tracker',{websocket:true},online.onlineTracker)
 }
 
 async function FriendRoutes(fastify) {

@@ -81,7 +81,7 @@ const login = async (request, reply) => {
         return reply.status(500).send({ error: "Failed to generate token." });
       }
       fillObject(request, "INFO", "login", user.id, true, "", request.cookies?.token || null);
-      return Cookies(reply, token).redirect(process.env.HOME_PAGE);
+      return Cookies(reply, token, user.id).redirect(process.env.HOME_PAGE);
     } catch (err) {
       fillObject(request, "ERROR", "login", "unknown", false, "Error during login", request.cookies?.token || null);
       console.error("Error during login:", err);

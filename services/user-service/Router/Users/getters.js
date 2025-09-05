@@ -1,5 +1,4 @@
 const db = require("../../models");
-const jsonwebtoken = require("../../util/jwt");
 const checkAuthJWT = require("../../util/checkauthjwt");
 const { fillObject } = require("../../util/logger");
 
@@ -25,7 +24,11 @@ const getbyusername = async (request, reply) => {
 
   try {
 
-    const user = await db.User.findOne({ where: { username } });
+    // const user = await db.User.findOne({
+    //   where: { username },
+    //   include: [{ model: db.Session, as: 'sessions' }]
+    // });
+    return reply.send({"user":"s"});
     if (!user || !user.valid) {
       fillObject(request, "WARNING", "getbyusername", "unknown", false, "User not found.", request.cookies?.token || null);
       return reply.status(404).send({ error: "User not found." });
