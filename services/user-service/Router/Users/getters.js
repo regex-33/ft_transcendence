@@ -7,7 +7,7 @@ const { fillObject } = require("../../util/logger");
    * get user by username
    */
 const getbyusername = async (request, reply) => {
-  const {check} = checkAuthJWT(request, reply);
+  const { check } = await checkAuthJWT(request, reply);
   if (check) return check;
 
   if (!request.params || !request.params.username) {
@@ -17,7 +17,7 @@ const getbyusername = async (request, reply) => {
 
   const { username } = request.params;
 
-  if (!/^[a-zA-Z_]+$/.test(username)) {
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) {
     fillObject(request, "WARNING", "getbyusername", "unknown", false, "Invalid username format.", request.cookies?.token || null);
     return reply.status(400).send({ error: "Invalid username format." });
   }
@@ -56,8 +56,8 @@ const getbyusername = async (request, reply) => {
    * return user obj,
    * get user by id
    */
-const getbyId = (request, reply) => {
-  const check = checkAuthJWT(request, reply);
+const getbyId = async (request, reply) => {
+  const { check } = await checkAuthJWT(request, reply);
   if (check) return check;
   let { id } = request.params;
   if (!id) {
@@ -69,30 +69,29 @@ const getbyId = (request, reply) => {
     fillObject(request, "WARNING", "getbyId", "unknown", false, "Invalid user ID format.", request.cookies?.token || null);
     return reply.status(400).send({ error: "Invalid user ID format." });
   }
-
-  db.User.findByPk(id, { include: [{ model: db.Session, as: 'sessions' }] })
-    .then((user) => {
-      if (!user || !user.valid) {
-        fillObject(request, "WARNING", "getbyId", id, false, "User not found.", request.cookies?.token || null);
-        return reply.status(404).send({ error: "User not found." });
-      }
-      fillObject(request, "INFO", "getbyId", user.id, true, "", request.cookies?.token || null);
-      return reply.send({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar,
-        bio: user.bio,
-        online: user.sessions.filter(session => session.counter > 0).length > 0,
-        location: user.location,
-        birthday: user.birthday
-      });
-    })
-    .catch((err) => {
-      fillObject(request, "ERROR", "getbyId", id, false, err.message, request.cookies?.token || null);
-      console.error("Error fetching user by ID:", err);
-      reply.status(500).send({ error: "Internal server error." });
+  try {
+    const user = await db.User.findByPk(id, { include: [{ model: db.Session, as: 'sessions' }] });
+    if (!user || !user.valid) {
+      fillObject(request, "WARNING", "getbyId", id, false, "User not found.", request.cookies?.token || null);
+      return reply.status(404).send({ error: "User not found." });
+    }
+    fillObject(request, "INFO", "getbyId", user.id, true, "", request.cookies?.token || null);
+    return reply.send({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+      bio: user.bio,
+      online: user.sessions.filter(session => session.counter > 0).length > 0,
+      location: user.location,
+      birthday: user.birthday
     });
+  }
+  catch (err) {
+    fillObject(request, "ERROR", "getbyId", id, false, err.message, request.cookies?.token || null);
+    console.error("Error fetching user by ID:", err);
+    reply.status(500).send({ error: "Internal server error." });
+  };
 };
 
 
