@@ -7,7 +7,7 @@ const { fillObject } = require("../../util/logger");
    * get user by username
    */
 const getbyusername = async (request, reply) => {
-  const check = checkAuthJWT(request, reply);
+  const {check} = checkAuthJWT(request, reply);
   if (check) return check;
 
   if (!request.params || !request.params.username) {
@@ -24,11 +24,10 @@ const getbyusername = async (request, reply) => {
 
   try {
 
-    // const user = await db.User.findOne({
-    //   where: { username },
-    //   include: [{ model: db.Session, as: 'sessions' }]
-    // });
-    return reply.send({"user":"s"});
+    const user = await db.User.findOne({
+      where: { username },
+      include: [{ model: db.Session, as: 'sessions' }]
+    });
     if (!user || !user.valid) {
       fillObject(request, "WARNING", "getbyusername", "unknown", false, "User not found.", request.cookies?.token || null);
       return reply.status(404).send({ error: "User not found." });
@@ -40,7 +39,7 @@ const getbyusername = async (request, reply) => {
       email: user.email,
       avatar: user.avatar,
       bio: user.bio,
-      online: !!user.online,
+      online: user.sessions.filter(session => session.counter > 0).length > 0,
       location: user.location,
       birthday: user.birthday
     });
@@ -71,7 +70,7 @@ const getbyId = (request, reply) => {
     return reply.status(400).send({ error: "Invalid user ID format." });
   }
 
-  db.User.findByPk(id)
+  db.User.findByPk(id, { include: [{ model: db.Session, as: 'sessions' }] })
     .then((user) => {
       if (!user || !user.valid) {
         fillObject(request, "WARNING", "getbyId", id, false, "User not found.", request.cookies?.token || null);
@@ -84,7 +83,7 @@ const getbyId = (request, reply) => {
         email: user.email,
         avatar: user.avatar,
         bio: user.bio,
-        online: !!user.online,
+        online: user.sessions.filter(session => session.counter > 0).length > 0,
         location: user.location,
         birthday: user.birthday
       });
@@ -104,7 +103,7 @@ const getme = async (request, reply) => {
   request.user = payload;
   let { id } = request.user;
   try {
-    const user = await db.User.findByPk(id)
+    const user = await db.User.findByPk(id, { include: [{ model: db.Session, as: 'sessions' }] });
     if (!user || !user.valid) {
       fillObject(request, "WARNING", "getbyId", id, false, "User not found.", request.cookies?.token || null);
       return reply.status(404).send({ error: "User not found." });
@@ -116,7 +115,7 @@ const getme = async (request, reply) => {
       email: user.email,
       avatar: user.avatar,
       bio: user.bio,
-      online: !!user.online,
+      online: user.sessions.filter(session => session.counter > 0).length > 0,
       location: user.location,
       birthday: user.birthday
     });
@@ -136,7 +135,7 @@ const getUsers = async (request, reply) => {
   const { check } = await checkAuthJWT(request, reply);
   if (check) return check;
   try {
-    const users = await db.User.findAll();
+    const users = await db.User.findAll({ include: [{ model: db.Session, as: 'sessions' }] });
     if (!users || users.length === 0) {
       fillObject(request, "WARNING", "getUsers", "unknown", false, "No users found.", request.cookies?.token || null);
       return reply.status(404).send({ error: "No users found." });
@@ -151,7 +150,7 @@ const getUsers = async (request, reply) => {
             email: user.email,
             avatar: user.avatar,
             bio: user.bio,
-            online: !!user.online,
+            online: user.sessions.filter(session => session.counter > 0).length > 0,
             location: user.location,
             birthday: user.birthday
           });
@@ -168,5 +167,6 @@ const getUsers = async (request, reply) => {
 module.exports = {
   getbyusername,
   getbyId,
-  getUsers, getme
+  getUsers,
+  getme
 };

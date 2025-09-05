@@ -19,6 +19,11 @@ const getFriends = async (request, reply) => {
           model: db.User,
           as: "other",
           attributes: ["id", "username", "avatar", "online"],
+          include: [{
+            model: db.Session,
+            as: 'sessions',
+            attributes: ['counter']
+          }],
           through: {
             where: { status: "friend" },
           },
@@ -40,7 +45,7 @@ const getFriends = async (request, reply) => {
         id: friend.id,
         username: friend.username,
         avatar: friend.avatar,
-        online: !!friend.online
+        online: friend.sessions?.filter(session => session.counter > 0).length > 0
       });
     });
     console.log("Mapped friends:", new_friends);
@@ -82,11 +87,18 @@ const getPendingFriends = async (request, reply) => {
         where: {
           id: relation.userId
         },
+        include: [
+          {
+            model: db.Session,
+            as: 'sessions',
+            attributes: ['counter']
+          }
+        ],
         attributes: ["id", "username", "avatar", "online"]
       });
       return {
         ...user.toJSON(),
-        online: !!user.online
+        online: user.sessions?.filter(session => session.counter > 0).length > 0
       };
     }));
     fillObject(
@@ -132,10 +144,16 @@ const getRequestedFriends = async (request, reply) => {
           model: db.User,
           as: "other",
           attributes: ["id", "username", "avatar", "online"],
+          include: [{
+            model: db.Session,
+            as: 'sessions',
+            attributes: ['counter']
+          }],
           through: {
             where: { status: "pending", userId },
           },
         },
+
       ],
     });
     fillObject(
@@ -152,7 +170,7 @@ const getRequestedFriends = async (request, reply) => {
         id: friend.id,
         username: friend.username,
         avatar: friend.avatar,
-        online: !!friend.online
+        online: friend.sessions?.filter(session => session.counter > 0).length > 0
       });
     });
     reply.send(new_friends || { new_friends: [] });
@@ -188,6 +206,11 @@ const getBlockedUsers = async (request, reply) => {
           model: db.User,
           as: "other",
           attributes: ["id", "username", "avatar", "online"],
+          include: [{
+            model: db.Session,
+            as: 'sessions',
+            attributes: ['counter']
+          }],
           through: {
             where: { status: "blocked", userId: userId },
           },
@@ -208,7 +231,7 @@ const getBlockedUsers = async (request, reply) => {
         id: friend.id,
         username: friend.username,
         avatar: friend.avatar,
-        online: !!friend.online
+        online: friend.sessions?.filter(session => session.counter > 0).length > 0
       });
     });
     reply.send(new_friends || { new_friends: [] });

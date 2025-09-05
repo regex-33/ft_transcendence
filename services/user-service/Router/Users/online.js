@@ -68,10 +68,15 @@ async function onlineTracker(ws, req) {
             console.log("No session or payload");
             return;
         };
-        const internalPing = setInterval(() => {
-            console.log("Pinging WebSocket...");
+        const internalPing = setInterval(async () => {
+            try {
+                await session.reload();
+            }
+            catch (err) {
+                ws.terminate();
+                return;
+            }
             if (!active) {
-                console.log("No pong received, terminating WebSocket.");
                 ws.terminate();
                 return;
             }
@@ -81,9 +86,8 @@ async function onlineTracker(ws, req) {
             } catch (err) {
                 console.log("WebSocket ping error:", err);
             }
-        }, 1000);
+        }, 30000);
         ws.on("pong", () => {
-            console.log("Pong received, connection is alive.");
             active = true;
         });
         ws.on("close", async () => {
