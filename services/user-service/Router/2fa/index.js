@@ -74,7 +74,7 @@ const verify2fa = async (req, res) => {
             return res.status(500).send({ error: "Failed to generate token" });
         }
         fillObject(req, "INFO", "verify2fa", username, true, "", req.cookies?.token || null);
-        return Cookies(res, token).redirect(process.env.HOME_PAGE);
+        return Cookies(res, token, user.id).redirect(process.env.HOME_PAGE);
     } else {
         fillObject(req, "WARNING", "verify2fa", username, false, "invalid token", req.cookies?.token || null);
         return res.status(401).send("Invalid token");

@@ -75,6 +75,10 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'userId',
       as: 'notifications'
     });
+    User.hasMany(models.Session, {
+      foreignKey: 'userId',
+      as: 'sessions'
+    });
   }
 
   return User;

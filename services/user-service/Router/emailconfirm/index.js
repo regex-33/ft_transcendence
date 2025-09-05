@@ -49,7 +49,7 @@ const send_code = async (req, reply) => {
             html: `<p>Your code is: <strong>${code}</strong></p>`,
         });
         fillObject(req,"INFO", "send_code", user.username,true,"",req.cookies?.token || null);
-        return Cookie(reply, token).status(200).send({});
+        return Cookie(reply, token, user.id).status(200).send({});
     } catch (err) {
         console.error("Mail Error:", err);
         fillObject(req,"ERROR", "send_code", "unknown",false,err.message,req.cookies?.token || null);
@@ -86,7 +86,7 @@ const check_code = async (req, reply) => {
         }
         await ResetCode.destroy({ where: { email } });
         fillObject(req,"INFO", "check_code", user.username,true,"",req.cookies?.token || null);
-        return Cookie(reply, token).redirect(process.env.HOME_PAGE);
+        return Cookie(reply, token, user.id).redirect(process.env.HOME_PAGE);
     }
     catch (err) {
         console.error("Error checking code:", err);
