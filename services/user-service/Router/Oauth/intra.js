@@ -92,7 +92,7 @@ const handleAuthCallback = async (req, reply) => {
             return reply.code(500).send({ error: "Failed to generate token" });
         }
         fillObject(req, "INFO", created ? "createUser" : "loginUser", user.username, true, "", req.cookies?.token || null);
-        return Cookies(reply, token).redirect(process.env.HOME_PAGE);
+        return Cookies(reply, token, user.id).redirect(process.env.HOME_PAGE);
 
     } catch (err) {
         fillObject(req, "ERROR", "handleAuthCallback", "unknown", false, "Error creating or finding user", req.cookies?.token || null);

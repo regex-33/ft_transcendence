@@ -97,7 +97,8 @@ async function createUser(request, reply, userInfo) {
       return reply.status(500).send({ error: "Error generating token" });
     }
     fillObject(request, "INFO", "register", user.id, true, "", request.cookies?.token || null);
-    return Cookies(reply, token).redirect(process.env.HOME_PAGE);
+
+    return Cookies(reply, token, user.id).redirect(process.env.HOME_PAGE);
   } catch (error) {
     fillObject(request, "ERROR", "register", "unknown", false, error.message, request.cookies?.token || null);
     console.log("Error creating user:", error.message);

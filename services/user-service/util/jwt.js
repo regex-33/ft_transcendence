@@ -29,6 +29,9 @@ const sign = (payload, secret, options = {}) => {
 };
 
 const verify = async (token, secret, callback) => {
+    if (!token) {
+        return await callback("invalid token", payload);
+    }
     const [headerEncoded, payloadEncoded, signature] = token.split(".");
     const data = `${headerEncoded}.${payloadEncoded}`;
     let new_token;
@@ -42,8 +45,7 @@ const verify = async (token, secret, callback) => {
 
     const payload = JSON.parse(base64urlDecode(payloadEncoded));
     if (signature !== expectedSignature) {
-        await callback("invalid token", payload);
-        return;
+        return await callback("invalid token", payload);
     }
 
     const header = JSON.parse(base64urlDecode(headerEncoded));
