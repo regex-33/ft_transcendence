@@ -11,9 +11,8 @@ export const Header: ComponentFunction = () => {
   const handleLogout = async () => {
     try {
       await fetch(
-        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/logout`,
-        {
-          method: "POST", 
+        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/logout`,
+        { 
           credentials: "include",
         }
       );

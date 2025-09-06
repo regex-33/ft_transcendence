@@ -10,7 +10,13 @@ type Friend = {
   avatar: string;
   status: 'accepted' | 'pending' | 'blocked';
 };
-
+/*
+get /api/friends/friends
+get /api/friends/pending-friends
+get /api/friends/blocked-users
+post /api/friends/actions {username,accept/cancel/block/unblock}
+post /api/friends/add {username}
+*/
 const friends: Friend[] = [
      { id: 1, name: 'yous', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'blocked' },
     { id: 2, name: 'ssef', avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", status: 'accepted' },

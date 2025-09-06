@@ -6,6 +6,7 @@ import { useEffect } from '../../hooks/useEffect';
 
 
 export const Home: ComponentFunction = () => {
+
   useEffect(() => {
     const checkAuth = async () => {
       try {

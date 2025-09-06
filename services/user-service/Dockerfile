@@ -7,7 +7,8 @@ COPY package*.json ./
 
 COPY . .
 
-RUN npm i nodemon -g
+RUN npm i nodemon -g 
+RUN npm i @fastify/websocket
 
 RUN npm install
 
