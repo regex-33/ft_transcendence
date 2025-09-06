@@ -11,7 +11,7 @@ interface SettingsPageProps {
 
 export const SettingsPage: ComponentFunction<SettingsPageProps> = (props) => {
   const { defaultTab = "matchHistory" } = props || {};
-
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -19,33 +19,30 @@ export const SettingsPage: ComponentFunction<SettingsPageProps> = (props) => {
         const response = await fetch(
           `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
           {
-            method: 'GET',
+            method: "GET",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
           }
         );
 
-        if (response.ok) {
-          const data = await response.json();
-          console.log(`data : ${data}`);
+        if (response.ok) 
+        {
+          setIsAuthenticated(true);
         } 
         else 
         {
-          console.log(`1111111111111111111111111111111111111111111111111111data`);
-          window.history.pushState({}, '', `/login`);
-          window.dispatchEvent(new PopStateEvent('popstate'));
+          window.history.pushState({}, "", `/login`);
+          window.dispatchEvent(new PopStateEvent("popstate"));
         }
-      } 
-      catch (err) 
-      {
-        console.log(`22222222222222222222222222222222222data `);
-        window.history.pushState({}, '', `/login`);
-        window.dispatchEvent(new PopStateEvent('popstate'));
+      } catch (err) {
+        window.history.pushState({}, "", `/login`);
+        window.dispatchEvent(new PopStateEvent("popstate"));
       } 
     };
+
     checkAuth();
-  });
+  }, []);
 
   // if (loading) {
   //   return <div className="text-white p-4">Checking authentication...</div>;
@@ -54,7 +51,8 @@ export const SettingsPage: ComponentFunction<SettingsPageProps> = (props) => {
   // if (!authenticated) {
   //   return <div />; // redirecting already
   // }
-
+  if (isAuthenticated)
+    {
   return (
     <div
       className="relative flex flex-col overflow-hidden h-screen w-screen"
@@ -75,6 +73,9 @@ export const SettingsPage: ComponentFunction<SettingsPageProps> = (props) => {
       </div>
     </div>
   );
+}
+
+return <div></div>;
 };
 
 {/* 
