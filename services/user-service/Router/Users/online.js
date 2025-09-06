@@ -54,6 +54,11 @@ async function onlineTracker(ws, req) {
 
     try {
         const { payload } = await jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => { return decoded });
+        if(!payload)
+        {
+            ws.close();
+            return;
+        }
         const session = await db.Session.findOne({ where: { SessionId: session_id, userId: payload.id } });
         let active = true;
         if (!session) {
