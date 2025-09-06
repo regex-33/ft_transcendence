@@ -67,7 +67,7 @@ export const Sidebar: ComponentFunction = () => {
       <div className="w-[310px] h-[740px] bg-[#5E9CAB] rounded-xl bg-opacity-35 text-white p-3 shadow-lg relative ml-9 mt-10">
         <div className="flex flex-col items-center text-center w-full pr-20">
           <div className="flex items-center justify-center gap-2 w-full">
-            <div className="relative w-[85px] h-[85px] flex-shrink-0">
+            <div className="relative w-[100px] h-[100px] flex-shrink-0">
               <img
                 src="/images/home-assests/cir-online.svg"
                 className="absolute inset-0 w-full h-full z-0"
@@ -75,7 +75,7 @@ export const Sidebar: ComponentFunction = () => {
               />
               <img
                 src={profileData.avatar}
-                className="absolute inset-[10px] w-16 h-16 rounded-full object-cover z-10"
+                className="absolute inset-[11px] w-20 h-20 rounded-full object-cover z-10"
                 alt="Avatar"
                 onError={(e: { target: HTMLImageElement; }) => {
                   (e.target as HTMLImageElement).src = "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg";
@@ -86,7 +86,7 @@ export const Sidebar: ComponentFunction = () => {
               {isLoading ? 'Loading...' : profileData.name}
             </h2>
           </div>
-          <button
+          {/* <button
             className="mt-2 flex items-center justify-between px-6 py-1 w-[180px] text-white bg-no-repeat bg-contain bg-center"
             style={{ backgroundImage: "url('/images/setting-assests/bg-add-friends.svg')" }}
           >
@@ -97,10 +97,10 @@ export const Sidebar: ComponentFunction = () => {
               className="w-8 h-8 ml-4 transition-transform duration-200 hover:scale-95"
               
             />
-          </button>
+          </button> */}
         </div>
         
-        <div className="mt-16 space-y-4 pl-7">
+        <div className="mt-8 space-y-4 pl-7">
           <h3 className="text-lg font-bold mb-2">About me</h3>
           {isLoading ? (
             <div className="animate-pulse">

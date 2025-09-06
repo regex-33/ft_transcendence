@@ -64,7 +64,7 @@ export const FriendsSettings: ComponentFunction = () => {
 
 
   const handleFriendAction = async (username: string, action: 'accept' | 'cancel' | 'block' | 'unblock') => {
-    console.log(`usernameeeeeeeeeeeeeeeeeee`, username);
+    // console.log(`usernameeeeeeeeeeeeeeeeeee`, username);
     try {
       const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
         method: 'POST',
@@ -138,29 +138,27 @@ export const FriendsSettings: ComponentFunction = () => {
         <div className="flex gap-2">
           <button 
             onClick={() => handleFriendAction(friend.username, 'cancel')}
-            className="flex items-center justify-center gap-2
-             bg-blue-500 text-white px-4 py-1 rounded-full h-[28px]
-              hover:bg-blue-600 transition
-                rounded-tr-md
-                rounded-bl-md
-                rounded-tl-xl 
-                rounded-br-xl
-              ">
+            className="
+            flex items-center gap-2 px-4 h-[30px]
+            bg-[url('/images/setting-assests/bg-unfriend.svg')]
+            bg-no-repeat bg-center bg-contain
+            text-white font-semibold text-sm
+            transition-transform duration-200 hover:scale-95 
+          ">
             <i className="fa-solid fa-user-xmark text-sm"></i>
-            Unfriend
+            <span>Unfriend</span>
           </button>
           <button 
             onClick={() => handleFriendAction(friend.username, 'block')}
-            className="flex items-center justify-center gap-2
-             bg-red-500 text-white px-4 py-1 rounded-full h-[28px]
-              hover:bg-red-600 transition
-                rounded-tr-md
-                rounded-bl-md
-                rounded-tl-xl 
-                rounded-br-xl
-              ">
+            className="
+            flex items-center gap-2 px-4 h-[30px]
+            bg-[url('/images/setting-assests/bg-block.svg')]
+            bg-no-repeat bg-center bg-contain
+            text-white font-semibold text-sm
+            transition-transform duration-200 hover:scale-95 
+          ">
             <i className="fa-solid fa-ban text-sm"></i>
-            Block
+            <span>Block</span>
           </button>
         </div>
       );
@@ -169,30 +167,27 @@ export const FriendsSettings: ComponentFunction = () => {
         <div className="flex gap-2">
           <button 
             onClick={() => handleFriendAction(friend.username, 'accept')}
-            className="flex items-center justify-center gap-2
-             bg-green-500 text-white px-4 py-1 rounded-full 
-             h-[28px] hover:bg-green-600 transition
-                rounded-tr-md
-                rounded-bl-md
-                rounded-tl-xl 
-                rounded-br-xl
-             ">
+            className="
+            flex items-center gap-2 px-4 h-[30px]
+            bg-[url('/images/setting-assests/bg-accept.svg')]
+            bg-no-repeat bg-center bg-contain
+            text-white font-semibold text-sm
+            transition-transform duration-200 hover:scale-95 
+          ">
             <i className="fa-solid fa-check text-sm"></i>
-            Accept
+            <span>Accept</span>
           </button>
           <button 
             onClick={() => handleFriendAction(friend.username, 'cancel')}
-            className="flex items-center
-             justify-center gap-2 bg-cyan-500
-              text-white px-4 py-1 rounded-full h-[28px]
-               hover:bg-cyan-600 transition
-                rounded-tr-md
-                rounded-bl-md
-                rounded-tl-xl 
-                rounded-br-xl
-               ">
+            className="
+            flex items-center gap-2 px-4 h-[30px]
+            bg-[url('/images/setting-assests/bg-decline.svg')]
+            bg-no-repeat bg-center bg-contain
+            text-white font-semibold text-sm
+            transition-transform duration-200 hover:scale-95 
+          ">
             <i className="fa-solid fa-xmark text-sm"></i>
-            Decline
+            <span>Decline</span>
           </button>
         </div>
       );
@@ -200,17 +195,15 @@ export const FriendsSettings: ComponentFunction = () => {
       return (
         <button 
           onClick={() => handleFriendAction(friend.username, 'unblock')}
-          className="flex items-center justify-center gap-1.5
-          bg-[#55646C] hover:bg-[#445257]
-          text-white text-sm font-medium
-          px-3 py-1 h-[28px]
-          rounded-tr-md
-          rounded-bl-md
-            rounded-tl-xl 
-            rounded-br-xl
-          ">
+          className="
+          flex items-center gap-2 px-4 h-[30px]
+          bg-[url('/images/home-assests/bg-unbloc.svg')]
+          bg-no-repeat bg-center bg-contain
+          text-white font-semibold text-sm
+          transition-transform duration-200 hover:scale-95 
+        ">
           <i className="fa-solid fa-user-xmark text-xs"></i>
-          Unblock
+          <span>Unblock</span>
         </button>
       );
     }

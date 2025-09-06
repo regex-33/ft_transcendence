@@ -12,6 +12,7 @@ interface SettingsPageProps {
 export const SettingsPage: ComponentFunction<SettingsPageProps> = (props) => {
   const { defaultTab = "matchHistory" } = props || {};
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -38,15 +39,18 @@ export const SettingsPage: ComponentFunction<SettingsPageProps> = (props) => {
       } catch (err) {
         window.history.pushState({}, "", `/login`);
         window.dispatchEvent(new PopStateEvent("popstate"));
-      } 
+      }
+      finally {
+        setLoading(false);
+      }
     };
 
     checkAuth();
   }, []);
-
-  // if (loading) {
-  //   return <div className="text-white p-4">Checking authentication...</div>;
-  // }
+  
+  if (loading) {
+    return <div className="text-white p-4">Checking authentication...</div>;
+  }
 
   // if (!authenticated) {
   //   return <div />; // redirecting already
