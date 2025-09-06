@@ -52,6 +52,11 @@ const addFriend = async (request, reply) => {
       return reply.status(404).send({ error: "User not found." });
     }
     await user.addOther(friend);
+    await db.Notification.create({
+      userId: friend.id,
+      type: 'FRIEND_REQUEST',
+      notifierId: user.id
+    });
     return reply.status(201).send({
       message: "Friend added successfully",
     });

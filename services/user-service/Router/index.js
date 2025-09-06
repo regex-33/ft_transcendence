@@ -67,7 +67,7 @@ async function checksRoutes(fastify) {
 
 async function NotificationRoutes(fastify) {
   fastify.post("/create", createNotification);
-  fastify.get("/user/:username", getNotifications);
+  fastify.get("/", getNotifications);
 }
 
 module.exports = { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes, NotificationRoutes };

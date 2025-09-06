@@ -17,7 +17,7 @@ const createNotification = async (req, reply) => {
             const notification = await db.Notification.create({
                 userId,
                 type,
-                id
+                notifierId: id
             });
             return reply.status(201).send(notification);
         } catch (error) {

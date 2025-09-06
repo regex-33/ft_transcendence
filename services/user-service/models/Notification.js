@@ -7,8 +7,9 @@ module.exports = (sequelize, DataTypes) => {
     type: {
       type: DataTypes.ENUM('FRIEND_REQUEST', 'MATCH_NOTIFICATION'),
       allowNull: false,
+      defaultValue: 'FRIEND_REQUEST',
     },
-    notid: {
+    notifierId: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
@@ -17,6 +18,8 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false,
     },
   });
-
+  Notification.associate = (models) => {
+    Notification.belongsTo(models.User, { foreignKey: 'notid', onDelete: 'CASCADE' });
+  }
   return Notification;
 };

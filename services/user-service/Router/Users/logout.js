@@ -8,5 +8,6 @@ module.exports = async (req, res) => {
     await db.Session.destroy({ where: { SessionId: session.SessionId, userId: payload.id } });
     fillObject(req, "INFO", "logout", payload.id, true, "", req.cookies?.token || null);
     res.clearCookie('token');
+    res.clearCookie('session_id');
     return res.redirect('/login');
 };
