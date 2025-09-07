@@ -13,7 +13,7 @@ interface Profile {
   bio: string;
 }
 
-export const ProfileSettings: ComponentFunction = () => {
+export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) => {
   const [profile, setProfile] = useState<Profile>({
     id: 1,
     username: "",
@@ -27,6 +27,7 @@ export const ProfileSettings: ComponentFunction = () => {
   const [loading, setLoading] = useState(true);
   const [previewAvatar, setPreviewAvatar] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/update`)
@@ -39,6 +40,7 @@ export const ProfileSettings: ComponentFunction = () => {
       })
       .catch((err) => {
         console.error(err);
+        setError('Failed to load profile data');
         setLoading(false);
       });
   }, []);
@@ -48,34 +50,70 @@ export const ProfileSettings: ComponentFunction = () => {
     setProfile({ ...profile, [target.name]: target.value });
   };
 
+  // Helper function to get only changed fields
+  const getChangedFields = () => {
+    if (!initialProfile) return {};
+    
+    const changes: any = {};
+    
+    // Check each field for changes
+    if (profile.username !== initialProfile.username && profile.username.trim() !== '') {
+      changes.username = profile.username;
+    }
+    if (profile.email !== initialProfile.email && profile.email.trim() !== '') {
+      changes.email = profile.email;
+    }
+    if (profile.birthday !== initialProfile.birthday && profile.birthday.trim() !== '') {
+      changes.birthday = profile.birthday;
+    }
+    if (profile.location !== initialProfile.location && profile.location.trim() !== '') {
+      changes.location = profile.location;
+    }
+    if (profile.bio !== initialProfile.bio && profile.bio.trim() !== '') {
+      changes.bio = profile.bio;
+    }
+    
+    return changes;
+  };
+
   const handleSave = async () => {
     try {
       const formData = new FormData();
+      const changedFields = getChangedFields();
       
-     
-      // formData.append('id', profile.id.toString());
-      formData.append('username', profile.username);
-      formData.append('email', profile.email);
-      formData.append('birthday', profile.birthday);
-      formData.append('location', profile.location);
-      formData.append('bio', profile.bio);
+      // Only append changed fields to formData
+      Object.keys(changedFields).forEach(key => {
+        formData.append(key, changedFields[key]);
+      });
       
-     
+      // Always include avatar if a new file was selected
       if (avatarFile) {
         formData.append('avatar', avatarFile);
       }
+      
+      // Check if there are any changes to save
+      if (Object.keys(changedFields).length === 0 && !avatarFile) {
+        alert("No changes to save!");
+        return;
+      }
+      
       const res = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/update`, {
         method: "PUT",
         body: formData,
       });
       
-      if (!res.ok) throw new Error("Failed to save profile");
+      if (!res.ok) 
+        throw new Error("Failed to save profile");
+      
       alert("Profile saved!");
+      
+      // Trigger sidebar update
+      setUpdateAll(true);
+      
       const updated = await res.json();
       setProfile(updated);
       setInitialProfile(updated);
       
-
       if (updated.avatar) {
         setPreviewAvatar(updated.avatar);
       }
@@ -88,15 +126,12 @@ export const ProfileSettings: ComponentFunction = () => {
     }
   };
 
-
   const handleAvatarChange = (e: Event) => {
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0];
     if (file) {
-  
       setAvatarFile(file);
       
-
       const reader = new FileReader();
       reader.onload = (event) => {
         const newAvatar = event.target?.result as string;
@@ -107,71 +142,27 @@ export const ProfileSettings: ComponentFunction = () => {
   };
 
   const handleReset = () => {
-    if (initialProfile) {
-      setProfile(initialProfile);
-      setPreviewAvatar(initialProfile.avatar || "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg");
-      setAvatarFile(null);
-    }
+    console.log("Reset button clicked!");
+    console.log("Profile before reset:", profile);
+    
+    // Force clear each field individually to ensure state update
+    setProfile(prevProfile => ({
+      id: prevProfile.id || 1,
+      username: "",
+      email: "",
+      birthday: "",
+      location: "",
+      bio: "",
+      avatar: profileData.avatar || ''
+    }));
+    
+    // Reset avatar to the original one from profileData
+    setPreviewAvatar(profileData.avatar || "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg");
+    setAvatarFile(null);
   };
 
   if (loading) return <div className="text-gray-500">Loading...</div>;
-  const [profileData, setProfileData] = useState({
-    name: 'Loading...',
-    email: '',
-    birthday: '',
-    location: '',
-    avatar: '/images/default-avatar.png'
-  });
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        setIsLoading(true);
-        setError('');
-        const response = await fetch(
-          `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          
-          // Update profile data with fetched information
-          setProfileData({
-            name: data.username || 'Unknown User',
-            email: data.email || '',
-            birthday: data.birthday || 'Not specified',
-            location: data.location || 'Not specified',
-            avatar: data.avatar || "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg"
-          });
-        } else {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-      } catch (error) {
-        console.error('Error fetching profile data:', error);
-        setError('Failed to load profile data');
-        setProfileData({
-          name: 'Error Loading',
-          email: '',
-          birthday: 'Not available',
-          location: 'Not available',
-          avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProfileData();
-  }, []);
-  
+  if (error) return <div className="text-red-500">{error}</div>;
 
   return (
     <div className="min-h-screen">
@@ -182,7 +173,7 @@ export const ProfileSettings: ComponentFunction = () => {
             <div className="flex flex-col items-center mb-8">
               <div className="relative w-[140px] h-[140px] mb-1 rounded-full">
                 <img
-                  src={profileData.avatar}
+                  src={ profileData.avatar || previewAvatar }
                   className="absolute w-32 h-32 rounded-full object-cover z-10"
                   alt="Avatar"
                   onError={(e: { target: HTMLImageElement; }) => {
@@ -232,7 +223,7 @@ export const ProfileSettings: ComponentFunction = () => {
             <div className="grid grid-cols-2 gap-4">
               <input
                 name="username"
-                value={profile.username}
+                value={profile.username || ""}
                 onInput={handleChange}
                 className="w-full bg-[#91BFBF] border-0 rounded-lg 
                 px-4 py-2 focus:outline-none focus:ring-2
@@ -244,7 +235,7 @@ export const ProfileSettings: ComponentFunction = () => {
             <div className="grid grid-cols-1 gap-4">
               <input
                 name="email"
-                value={profile.email}
+                value={profile.email || ""}
                 onInput={handleChange}
                 className="w-full bg-[#91BFBF] border-0 
                 rounded-lg px-4 py-2 focus:outline-none 
@@ -256,7 +247,7 @@ export const ProfileSettings: ComponentFunction = () => {
             <div className="grid grid-cols-2 gap-4">
               <input
                 name="location"
-                value={profile.location}
+                value={profile.location || ""}
                 onInput={handleChange}
                 className="w-full bg-[#91BFBF] border-0 
                   rounded-lg px-4 py-2 focus:outline-none 
@@ -265,7 +256,7 @@ export const ProfileSettings: ComponentFunction = () => {
               />
               <input
                 name="birthday"
-                value={profile.birthday}
+                value={profile.birthday || ""}
                 onInput={handleChange}
                 className="w-full bg-[#91BFBF] border-0 rounded-lg px-4 
                 py-2 focus:outline-none focus:ring-2
@@ -277,7 +268,7 @@ export const ProfileSettings: ComponentFunction = () => {
             <div className="grid grid-cols-1 gap-4">
               <textarea
                 name="bio"
-                value={profile.bio}
+                value={profile.bio || ""}
                 onInput={handleChange}
                 rows={7}
                 className="w-full bg-[#91BFBF] border-0 

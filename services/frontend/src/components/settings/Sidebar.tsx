@@ -3,15 +3,7 @@ import { ComponentFunction, process } from "../../types/global";
 import { useEffect } from '../../hooks/useEffect';
 import { useState } from '../../hooks/useState';
 
-export const Sidebar: ComponentFunction = () => {
-  const [profileData, setProfileData] = useState({
-    name: 'Loading...',
-    email: '',
-    aboutMe: 'Loading profile information...',
-    birthday: '',
-    location: '',
-    avatar: '/images/default-avatar.png' 
-  });
+export const Sidebar: ComponentFunction = ({updateAll, profileData, setProfileData}) => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -60,7 +52,7 @@ export const Sidebar: ComponentFunction = () => {
     };
 
     fetchProfileData();
-  }, []);
+  }, [updateAll]);
 
   return (
     <aside className="w-[30%] h-full p-2">
@@ -83,7 +75,7 @@ export const Sidebar: ComponentFunction = () => {
               />
             </div>
             <h2 className="text-2xl font-bold truncate max-w-[120px]">
-              {isLoading ? 'Loading...' : profileData.name}
+              {profileData.name}
             </h2>
           </div>
           {/* <button

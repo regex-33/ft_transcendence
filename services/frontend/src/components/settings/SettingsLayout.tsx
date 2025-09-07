@@ -17,13 +17,34 @@ interface SettingsLayoutProps {
 export const SettingsLayout: ComponentFunction<SettingsLayoutProps> = (props) => {
   const { defaultTab = 'matchHistory' } = props || {};
   const [activeTab, setActiveTab] = useState<'profile'|'friends'|'achievements'|'matchHistory'|'overview'>(defaultTab);
+  const [updateAll, setUpdateAll] = useState(false);
+  const [profileData, setProfileData] = useState({
+    name: 'Loading...',
+    email: '',
+    birthday: '',
+    location: '',
+    avatar: '/images/default-avatar.png'
+  });
+  
   useEffect(() => {
     setActiveTab(defaultTab);
   }, [defaultTab]);
 
+ 
+  useEffect(() => {
+    if (updateAll) 
+      {
+      const timer = setTimeout(() => {
+        setUpdateAll(false);
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [updateAll]);
+
   const renderTab = () => {
     switch (activeTab) {
-      case 'profile':      return <ProfileSettings />;
+      case 'profile':      return <ProfileSettings setUpdateAll={setUpdateAll} profileData={profileData} />;
       case 'friends':      return <FriendsSettings />;
       case 'matchHistory':  return <MatchHistory />;
       case 'overview':      return <OverviewSettings />;
@@ -31,17 +52,16 @@ export const SettingsLayout: ComponentFunction<SettingsLayoutProps> = (props) =>
     }
   };
 
-
-const handleTabClick = (tab: typeof activeTab, e: Event) => {
-  e.preventDefault();
-  setActiveTab(tab);
-  window.history.pushState({}, '', `/settings/${tab}`);
-  window.dispatchEvent(new PopStateEvent('popstate'));
-};
+  const handleTabClick = (tab: typeof activeTab, e: Event) => {
+    e.preventDefault();
+    setActiveTab(tab);
+    window.history.pushState({}, '', `/settings/${tab}`);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
 
   return (
     <div className="flex h-[calc(100vh-72px)]">
-      <Sidebar/>
+      <Sidebar updateAll={updateAll} profileData={profileData} setProfileData={setProfileData}/>
       <main className="w-full flex flex-col ">
         <nav className="flex  flex-none gap-8 min-w-0 pt-16  pl-5">
           <button
@@ -76,7 +96,6 @@ const handleTabClick = (tab: typeof activeTab, e: Event) => {
           </button>
         </nav>
         
-
         <div className="flex-1 w-full">
           {renderTab()}
         </div>
