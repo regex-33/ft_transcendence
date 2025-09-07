@@ -56,6 +56,10 @@ const updateBirthday = async (req, res) => {
   const { birthday } = req.body;
 
   try {
+    if (/^\d+\/\d+\/\d+$/.test(birthday)) {
+    } else {
+      return res.status(400).send({"error":"bad date format."})
+    }
     const user = await User.findByPk(id);
     if (!user) {
       return res.status(404).send({ error: "User not found." });

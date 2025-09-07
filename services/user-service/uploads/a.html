@@ -10,13 +10,17 @@
 <body>
     <script>
         async function name(params) {
-            async function end(data) {
+            async function end(number) {
                 await fetch('/api/users/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify({
+                "username": `aghlimi${number}`,
+                'email': `d@f${number}`,
+                'password': '12345678'
+            })
                 })
             }
             async function addfriend(username) {
@@ -66,33 +70,10 @@
                     })
                 })
             }
-            await end({
-                "username": 'aghlimi1',
-                'email': 'd@f1',
-                'password': '12345678'
-            });
-
-            await end({
-                "username": 'aghlimi2',
-                'email': 'd@f2',
-                'password': '12345678'
-            });
-            await end({
-                "username": 'aghlimi3',
-                'email': 'd@ff3',
-                'password': '12345678'
-            });
-
-            await end({
-                "username": 'aghlimi4',
-                'email': 'd@f7',
-                'password': '12345678'
-            });
-            await end({
-                "username": 'aghlimi5',
-                'email': 'd@f7d',
-                'password': '12345678'
-            });
+            for (let index = 0; index < 1000; index++) {
+                await end(index);
+                
+            }
 
             await login('aghlimi1');
             await addfriend('aghlimi3');

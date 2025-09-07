@@ -18,7 +18,7 @@ docker volume rm $(docker volume ls -q)
 
 echo "🔌 Removing all unused networks..."
 docker network prune -f
-
+docker builder prune --all -force
 # Optional: Remove all images
 echo "🖼️ Removing all images..."
 docker rmi $(docker images -q)
