@@ -111,7 +111,7 @@ export const Search: ComponentFunction = () => {
       // Refresh users data to update friend statuses
       await fetchUsers();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      alert(`Failed to ${action} friend`);
       console.error(`Error performing ${action} action:`, err);
     }
   };
