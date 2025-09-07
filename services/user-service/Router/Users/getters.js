@@ -131,30 +131,48 @@ const getme = async (request, reply) => {
    * 
    */
 const getUsers = async (request, reply) => {
-  const { check } = await checkAuthJWT(request, reply);
+  const { check, payload } = await checkAuthJWT(request, reply);
   if (check) return check;
   try {
-    const users = await db.User.findAll({ include: [{ model: db.Session, as: 'sessions' }] });
+    const users = await db.User.findAll({
+      include: [
+        { model: db.Session, as: 'sessions' }
+      ]
+    });
     if (!users || users.length === 0) {
       fillObject(request, "WARNING", "getUsers", "unknown", false, "No users found.", request.cookies?.token || null);
       return reply.status(404).send({ error: "No users found." });
     }
+
     fillObject(request, "INFO", "getUsers", "unknown", true, "", request.cookies?.token || null);
-    return reply.send(
-      users.map((user) => {
-        if (user.valid)
-          return ({
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            avatar: user.avatar,
-            bio: user.bio,
-            online: user.sessions.filter(session => session.counter > 0).length > 0,
-            location: user.location,
-            birthday: user.birthday
-          });
+    const userList = await Promise.all(
+      users.filter(user => user.valid).map(async (user) => {
+        const rel = await db.Relationship.findOne({
+          where: {
+            [db.Sequelize.Op.or]: [
+              { userId: payload.id, otherId: user.id },
+              { userId: user.id, otherId: payload.id }
+            ]
+          }
+        });
+        if(user.id === payload.id) return null;
+        if (rel && rel.status === 'pending' && rel.userId === payload.id){
+          rel.status = 'request';
+        }
+        return {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          avatar: user.avatar,
+          bio: user.bio,
+          status: rel ? rel.status : null,
+          online: user.sessions.filter(session => session.counter > 0).length > 0,
+          location: user.location,
+          birthday: user.birthday
+        };
       })
     );
+    return reply.send(userList.filter(u => u));
   }
   catch (err) {
     fillObject(request, "ERROR", "getUsers", "unknown", false, err.message, request.cookies?.token || null);
