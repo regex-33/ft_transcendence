@@ -155,8 +155,8 @@ const getUsers = async (request, reply) => {
             ]
           }
         });
-        if(user.id === payload.id) return null;
-        if (rel && rel.status === 'pending' && rel.userId === payload.id){
+        if (user.id === payload.id || (rel && rel.status === 'blocked' && rel.otherId === payload.id)) return null;
+        if (rel && rel.status === 'pending' && rel.userId === payload.id) {
           rel.status = 'request';
         }
         return {
