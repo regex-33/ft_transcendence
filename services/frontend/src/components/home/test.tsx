@@ -5,7 +5,6 @@ import { ComponentFunction } from "../../types/global";
 import { h } from "../../vdom/createElement";
 
 type User = {
-  status: FriendStatus | null;
   id: number;
   username: string;
   email: string;
@@ -16,7 +15,7 @@ type User = {
   birthday: string | null;
 };
 
-type FriendStatus = 'none' | 'pending' | 'friend' | 'request' | 'blocked';
+type FriendStatus = 'none' | 'pending' | 'accepted' | 'blocked';
 
 type UserWithFriendStatus = User & {
   friendStatus: FriendStatus;
@@ -28,7 +27,21 @@ export const Search: ComponentFunction = () => {
   const [users, setUsers] = useState<UserWithFriendStatus[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const modalRef = useRef<HTMLDivElement | null>(null);
+
+  // Fetch current user data
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`);
+      if (response.ok) {
+        const userData = await response.json();
+        setCurrentUser(userData);
+      }
+    } catch (err) {
+      console.error('Error fetching current user:', err);
+    }
+  };
 
   // Fetch users from API
   const fetchUsers = async () => {
@@ -36,22 +49,43 @@ export const Search: ComponentFunction = () => {
       setLoading(true);
       setError(null);
 
-      // Fetch users from single endpoint
-      const usersResponse = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users`);
+      // Fetch users and friends data
+      const [usersResponse, friendsResponse, pendingResponse, blockedResponse] = await Promise.all([
+        fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users`),
+        fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`),
+        fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/pending-friends`),
+        fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/blocked-users`)
+      ]);
 
       if (!usersResponse.ok) {
         throw new Error('Failed to fetch users');
       }
 
-      const allUsers = await usersResponse.json();
+      const [allUsers, acceptedFriends, pendingFriends, blockedUsers] = await Promise.all([
+        usersResponse.json(),
+        friendsResponse.ok ? friendsResponse.json() : [],
+        pendingResponse.ok ? pendingResponse.json() : [],
+        blockedResponse.ok ? blockedResponse.json() : []
+      ]);
 
-      // Map users and use status directly from API response
-      const usersWithStatus: UserWithFriendStatus[] = allUsers.map((user: User) => ({
-        ...user,
-        friendStatus: user.status || 'none' // Use status from API, default to 'none' if null
-      }));
+      // Create maps for friend statuses
+      const acceptedMap = new Map(acceptedFriends.map((f: any) => [f.username, 'accepted']));
+      const pendingMap = new Map(pendingFriends.map((f: any) => [f.username, 'pending']));
+      const blockedMap = new Map(blockedUsers.map((f: any) => [f.username, 'blocked']));
 
-      console.log("all users", usersWithStatus);
+      // Add friend status to users and filter out current user
+      const usersWithStatus: UserWithFriendStatus[] = allUsers
+        .filter((user: User) => currentUser ? user.id !== currentUser.id : true)
+        .map((user: User) => ({
+          ...user,
+          friendStatus: (
+            acceptedMap.get(user.username) ||
+            pendingMap.get(user.username) ||
+            blockedMap.get(user.username) ||
+            'none'
+          ) as FriendStatus
+        }));
+
       setUsers(usersWithStatus);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -66,7 +100,9 @@ export const Search: ComponentFunction = () => {
     try {
       let response;
       
-      if (action === 'add') {
+      if (action === 'add') 
+      {
+        // Add friend
         response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/add`, {
           method: 'POST',
           headers: {
@@ -74,7 +110,10 @@ export const Search: ComponentFunction = () => {
           },
           body: JSON.stringify({ username })
         });
-      } else {
+      } 
+      else 
+      {
+        // Cancel friend request
         response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
           method: 'POST',
           headers: {
@@ -96,12 +135,17 @@ export const Search: ComponentFunction = () => {
     }
   };
 
-  // Fetch users when component mounts or when search opens
+  // Fetch current user when component mounts
   useEffect(() => {
-    if (showSearch && users.length === 0) {
+    fetchCurrentUser();
+  }, []);
+
+  // Fetch users when search opens or current user is loaded
+  useEffect(() => {
+    if (showSearch && users.length === 0 && currentUser) {
       fetchUsers();
     }
-  }, [showSearch]);
+  }, [showSearch, currentUser]);
 
   console.log('type:', typeof searchQuery, searchQuery);
   const trimmed = (typeof searchQuery === 'string' ? searchQuery : '').trim().toLowerCase();
@@ -163,10 +207,7 @@ export const Search: ComponentFunction = () => {
     setShowSearch(true);
   };
 
- 
   const renderActionButton = (user: UserWithFriendStatus) => {
-    console.log("actionssssssssssssssssssss" , user.friendStatus)
-    console.log("usernameeeeeeeeeeeeeeeeee", user.username)
     if (user.friendStatus === 'blocked') {
       return (
         <div className="flex items-center text-red-400 font-semibold text-sm gap-1">
@@ -175,7 +216,7 @@ export const Search: ComponentFunction = () => {
       </div>      
       );
     } 
-  else if (user.friendStatus === 'friend') {
+  else if (user.friendStatus === 'accepted') {
   return (
     <span className="inline-flex items-center text-green-400 font-semibold text-sm gap-2">
       <i className="fa-solid fa-user-check"></i>
@@ -183,8 +224,7 @@ export const Search: ComponentFunction = () => {
     </span>
   );
 } 
-else if (user.friendStatus === 'pending') 
-{
+else if (user.friendStatus === 'pending') {
   return (
     <span className="inline-flex items-center text-blue-500 font-semibold text-sm gap-2">
       <i className="fa-solid fa-user-clock"></i>
@@ -192,30 +232,10 @@ else if (user.friendStatus === 'pending')
     </span>
   );
 }
-else if (user.friendStatus === 'request')
-{
-  return (
-      <button
-      type="button"
-      onClick={() => handleFriendAction(user.username, 'cancel')}          
-          className="
-          flex items-center gap-2 px-3 h-[50px]
-          bg-[url('/images/home-assests/bg-cancel.svg')]
-          bg-no-repeat bg-center bg-contain
-          text-white font-semibold text-sm
-          transition-transform duration-200 hover:scale-95 p-5
-        ">
-        <i className="fa-solid fa-xmark text-md"></i>
-        <span>Cancel</span>
-    </button>
-  );
-
-}
  else {
       // friendStatus === 'none'
       return (
         <button
-        type="button"
           onClick={() => handleFriendAction(user.username, 'add')}
           className="
             flex items-center gap-2 px-3 h-[30px]
@@ -294,7 +314,6 @@ else if (user.friendStatus === 'request')
                       key={user.id}
                       className="flex ml-5 w-[420px] items-center justify-between gap-3 pb-1 border-b border-[#91C7D6]"
                     >
-                      
                       <div className="flex items-center gap-3">
                         <div
                           className="relative w-14 h-14 flex items-center justify-center bg-no-repeat bg-contain"
@@ -313,7 +332,7 @@ else if (user.friendStatus === 'request')
                         <span className="font-irish text-white">{user.username}</span>
                       </div>
                       
-               
+
                       {renderActionButton(user)}
                     </li>
                   ))}
@@ -326,6 +345,3 @@ else if (user.friendStatus === 'request')
     </div>
   );
 };
-
-
-

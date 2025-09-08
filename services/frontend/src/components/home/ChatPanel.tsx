@@ -6,26 +6,28 @@ import { ComponentFunction } from "../../types/global";
 
 
 interface Friend {
-  id?: number;
+  id: number;
+  username: string;
   avatar: string;
   online: boolean;
-  name?: string;
 }
 
 const FriendItem: ComponentFunction = (props = {}) => {
   const friend = props.friend as Friend;
   const cadreBg = friend.online ? "/images/home-assests/cir-online.svg" : "/images/home-assests/cir-offline.svg";
-  return h('div', { className: "flex flex-row items-center w-16 translate-y-14" },
-    h('div', { 
-      className: "w-20 h-20 relative flex items-center justify-center bg-no-repeat bg-contain",
-      style: { backgroundImage: `url(${cadreBg})` }
-    },
-      h('img', {
-        src: friend.avatar,
-        alt: "Friend Avatar",
-        className: "w-12 h-12 rounded-full object-cover relative -top-[7px]"
-      })
-    )
+  return (
+    <div className="flex flex-row items-center w-16 translate-y-14">
+      <div 
+        className="w-20 h-20 relative flex items-center justify-center bg-no-repeat bg-contain"
+        style={{ backgroundImage: `url(${cadreBg})` }}
+      >
+        <img
+          src={friend.avatar}
+          alt="Friend Avatar"
+          className="w-12 h-12 rounded-full object-cover relative -top-[7px]"
+        />
+      </div>
+    </div>
   );
 }
 
@@ -43,10 +45,7 @@ export const ChatPanel: ComponentFunction = () => {
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-        // setLoading(true);
-        // setError(null);
-        
-        const response = await fetch('http://localhost:5000/friends');
+        const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`);
         if (!response.ok) {
           throw new Error(`Failed to fetch friends: ${response.status} ${response.statusText}`);
         }
@@ -55,85 +54,13 @@ export const ChatPanel: ComponentFunction = () => {
         setFriends(data);
       } catch (err) {
         console.error('Error fetching friends:', err);
-        // setError(err instanceof Error ? err.message : 'An unknown error occurred');
       } 
-      // finally {
-      //   setLoading(false);
-      // }
     };
 
     fetchFriends();
   }, []);
 
   const friendColumns = chunk(friends, 2);
-
-
-  // if (loading) {
-  //   return (
-  //     <aside className="w-[25%] p-2 flex flex-col gap-4">
-  //       <div className="relative w-full">
-  //         <button
-  //           className="h-[50px] w-[260px] py-2 bg-no-repeat bg-contain 
-  //             bg-center text-white relative left-16 top-3"
-  //           style={{ backgroundImage: "url('/images/home-assests/bg-gameMode.svg')" }}
-  //         >
-  //           <span className="font-irish font-bold tracking-wide text-sm sm:text-base md:text-2xl">
-  //             Loading Friends...
-  //           </span>
-  //         </button>
-  //         <div
-  //           className="relative rounded-lg h-[320px] w-[340px]
-  //             bg-no-repeat bg-center bg-[length:340px_330px] translate-x-7 overflow-hidden
-  //             flex items-center justify-center"
-  //           style={{ backgroundImage: "url('/images/home-assests/bg-online.svg')" }}
-  //         >
-  //           <div className="text-white text-center">
-  //             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
-  //             <p>Loading friends...</p>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     </aside>
-  //   );
-  // }
-
-  
-  // if (error) {
-  //   return (
-  //     <aside className="w-[25%] p-2 flex flex-col gap-4">
-  //       <div className="relative w-full">
-  //         <button
-  //           className="h-[50px] w-[260px] py-2 bg-no-repeat bg-contain 
-  //             bg-center text-white relative left-16 top-3"
-  //           style={{ backgroundImage: "url('/images/home-assests/bg-gameMode.svg')" }}
-  //         >
-  //           <span className="font-irish font-bold tracking-wide text-sm sm:text-base md:text-2xl">
-  //             Friends Error
-  //           </span>
-  //         </button>
-  //         <div
-  //           className="relative rounded-lg h-[320px] w-[340px]
-  //             bg-no-repeat bg-center bg-[length:340px_330px] translate-x-7 overflow-hidden
-  //             flex items-center justify-center"
-  //           style={{ backgroundImage: "url('/images/home-assests/bg-online.svg')" }}
-  //         >
-  //           <div className="text-white text-center p-4">
-  //             <p className="text-red-300 mb-2">Failed to load friends</p>
-  //             <p className="text-sm">{error}</p>
-  //             <button 
-  //               className="mt-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded text-white text-sm"
-  //               onClick={() => window.location.reload()}
-  //             >
-  //               Retry
-  //             </button>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     </aside>
-  //   );
-  // }
-
-
   if (friends.length === 0) 
     {
     return (
@@ -195,7 +122,7 @@ export const ChatPanel: ComponentFunction = () => {
                   key={idx}
                   className="flex flex-col gap-4 items-center min-w-[60px] flex-shrink-0">
                   {group.map((friend, friendIdx) => 
-                    h(FriendItem, { friend }, friend.id || `friend-${idx}-${friendIdx}`)
+                    <FriendItem key={friend.id || `friend-${idx}-${friendIdx}`} friend={friend} />
                   )}
                 </div>
               ))}

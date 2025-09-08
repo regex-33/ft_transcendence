@@ -7,8 +7,8 @@ type Friend = {
   id: number;
   username: string;
   avatar: string;
-  online?: boolean
-  status: 'accepted' | 'pending' | 'blocked';
+  online: boolean;
+  status: 'pending' | 'blocked' | 'friend';
 };
 
 function chunk<T>(arr: T[], size: number): T[][] {
@@ -18,42 +18,37 @@ function chunk<T>(arr: T[], size: number): T[][] {
 }
 
 export const FriendsSettings: ComponentFunction = () => {
-  const [sortBy, setSortBy] = useState<'all' | 'accepted' | 'pending' | 'blocked'>('all');
+  const [sortBy, setSortBy] = useState<'all' | 'friend' | 'pending' | 'blocked'>('all');
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
 
   const fetchFriends = async () => {
     try {
       setLoading(true);
       setError(null);
 
- 
-      const [acceptedResponse, pendingResponse, blockedResponse] = await Promise.all([
-        fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`),
-        fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/pending-friends`),
-        fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/blocked-users`)
-      ]);
+      // Fetch all users from single endpoint
+      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users`);
 
-      if (!acceptedResponse.ok || !pendingResponse.ok || !blockedResponse.ok) {
-        throw new Error('Failed to fetch friends data');
+      if (!response.ok) {
+        throw new Error('Failed to fetch users data');
       }
 
-      const [acceptedFriends, pendingFriends, blockedUsers] = await Promise.all([
-        acceptedResponse.json(),
-        pendingResponse.json(),
-        blockedResponse.json()
-      ]);
+      const allUsers = await response.json();
 
-     
-      const allFriends: Friend[] = [
-        ...acceptedFriends.map((friend: any) => ({ ...friend, status: 'accepted' as const })),
-        ...pendingFriends.map((friend: any) => ({ ...friend, status: 'pending' as const })),
-        ...blockedUsers.map((friend: any) => ({ ...friend, status: 'blocked' as const }))
-      ];
-  console.log(`alllllllllllll Friends`, allFriends);
-      setFriends(allFriends);
+      // Filter users to only include those with relationships (status is not null)
+      const friendsWithRelationships: Friend[] = allUsers
+        .filter((user: any) => user.status !== null)
+        .map((user: any) => ({
+          id: user.id,
+          username: user.username,
+          avatar: user.avatar,
+          online: user.online,
+          status: user.status
+        }));
+
+      setFriends(friendsWithRelationships);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       console.error('Error fetching friends:', err);
@@ -62,9 +57,7 @@ export const FriendsSettings: ComponentFunction = () => {
     }
   };
 
-
   const handleFriendAction = async (username: string, action: 'accept' | 'cancel' | 'block' | 'unblock') => {
-    // console.log(`usernameeeeeeeeeeeeeeeeeee`, username);
     try {
       const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
         method: 'POST',
@@ -85,30 +78,6 @@ export const FriendsSettings: ComponentFunction = () => {
     }
   };
 
-
-  // const handleAddFriend = async (username: string) => {
-  //   try {
-  //     const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/add`, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({ username })
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error('Failed to add friend');
-  //     }
-
-
-  //     await fetchFriends();
-  //   } catch (err) {
-  //     setError(err instanceof Error ? err.message : 'An error occurred');
-  //     console.error('Error adding friend:', err);
-  //   }
-  // };
-
-
   useEffect(() => {
     fetchFriends();
   }, []);
@@ -121,7 +90,7 @@ export const FriendsSettings: ComponentFunction = () => {
 
   function getStatusColor(status: string) {
     switch (status) {
-      case 'accepted':
+      case 'friend':
         return 'bg-green-500';
       case 'pending':
         return 'bg-yellow-500';
@@ -133,7 +102,7 @@ export const FriendsSettings: ComponentFunction = () => {
   }
 
   function getActionButtons(friend: { id: number; username: string; avatar: string; status: string; }) {
-    if (friend.status === "accepted") {
+    if (friend.status === "friend") {
       return (
         <div className="flex gap-2">
           <button 
@@ -244,7 +213,7 @@ export const FriendsSettings: ComponentFunction = () => {
         }}>
         <select
           value={sortBy}
-          onChange={(e: Event) => setSortBy((e.target as HTMLSelectElement).value as Friend['status'] | 'all')}
+          onChange={(e: Event) => setSortBy((e.target as HTMLSelectElement).value as 'all' | 'friend' | 'pending' | 'blocked')}
           className="w-full h-full bg-transparent text-white font-luckiest text-base appearance-none pl-6 pt-1 focus:outline-none cursor-pointer"
           style={{
             border: 'none',
@@ -255,7 +224,7 @@ export const FriendsSettings: ComponentFunction = () => {
         >
           <option value="all" className="bg-[#5E9CAB] text-white rounded-2xl">All</option>
           <option value="pending" className="bg-[#5E9CAB] text-white rounded-2xl">Pending</option>
-          <option value="accepted" className="bg-[#5E9CAB] text-white rounded-2xl">Accepted</option>
+          <option value="friend" className="bg-[#5E9CAB] text-white rounded-2xl">Friends</option>
           <option value="blocked" className="bg-[#5E9CAB] text-white rounded-2xl">Blocked</option>
         </select>
       </div>
@@ -272,13 +241,32 @@ export const FriendsSettings: ComponentFunction = () => {
                   style={{ backgroundImage: "url('/images/setting-assests/bg-friends.svg')" }}
                 >
                   <div className="flex flex-col items-center justify-center h-full">
-                    <div className="relative w-[100px] h-[100px] flex-shrink-0 mb-4">
-                      <img
-                        src={friend.avatar}
-                        className="w-full h-full rounded-full object-cover border-4 border-white/30"
-                        alt="Avatar"
-                      />
+                    
+                    <div className="relative w-[100px] h-[100px] flex-shrink-0 mt-10">
+                      {friend.status === 'friend' ? (
+                        <div
+                          className="relative w-24 h-24 flex items-center justify-center bg-no-repeat bg-contain"
+                          style={{
+                            backgroundImage: friend.online
+                              ? 'url("/images/home-assests/cir-online.svg")'
+                              : 'url("/images/home-assests/cir-offline.svg")'
+                          }}
+                        >
+                          <img
+                            src={friend.avatar}
+                            className="w-[70px] h-[70px] rounded-full object-cover relative"
+                            alt="Avatar"
+                          />
+                        </div>
+                      ) : (
+                        <img
+                          src={friend.avatar}
+                          className="w-full h-full rounded-full object-cover border-4 border-white/30"
+                          alt="Avatar"
+                        />
+                      )}
                     </div>
+
                     <h3 className="text-lg font-bold text-white mb-2">{friend.username}</h3>
                     <div className="flex flex-row items-center gap-2">
                       <div className="">

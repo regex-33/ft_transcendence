@@ -16,7 +16,7 @@ type User = {
   birthday: string | null;
 };
 
-type FriendStatus = 'none' | 'pending' | 'friend' | 'request' | 'blocked';
+type FriendStatus = 'none' | 'pending' | 'accepted' | 'request' | 'blocked';
 
 type UserWithFriendStatus = User & {
   friendStatus: FriendStatus;
@@ -36,21 +36,53 @@ export const Search: ComponentFunction = () => {
       setLoading(true);
       setError(null);
 
-      // Fetch users from single endpoint
-      const usersResponse = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users`);
+      // Fetch users and friends data
+      const [usersResponse, friendsResponse, pendingResponse, blockedResponse] = await Promise.all([
+        fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users`),
+        fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`),
+        fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/pending-friends`),
+        fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/blocked-users`)
+      ]);
 
       if (!usersResponse.ok) {
         throw new Error('Failed to fetch users');
       }
 
-      const allUsers = await usersResponse.json();
+      const [allUsers, acceptedFriends, pendingFriends, blockedUsers] = await Promise.all([
+        usersResponse.json(),
+        friendsResponse.ok ? friendsResponse.json() : [],
+        pendingResponse.ok ? pendingResponse.json() : [],
+        blockedResponse.ok ? blockedResponse.json() : []
+      ]);
 
-      // Map users and use status directly from API response
-      const usersWithStatus: UserWithFriendStatus[] = allUsers.map((user: User) => ({
-        ...user,
-        friendStatus: user.status || 'none' // Use status from API, default to 'none' if null
-      }));
+     
+      const acceptedMap = new Map(acceptedFriends.map((f: any) => [f.username, 'accepted']));
+      const pendingMap = new Map(pendingFriends.map((f: any) => [f.username, 'pending']));
+      const blockedMap = new Map(blockedUsers.map((f: any) => [f.username, 'blocked']));
 
+      const usersWithStatus: UserWithFriendStatus[] = allUsers.map((user: User) => {
+        const backendStatus = user.status as FriendStatus | null;
+        return {
+          ...user,
+          friendStatus:
+            backendStatus ??
+            (acceptedMap.get(user.username) ||
+              pendingMap.get(user.username) ||
+              blockedMap.get(user.username) ||
+              "none"),
+        };
+      });
+      
+
+      // const usersWithStatus: UserWithFriendStatus[] = allUsers.map((user: User) => ({
+      //   ...user,
+      //   friendStatus: (
+      //     acceptedMap.get(user.username) ||
+      //     pendingMap.get(user.username) ||
+      //     blockedMap.get(user.username) ||
+      //     'none'
+      //   ) as FriendStatus
+      // }));
       console.log("all users", usersWithStatus);
       setUsers(usersWithStatus);
     } catch (err) {
@@ -175,7 +207,7 @@ export const Search: ComponentFunction = () => {
       </div>      
       );
     } 
-  else if (user.friendStatus === 'friend') {
+  else if (user.friendStatus === 'accepted') {
   return (
     <span className="inline-flex items-center text-green-400 font-semibold text-sm gap-2">
       <i className="fa-solid fa-user-check"></i>
@@ -294,7 +326,7 @@ else if (user.friendStatus === 'request')
                       key={user.id}
                       className="flex ml-5 w-[420px] items-center justify-between gap-3 pb-1 border-b border-[#91C7D6]"
                     >
-                      
+                    
                       <div className="flex items-center gap-3">
                         <div
                           className="relative w-14 h-14 flex items-center justify-center bg-no-repeat bg-contain"
