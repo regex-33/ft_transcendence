@@ -27,8 +27,6 @@ export const FriendsSettings: ComponentFunction = () => {
     try {
       setLoading(true);
       setError(null);
-
-      // Fetch all users from single endpoint
       const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users`);
 
       if (!response.ok) {
@@ -36,8 +34,6 @@ export const FriendsSettings: ComponentFunction = () => {
       }
 
       const allUsers = await response.json();
-
-      // Filter users to only include those with relationships (status is not null)
       const friendsWithRelationships: Friend[] = allUsers
         .filter((user: any) => user.status !== null)
         .map((user: any) => ({

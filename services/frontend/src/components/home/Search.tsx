@@ -296,6 +296,7 @@ else if (user.friendStatus === 'request')
                     >
                       
                       <div className="flex items-center gap-3">
+                      {user.status === 'friend' ? (
                         <div
                           className="relative w-14 h-14 flex items-center justify-center bg-no-repeat bg-contain"
                           style={{
@@ -306,13 +307,63 @@ else if (user.friendStatus === 'request')
                         >
                           <img
                             src={user.avatar}
-                            alt="User Avatar"
                             className="w-10 h-10 rounded-full object-cover"
+                            alt="Avatar"
                           />
                         </div>
+                      ) : (
+                        <img
+                          src={user.avatar}
+                          className="w-14 h-14 rounded-full object-cover border-4 border-white/20"
+                          alt="Avatar"
+                        />
+                      )}
                         <span className="font-irish text-white">{user.username}</span>
                       </div>
-                      
+                      {/* {user.status === 'friend' ? (
+                        <div
+                          className="relative w-14 h-14 flex items-center justify-center bg-no-repeat bg-contain"
+                          style={{
+                            backgroundImage: user.online
+                              ? 'url("/images/home-assests/cir-online.svg")'
+                              : 'url("/images/home-assests/cir-offline.svg")'
+                          }}
+                        >
+                          <img
+                            src={user.avatar}
+                            className="w-10 h-10 rounded-full object-cover"
+                            alt="Avatar"
+                          />
+                        </div>
+                      ) : (
+                        <img
+                          src={user.avatar}
+                          className="w-10 h-10 rounded-full object-cover border-4 border-white/30"
+                          alt="Avatar"
+                        />
+                      )} */}
+                      {/* {friend.status === 'friend' ? (
+                        <div
+                          className="relative w-24 h-24 flex items-center justify-center bg-no-repeat bg-contain"
+                          style={{
+                            backgroundImage: friend.online
+                              ? 'url("/images/home-assests/cir-online.svg")'
+                              : 'url("/images/home-assests/cir-offline.svg")'
+                          }}
+                        >
+                          <img
+                            src={friend.avatar}
+                            className="w-[70px] h-[70px] rounded-full object-cover relative"
+                            alt="Avatar"
+                          />
+                        </div>
+                      ) : (
+                        <img
+                          src={friend.avatar}
+                          className="w-full h-full rounded-full object-cover border-4 border-white/30"
+                          alt="Avatar"
+                        />
+                      )} */}
                
                       {renderActionButton(user)}
                     </li>

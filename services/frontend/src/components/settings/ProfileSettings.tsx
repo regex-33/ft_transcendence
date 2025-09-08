@@ -35,7 +35,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
       .then((data) => {
         setProfile(data);
         setInitialProfile(data);
-        setPreviewAvatar(data.avatar || "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg");
+        setPreviewAvatar(data.avatar);
         setLoading(false);
       })
       .catch((err) => {
@@ -50,13 +50,10 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
     setProfile({ ...profile, [target.name]: target.value });
   };
 
-  // Helper function to get only changed fields
   const getChangedFields = () => {
     if (!initialProfile) return {};
     
     const changes: any = {};
-    
-    // Check each field for changes
     if (profile.username !== initialProfile.username && profile.username.trim() !== '') {
       changes.username = profile.username;
     }
@@ -81,17 +78,17 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
       const formData = new FormData();
       const changedFields = getChangedFields();
       
-      // Only append changed fields to formData
+
       Object.keys(changedFields).forEach(key => {
         formData.append(key, changedFields[key]);
       });
       
-      // Always include avatar if a new file was selected
+
       if (avatarFile) {
         formData.append('avatar', avatarFile);
       }
       
-      // Check if there are any changes to save
+    
       if (Object.keys(changedFields).length === 0 && !avatarFile) {
         alert("No changes to save!");
         return;
@@ -107,7 +104,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
       
       alert("Profile saved!");
       
-      // Trigger sidebar update
+    
       setUpdateAll(true);
       
       const updated = await res.json();
@@ -145,7 +142,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
     console.log("Reset button clicked!");
     console.log("Profile before reset:", profile);
     
-    // Force clear each field individually to ensure state update
+
     setProfile(prevProfile => ({
       id: prevProfile.id || 1,
       username: "",
@@ -156,8 +153,8 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
       avatar: profileData.avatar || ''
     }));
     
-    // Reset avatar to the original one from profileData
-    setPreviewAvatar(profileData.avatar || "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg");
+
+    setPreviewAvatar(profileData.avatar);
     setAvatarFile(null);
   };
 
@@ -173,12 +170,12 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
             <div className="flex flex-col items-center mb-8">
               <div className="relative w-[140px] h-[140px] mb-1 rounded-full">
                 <img
-                  src={ profileData.avatar || previewAvatar }
+                  src={previewAvatar || profileData.avatar}
                   className="absolute w-32 h-32 rounded-full object-cover z-10"
                   alt="Avatar"
-                  onError={(e: { target: HTMLImageElement; }) => {
-                    (e.target as HTMLImageElement).src = "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg";
-                  }}
+                  // onError={(e: { target: HTMLImageElement; }) => {
+                  //   (e.target as HTMLImageElement).src = "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg";
+                  // }}
                 />
                 <label className="absolute top-1 right-2 bg-white bg-opacity-65 w-8 h-8 flex items-center justify-center rounded-full cursor-pointer z-20">
                   <img 
