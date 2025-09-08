@@ -4,21 +4,32 @@ const { fillObject } = require("../../util/logger");
 
 const blockUser = async (req, reply, payload, userId, username) => {
   try {
-    const users = await Promise.all([
-      db.User.findOne({ where: { username } }),
-      db.User.findByPk(userId)
-    ]);
-    if (users.filter(user => user).length != 2) {
-      fillObject(req, 'WARNING', 'block', payload.username, false, 'user not found', req.cookies?.token || null);
-      return reply.stats(404).send({ 'message': 'user not found' });
+    const user = await db.User.findOne({ where: { username } });
+    if (!user) {
+      return reply.status(404).send({ error: "User not found." });
     }
-    await users[1].addOther(users[0], { through: { status: 'blocked' } });
-    fillObject(req, 'INFO', 'block', payload.username, true, null, req.cookies?.token || null);
+    if (user.id === payload.id) {
+      return reply.status(400).send({ error: "You cannot block yourself." });
+    }
+    console.log('block user:', userId, 'by:', payload.id);
+    const rel = await db.Relationship.findOne({
+      where: {
+        [db.Sequelize.Op.or]: [
+          { userId: user.id, otherId: payload.id },
+          { otherId: user.id, userId: payload.id }
+        ]
+      }
+    });
+    if (!rel || rel.status == 'blocked') {
+      return reply.status(404).send({ 'message': 'this user not friend.' });
+    }
+    rel.status = 'blocked';
+    await rel.save();
     return reply.send({ 'message': 'success' });
+
   } catch (error) {
-    fillObject(req, 'ERROR', 'block', payload.username, false, error.message, req.cookies?.token || null);
     console.log('block crash:', error);
-    return reply.stats(500).send({ error: 'internal server error' })
+    return reply.status(500).send({ error: 'internal server error' });
   }
 };
 

@@ -3,30 +3,15 @@ import { ComponentFunction, process } from "../../types/global";
 import { useEffect } from '../../hooks/useEffect';
 import { useState } from '../../hooks/useState';
 
-export const Sidebar: ComponentFunction = () => {
-  // Local state for profile data fetched from API
-  const [profileData, setProfileData] = useState({
-    name: 'Loading...',
-    email: '',
-    aboutMe: 'Loading profile information...',
-    birthday: '',
-    location: '',
-    avatar: '/images/default-avatar.png' // fallback avatar
-  });
+export const Sidebar: ComponentFunction = ({updateAll, profileData, setProfileData}) => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // Fetch profile data from API on component mount
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
         setIsLoading(true);
         setError('');
-        // process.env.VITE_USER_SERVICE_HOST 
-        // console.log("host: -> ", process.env.VITE_USER_SERVICE_HOST);
-        // console.log("port: -> ", process.env.VITE_USER_SERVICE_PORT);
-
         const response = await fetch(
           `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
           {
@@ -39,8 +24,6 @@ export const Sidebar: ComponentFunction = () => {
 
         if (response.ok) {
           const data = await response.json();
-          
-          // Update profile data with fetched information
           setProfileData({
             name: data.username || 'Unknown User',
             email: data.email || '',
@@ -55,8 +38,6 @@ export const Sidebar: ComponentFunction = () => {
       } catch (error) {
         console.error('Error fetching profile data:', error);
         setError('Failed to load profile data');
-        
-        // Set fallback data on error
         setProfileData({
           name: 'Error Loading',
           email: '',
@@ -71,14 +52,14 @@ export const Sidebar: ComponentFunction = () => {
     };
 
     fetchProfileData();
-  }, []);
+  }, [updateAll]);
 
   return (
     <aside className="w-[30%] h-full p-2">
       <div className="w-[310px] h-[740px] bg-[#5E9CAB] rounded-xl bg-opacity-35 text-white p-3 shadow-lg relative ml-9 mt-10">
         <div className="flex flex-col items-center text-center w-full pr-20">
           <div className="flex items-center justify-center gap-2 w-full">
-            <div className="relative w-[85px] h-[85px] flex-shrink-0">
+            <div className="relative w-[100px] h-[100px] flex-shrink-0">
               <img
                 src="/images/home-assests/cir-online.svg"
                 className="absolute inset-0 w-full h-full z-0"
@@ -86,19 +67,18 @@ export const Sidebar: ComponentFunction = () => {
               />
               <img
                 src={profileData.avatar}
-                className="absolute inset-[10px] w-16 h-16 rounded-full object-cover z-10"
+                className="absolute inset-[11px] w-20 h-20 rounded-full object-cover z-10"
                 alt="Avatar"
                 onError={(e: { target: HTMLImageElement; }) => {
-                  // Fallback to default avatar if image fails to load
                   (e.target as HTMLImageElement).src = "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg";
                 }}
               />
             </div>
             <h2 className="text-2xl font-bold truncate max-w-[120px]">
-              {isLoading ? 'Loading...' : profileData.name}
+              {profileData.name}
             </h2>
           </div>
-          <button
+          {/* <button
             className="mt-2 flex items-center justify-between px-6 py-1 w-[180px] text-white bg-no-repeat bg-contain bg-center"
             style={{ backgroundImage: "url('/images/setting-assests/bg-add-friends.svg')" }}
           >
@@ -107,11 +87,12 @@ export const Sidebar: ComponentFunction = () => {
               src="/images/setting-assests/plus-friends.svg"
               alt="Add"
               className="w-8 h-8 ml-4 transition-transform duration-200 hover:scale-95"
+              
             />
-          </button>
+          </button> */}
         </div>
         
-        <div className="mt-16 space-y-4 pl-7">
+        <div className="mt-8 space-y-4 pl-7">
           <h3 className="text-lg font-bold mb-2">About me</h3>
           {isLoading ? (
             <div className="animate-pulse">

@@ -59,7 +59,7 @@ export const OverviewSettings: ComponentFunction = () => {
 
   return (
     <div>
-      <div className="flex flex-row h-[300px] px-5 gap-20 pb-4">
+      <button className="flex flex-row h-[300px] px-5 gap-20 pb-4">
         <button
           className="flex flex-col justify-center items-center w-[180px] text-white bg-no-repeat bg-contain bg-center"
           style={{ backgroundImage: `url('/images/setting-assests/bg-greenOve.svg')` }}>
@@ -115,7 +115,7 @@ export const OverviewSettings: ComponentFunction = () => {
           <span className="font-luckiest text-3xl pt-2 whitespace-nowrap">450</span>
           <span className="text-sm whitespace-nowrap">Total Pts</span>
         </button>
-      </div>
+      </button>
       
       <div className="-mt-10 pl-9 -space-y-4">
         <h1 className="font-luckiest text-lg pt-2 whitespace-nowrap text-white">HIGHLIGHTED MATCHES</h1>

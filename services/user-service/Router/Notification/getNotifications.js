@@ -4,7 +4,7 @@ const { fillObject } = require('../../util/logger');
 const getNotifications = async (req, reply) => {
     const { check, payload } = await checkAuthJWT(req);
     if (check) return;
-    const username = req.params.username || payload.username;
+    const username = payload.username;
     const { readed } = req.query;
     try {
         const user = await db.User.findOne({
@@ -16,8 +16,15 @@ const getNotifications = async (req, reply) => {
         }
         const notifications = await db.Notification.findAll({
             where: readed ? { userId: user.id, readed } : { userId: user.id },
-            attributes: ['userId', 'type', 'notid', 'readed', 'createdAt']
+            attributes: ['userId', 'type', 'notifierId', 'readed', 'createdAt'],
         });
+        await Promise.all(notifications.map(async notification => {
+            notification.dataValues.user = await db.User.findOne({
+                where: { id: notification.notifierId },
+                attributes: ['id', 'username', 'avatar']
+            });
+        })
+        );
         await Promise.all(notifications
             .filter(notification => !notification.readed)
             .map(async notification => {

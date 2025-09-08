@@ -273,7 +273,7 @@ private setupRoutes(): void {
 
 // Router configuration
 this.router.addRoute('/settings', () => 
-  this.createFunctionalComponent(SettingsPage, { defaultTab: 'friends' })
+  this.createFunctionalComponent(SettingsPage, { defaultTab: 'profile' })
 );
 
 this.router.addRoute('/xo', () => 
@@ -286,10 +286,6 @@ this.router.addRoute('/settings/profile', () =>
 
 this.router.addRoute('/settings/friends', () => 
   this.createFunctionalComponent(SettingsPage, { defaultTab: 'friends' })
-);
-
-this.router.addRoute('/settings/achievements', () => 
-  this.createFunctionalComponent(SettingsPage, { defaultTab: 'achievements' })
 );
 
 this.router.addRoute('/settings/matchHistory', () => 

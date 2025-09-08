@@ -4,43 +4,125 @@ import { useEffect } from "../../hooks/useEffect";
 import { ComponentFunction } from "../../types/global";
 import { h } from "../../vdom/createElement";
 
-type Player = {
+type User = {
+  status: FriendStatus | null;
   id: number;
-  name: string;
+  username: string;
+  email: string;
   avatar: string;
+  bio: string;
   online: boolean;
+  location: string | null;
+  birthday: string | null;
 };
 
-const players: Player[] = [
-  { id: 1, name: "youssef", avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg", online: false },
-  { id: 2, name: "najib", avatar: "https://cdn.intra.42.fr/users/7b89b520749f54897c4655ec73c682dc/namoussa.jpeg", online: true },
-  { id: 3, name: "bader", avatar: "https://cdn.intra.42.fr/users/3396ca0db7588fdad017bae90c330b25/bchanaa.jpeg", online: false }
-];
+type FriendStatus = 'none' | 'pending' | 'friend' | 'request' | 'blocked';
+
+type UserWithFriendStatus = User & {
+  friendStatus: FriendStatus;
+};
 
 export const Search: ComponentFunction = () => {
   const [showSearch, setShowSearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [users, setUsers] = useState<UserWithFriendStatus[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement | null>(null);
-  
-  const trimmed = searchQuery.trim().toLowerCase();
+
+  // Fetch users from API
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch users from single endpoint
+      const usersResponse = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users`);
+
+      if (!usersResponse.ok) {
+        throw new Error('Failed to fetch users');
+      }
+
+      const allUsers = await usersResponse.json();
+
+      // Map users and use status directly from API response
+      const usersWithStatus: UserWithFriendStatus[] = allUsers.map((user: User) => ({
+        ...user,
+        friendStatus: user.status || 'none' // Use status from API, default to 'none' if null
+      }));
+
+      console.log("all users", usersWithStatus);
+      setUsers(usersWithStatus);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Error fetching users:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle friend actions
+  const handleFriendAction = async (username: string, action: 'add' | 'cancel') => {
+    try {
+      let response;
+      
+      if (action === 'add') {
+        response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/add`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username })
+        });
+      } else {
+        response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, action: 'cancel' })
+        });
+      }
+
+      if (!response.ok) {
+        throw new Error(`Failed to ${action} friend`);
+      }
+
+      // Refresh users data to update friend statuses
+      await fetchUsers();
+    } catch (err) {
+      alert(`Failed to ${action} friend`);
+      console.error(`Error performing ${action} action:`, err);
+    }
+  };
+
+  // Fetch users when component mounts or when search opens
+  useEffect(() => {
+    if (showSearch && users.length === 0) {
+      fetchUsers();
+    }
+  }, [showSearch]);
+
+  console.log('type:', typeof searchQuery, searchQuery);
+  const trimmed = (typeof searchQuery === 'string' ? searchQuery : '').trim().toLowerCase();
   const isSearching = trimmed.length > 0;
 
-  const defaultPlayers = players
-    .filter(p => p.online)
-    .concat(players.filter(p => !p.online))
+  const defaultUsers = users
+    .filter(u => u.online)
+    .concat(users.filter(u => !u.online))
     .slice(0, 5);
   
-  const filteredPlayers = players.filter(p =>
-    p.name.toLowerCase().includes(trimmed)
+  const filteredUsers = users.filter(u =>
+    u.username.toLowerCase().includes(trimmed)
   );
   
-  let displayPlayers: typeof players = [];
+  let displayUsers: UserWithFriendStatus[] = [];
   let showNoResults = false;
   
   if (!isSearching) {
-    displayPlayers = defaultPlayers;
-  } else if (filteredPlayers.length > 0) {
-    displayPlayers = filteredPlayers;
+    displayUsers = defaultUsers;
+  } else if (filteredUsers.length > 0) {
+    displayUsers = filteredUsers;
   } else {
     showNoResults = true;
   }
@@ -50,15 +132,12 @@ export const Search: ComponentFunction = () => {
     setSearchQuery('');
   };
   
-  // Alternative approach - handle click on overlay directly
   const handleOverlayClick = (e: MouseEvent) => {
-    // Check if the click was on the overlay (not the modal content)
     if (e.target === e.currentTarget) {
       handleCloseSearch();
     }
   };
 
-  // Backup useEffect approach with different event and timing
   useEffect(() => {
     if (!showSearch) return;
     
@@ -70,7 +149,6 @@ export const Search: ComponentFunction = () => {
       }
     };
   
-    // Use 'click' instead of 'mousedown' and add delay
     const timeoutId = setTimeout(() => {
       document.addEventListener('click', handleClickOutside, true);
     }, 200);
@@ -81,9 +159,80 @@ export const Search: ComponentFunction = () => {
     };
   }, [showSearch]);
 
-  // Function to handle search button click
   const onSearchInput = () => {
     setShowSearch(true);
+  };
+
+ 
+  const renderActionButton = (user: UserWithFriendStatus) => {
+    console.log("actionssssssssssssssssssss" , user.friendStatus)
+    console.log("usernameeeeeeeeeeeeeeeeee", user.username)
+    if (user.friendStatus === 'blocked') {
+      return (
+        <div className="flex items-center text-red-400 font-semibold text-sm gap-1">
+        <i className="fa-solid fa-ban text-sm"></i>
+        <span>Blocked</span>
+      </div>      
+      );
+    } 
+  else if (user.friendStatus === 'friend') {
+  return (
+    <span className="inline-flex items-center text-green-400 font-semibold text-sm gap-2">
+      <i className="fa-solid fa-user-check"></i>
+      Friends
+    </span>
+  );
+} 
+else if (user.friendStatus === 'pending') 
+{
+  return (
+    <span className="inline-flex items-center text-blue-500 font-semibold text-sm gap-2">
+      <i className="fa-solid fa-user-clock"></i>
+      Requested
+    </span>
+  );
+}
+else if (user.friendStatus === 'request')
+{
+  return (
+      <button
+      type="button"
+      onClick={() => handleFriendAction(user.username, 'cancel')}          
+          className="
+          flex items-center gap-2 px-3 h-[50px]
+          bg-[url('/images/home-assests/bg-cancel.svg')]
+          bg-no-repeat bg-center bg-contain
+          text-white font-semibold text-sm
+          transition-transform duration-200 hover:scale-95 p-5
+        ">
+        <i className="fa-solid fa-xmark text-md"></i>
+        <span>Cancel</span>
+    </button>
+  );
+
+}
+ else {
+      // friendStatus === 'none'
+      return (
+        <button
+        type="button"
+          onClick={() => handleFriendAction(user.username, 'add')}
+          className="
+            flex items-center gap-2 px-3 h-[30px]
+            bg-[url('/images/home-assests/bg-FriendsAdd.svg')]
+            bg-no-repeat bg-center bg-contain
+            text-white font-semibold text-sm
+            transition-transform duration-200 hover:scale-95 pl-1
+          ">
+          <img
+            src="/images/setting-assests/plus-friends.svg"
+            alt="Add"
+            className="w-7 h-7"
+          />
+          <span>Add Friend</span>
+        </button>
+      );
+    }
   };
 
   return (
@@ -107,11 +256,13 @@ export const Search: ComponentFunction = () => {
             onClick={(e: MouseEvent) => e.stopPropagation()}
           >
             <div className="relative w-full">
-              <span className="absolute top-[7px] left-0 flex items-center pl-3">🔍</span>
+              <span className="absolute top-[42px] left-1 flex items-center pl-3">
+                <i className="fa-solid fa-magnifying-glass text-md text-[#D3DDE3]"></i>
+              </span>
               <input
                 type="text"
-                placeholder="Search for a player"
-                className="w-full px-10 pb-3 mb-1 pt-2 placeholder-[#D3DDE3] border-b-[1px] border-[#FFFFFF] bg-transparent text-white focus:outline-none"
+                placeholder="Search for a user"
+                className="w-full px-10 pb-3 mb-1 pt-10 placeholder-[#D3DDE3] border-b-[1px] border-[#FFFFFF] bg-transparent text-white focus:outline-none"
                 value={searchQuery}
                 onInput={(e: InputEvent) =>
                   setSearchQuery((e.target as HTMLInputElement).value)
@@ -121,33 +272,49 @@ export const Search: ComponentFunction = () => {
               />
             </div>
 
-            {showNoResults ? (
+            {error && (
+              <div className="text-red-300 text-center mt-4 mb-2">
+                Error: {error}
+              </div>
+            )}
+
+            {loading ? (
+              <div className="text-white text-center mt-40">
+                Loading users...
+              </div>
+            ) : showNoResults ? (
               <div className="text-3xl font-irish text-gray-100 mt-40 ml-24">
-                No players found!
+                No users found!
               </div>
             ) : (
               <div className="max-h-[360px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-cyan-300">
                 <ul className="space-y-3">
-                  {displayPlayers.map(player => (
+                  {displayUsers.map(user => (
                     <li
-                      key={player.id}
-                      className="flex ml-5 w-[420px] items-center gap-3 pb-1 border-b border-[#91C7D6]"
+                      key={user.id}
+                      className="flex ml-5 w-[420px] items-center justify-between gap-3 pb-1 border-b border-[#91C7D6]"
                     >
-                      <div
-                        className="relative w-14 h-14 flex items-center justify-center bg-no-repeat bg-contain"
-                        style={{
-                          backgroundImage: player.online
-                            ? 'url("/images/home-assests/cir-online.svg")'
-                            : 'url("/images/home-assests/cir-offline.svg")'
-                        }}
-                      >
-                        <img
-                          src={player.avatar}
-                          alt="Friend Avatar"
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
+                      
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="relative w-14 h-14 flex items-center justify-center bg-no-repeat bg-contain"
+                          style={{
+                            backgroundImage: user.online
+                              ? 'url("/images/home-assests/cir-online.svg")'
+                              : 'url("/images/home-assests/cir-offline.svg")'
+                          }}
+                        >
+                          <img
+                            src={user.avatar}
+                            alt="User Avatar"
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                        </div>
+                        <span className="font-irish text-white">{user.username}</span>
                       </div>
-                      <span className="font-irish text-white">{player.name}</span>
+                      
+               
+                      {renderActionButton(user)}
                     </li>
                   ))}
                 </ul>
@@ -159,3 +326,6 @@ export const Search: ComponentFunction = () => {
     </div>
   );
 };
+
+
+

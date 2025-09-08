@@ -13,7 +13,8 @@ const cancelFriendRequest = async (req, reply, payload, username) => {
         [Op.or]: [
           { userId: payload.id, otherId: friend.id },
           { userId: friend.id, otherId: payload.id }
-        ]
+        ],
+        status:["pending", "friend"]
       }
     });
     fillObject(req, 'INFO', 'cancelFriendRequest', payload.username, true, 'friend request canceled', req.cookies?.token || null);

@@ -16,7 +16,9 @@ export const Content: ComponentFunction = () => {
     </h2>
 
     <button
-      className="px-10 sm:px-16 py-3 sm:py-4 bg-no-repeat bg-contain bg-center text-white font-bold text-lg transition-transform duration-200 hover:scale-95"
+      className="px-10 sm:px-16 py-3 sm:py-4 bg-no-repeat bg-contain bg-center
+       text-white font-bold text-lg 
+      transition-transform duration-200 hover:scale-95"
       style={{ backgroundImage: "url('/images/home-assests/bg-button.svg')" }}
     >
       <span className="font-irish text-white text-xl sm:text-4xl tracking-wide">

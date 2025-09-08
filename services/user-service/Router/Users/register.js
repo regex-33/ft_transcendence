@@ -87,7 +87,7 @@ const register = async (request, reply) => {
 async function createUser(request, reply, userInfo) {
   try {
     const user = await db.User.create(userInfo);
-    const token = await jsonwebtoken.sign(
+    const token = jsonwebtoken.sign(
       { id: user.id, username: user.username, email: user.email },
       jwt_secret,
       { expiresIn: time_token_expiration }
@@ -97,7 +97,8 @@ async function createUser(request, reply, userInfo) {
       return reply.status(500).send({ error: "Error generating token" });
     }
     fillObject(request, "INFO", "register", user.id, true, "", request.cookies?.token || null);
-    return Cookies(reply, token).redirect(process.env.HOME_PAGE);
+
+    return Cookies(reply, token, user.id).redirect(process.env.HOME_PAGE);
   } catch (error) {
     fillObject(request, "ERROR", "register", "unknown", false, error.message, request.cookies?.token || null);
     console.log("Error creating user:", error.message);
@@ -115,9 +116,10 @@ async function checkUserExisting(reply, username, email, request) {
 
     if (user) {
       fillObject(request, "WARNING", "register", "unknown", false, `${user.username === username ? "Username" : "Email"} already exists`, request.cookies?.token || null);
-      return reply.status(400).send({
+      reply.status(400).send({
         error: `${user.username === username ? "Username" : "Email"} already exists`,
       });
+      return true;
     }
     return;
   } catch (error) {

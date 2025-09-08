@@ -32,8 +32,8 @@ export const AuthForm: ComponentFunction = () => {
 
   try {
     const apiUrl = isLoginMode 
-      ? '/api/users/login'
-      : '/api/users/register';
+      ? 'api/users/login'
+      : 'api/users/register';
 
     const requestBody = isLoginMode
       ? {
@@ -45,8 +45,8 @@ export const AuthForm: ComponentFunction = () => {
           password: formData.password,
           email: formData.email,
         };
-
-    const response = await fetch(apiUrl, 
+        console.log(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/${apiUrl}`);
+    const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/${apiUrl}`, 
       {
       method: 'POST',
       headers: 
@@ -61,11 +61,11 @@ export const AuthForm: ComponentFunction = () => {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Authentication failed');
     }
+    window.location.href = '/home'
+    // const data = await response.json();
+    // const token = data.token;
 
-    const data = await response.json();
-    const token = data.token;
-
-    console.log('successful:', data);
+    // console.log('successful:', data);
     
     
   } 
