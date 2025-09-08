@@ -72,8 +72,6 @@ export const AuthForm: ComponentFunction = () => {
   catch (error) 
   {
     console.error('Authentication error:', error);
-    
-  
     if (error instanceof Error) 
     {
       alert(error.message || 'An error occurred during authentication');

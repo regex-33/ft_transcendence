@@ -252,7 +252,7 @@ else if (user.friendStatus === 'request')
         >
           <div
             ref={modalRef}
-            className="bg-[#64B0C5] w-[500px] p-2 h-[450px] rounded-3xl shadow-lg relative focus:outline-none"
+            className="bg-[#64B0C5] w-[500px] p-2 h-[455px] rounded-3xl shadow-lg relative focus:outline-none"
             onClick={(e: MouseEvent) => e.stopPropagation()}
           >
             <div className="relative w-full">
@@ -287,7 +287,12 @@ else if (user.friendStatus === 'request')
                 No users found!
               </div>
             ) : (
-              <div className="max-h-[360px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-cyan-300">
+              <div className="max-h-[360px] overflow-y-auto pr-1"
+              style={{
+                scrollbarColor: '#64B0C5 transparent',
+                msOverflowStyle: 'auto',
+              }}
+              >
                 <ul className="space-y-3">
                   {displayUsers.map(user => (
                     <li
@@ -320,51 +325,6 @@ else if (user.friendStatus === 'request')
                       )}
                         <span className="font-irish text-white">{user.username}</span>
                       </div>
-                      {/* {user.status === 'friend' ? (
-                        <div
-                          className="relative w-14 h-14 flex items-center justify-center bg-no-repeat bg-contain"
-                          style={{
-                            backgroundImage: user.online
-                              ? 'url("/images/home-assests/cir-online.svg")'
-                              : 'url("/images/home-assests/cir-offline.svg")'
-                          }}
-                        >
-                          <img
-                            src={user.avatar}
-                            className="w-10 h-10 rounded-full object-cover"
-                            alt="Avatar"
-                          />
-                        </div>
-                      ) : (
-                        <img
-                          src={user.avatar}
-                          className="w-10 h-10 rounded-full object-cover border-4 border-white/30"
-                          alt="Avatar"
-                        />
-                      )} */}
-                      {/* {friend.status === 'friend' ? (
-                        <div
-                          className="relative w-24 h-24 flex items-center justify-center bg-no-repeat bg-contain"
-                          style={{
-                            backgroundImage: friend.online
-                              ? 'url("/images/home-assests/cir-online.svg")'
-                              : 'url("/images/home-assests/cir-offline.svg")'
-                          }}
-                        >
-                          <img
-                            src={friend.avatar}
-                            className="w-[70px] h-[70px] rounded-full object-cover relative"
-                            alt="Avatar"
-                          />
-                        </div>
-                      ) : (
-                        <img
-                          src={friend.avatar}
-                          className="w-full h-full rounded-full object-cover border-4 border-white/30"
-                          alt="Avatar"
-                        />
-                      )} */}
-               
                       {renderActionButton(user)}
                     </li>
                   ))}
