@@ -35,7 +35,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
       .then((data) => {
         setProfile(data);
         setInitialProfile(data);
-        setPreviewAvatar(data.avatar);
+        setPreviewAvatar(data.avatar || "");
         setLoading(false);
       })
       .catch((err) => {
@@ -154,7 +154,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
     }));
     
 
-    setPreviewAvatar(profileData.avatar);
+    setPreviewAvatar(profileData.avatar || "");
     setAvatarFile(null);
   };
 
