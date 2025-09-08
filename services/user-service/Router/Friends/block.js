@@ -4,15 +4,23 @@ const { fillObject } = require("../../util/logger");
 
 const blockUser = async (req, reply, payload, userId, username) => {
   try {
+    const user = await db.User.findOne({ where: { username } });
+    if (!user) {
+      return reply.status(404).send({ error: "User not found." });
+    }
+    if (user.id === payload.id) {
+      return reply.status(400).send({ error: "You cannot block yourself." });
+    }
+    console.log('block user:', userId, 'by:', payload.id);
     const rel = await db.Relationship.findOne({
       where: {
         [db.Sequelize.Op.or]: [
-          { userId: userId },
-          { otherId: userId }
+          { userId: user.id, otherId: payload.id },
+          { otherId: user.id, userId: payload.id }
         ]
       }
     });
-    if (!rel) {
+    if (!rel || rel.status == 'blocked') {
       return reply.status(404).send({ 'message': 'this user not friend.' });
     }
     rel.status = 'blocked';
