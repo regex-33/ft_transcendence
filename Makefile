@@ -38,7 +38,7 @@ clean-test:
 rebuild-test:
 	@echo "Rebuilding test services..."
 	docker compose -f docker-compose.yml --profile dev build --no-cache
-	docker compose -f docker-compose.yml -d --profile dev up
+	docker compose -f docker-compose.yml --profile dev up -d
 
 help:
 	@echo "Available commands:"
