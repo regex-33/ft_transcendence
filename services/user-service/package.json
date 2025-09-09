@@ -20,6 +20,7 @@
   "homepage": "https://github.com/regex-33/transcendence#readme",
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
+    "@fastify/cors": "^11.1.0",
     "@fastify/express": "^4.0.2",
     "@fastify/middie": "^9.0.3",
     "@fastify/multipart": "^9.0.3",

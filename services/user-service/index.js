@@ -7,6 +7,8 @@ const { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, chec
 const logger = require("./util/logger_request");
 const websocket = require('@fastify/websocket')
 const { log } = require("./util/logger");
+
+
 fastify.addHook("onResponse", (req, res, done) => {
   logger(req, res);
   log({
@@ -33,6 +35,11 @@ fastify.addHook("onRequest", (req, res, done) => {
   done();
 });
 const fastifyCookie = require('@fastify/cookie');
+
+// Remove if not needed
+fastify.register(require('@fastify/cors'), {
+  origin: true
+});
 
 fastify.register(fastifyCookie);
 fastify.register(require("@fastify/multipart"));

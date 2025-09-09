@@ -337,6 +337,3 @@ else if (user.friendStatus === 'request')
     </div>
   );
 };
-
-
-
