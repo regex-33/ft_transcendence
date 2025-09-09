@@ -8,9 +8,8 @@ import {
   NotificationItemProps, 
   NotificationPanelProps 
 } from './NotifTypes';
+import { useRef } from '../../hooks/useRef';
 
-// export const NotificationItem: ComponentFunction<NotificationItemProps> = (props) => {
-//     const { notification, onAction } = props || {};
 export const NotificationItem: ComponentFunction<NotificationItemProps> = ({ 
   notification, 
   onAction 
@@ -95,201 +94,139 @@ export const NotificationItem: ComponentFunction<NotificationItemProps> = ({
   );
 };
 
-// NotificationPanel Component
-export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ 
-  isOpen, 
-  onClose 
-}) => {
-  // const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [filter, setFilter] = useState<'all' | 'unread'>('all');
-  const [notifications, _setNotifications] = useState<Notification[] | any>([]);
+export const NotificationPanel: ComponentFunction = () => {
 
-const setNotifications = (value: any) => {
-  if (typeof value !== 'function' && !Array.isArray(value)) {
-    console.warn('setNotifications called with non-array:', value);
-    console.trace();
-  }
-  return _setNotifications(value);
-};
-
-
-  // Mock data - replace with actual API call
-  useEffect(() => {
-    const mockNotifications: Notification[] = [
-      {
-        id: '1',
-        type: 'friend_request',
-        user: {
+  const [filter, setFilter] = useState<'all' | 'unread'>('all');  
+    // Mock data - replace with actual API call
+    useEffect(() => {
+      const mockNotifications: Notification[] = [
+        {
           id: '1',
-          username: 'duva@duva.234e50',
-          avatar: '/images/avatars/user1.png'
+          type: 'friend_request',
+          user: {
+            id: '1',
+            username: 'duva@duva.234e50',
+            avatar: '/images/avatars/user1.png'
+          },
+          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          message: 'is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text since the 1500s',
+          isRead: false,
+          actions: []
         },
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        message: 'is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text since the 1500s',
-        isRead: false,
-        actions: []
-      },
-      {
-        id: '2',
-        type: 'friend_request',
-        user: {
+        {
           id: '2',
-          username: '@abdo_847848',
-          avatar: '/images/avatars/user2.png'
+          type: 'friend_request',
+          user: {
+            id: '2',
+            username: '@abdo_847848',
+            avatar: '/images/avatars/user2.png'
+          },
+          timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+          message: 'sent you a friend request',
+          isRead: false,
+          actions: [
+            { type: 'refuse', label: 'refuse', variant: 'secondary' },
+            { type: 'accept', label: 'Add', variant: 'primary' }
+          ]
         },
-        timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-        message: 'sent you a friend request',
-        isRead: false,
-        actions: [
-          { type: 'refuse', label: 'refuse', variant: 'secondary' },
-          { type: 'accept', label: 'Add', variant: 'primary' }
-        ]
-      },
-      {
-        id: '3',
-        type: 'message',
-        user: {
+        {
           id: '3',
-          username: '@wahlba_tv_373',
-          avatar: '/images/avatars/user3.png'
+          type: 'message',
+          user: {
+            id: '3',
+            username: '@wahlba_tv_373',
+            avatar: '/images/avatars/user3.png'
+          },
+          timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+          message: 'is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the...',
+          isRead: false,
+          actions: []
         },
-        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-        message: 'is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the...',
-        isRead: false,
-        actions: []
-      },
-      {
-        id: '4',
-        type: 'game',
-        user: {
-          id: '1',
-          username: 'duva@duva.234e50',
-          avatar: '/images/avatars/user1.png'
-        },
-        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-        message: 'wants to play a game with you',
-        isRead: true,
-        actions: [
-          { type: 'match', label: 'Matche 🔥', variant: 'primary' },
-          { type: 'refuse', label: 'refuse', variant: 'secondary' }
-        ]
-      }
-    ];
-
-    setNotifications(mockNotifications);
-  }, []);
-
-  const handleAction = (notificationId: string, actionType: string) => {
-    console.log(`Action ${actionType} for notification ${notificationId}`);
-    
-    
-    switch (actionType) {
-      case 'accept':
-        // Handle friend request 
-        break;
-      case 'refuse':
-        // Handle refusal
-        break;
-      case 'match':
-        // Handle game match
-        break;
-      case 'view':
-        // Handle view action
-        break;
-    }
-
-    // Mark notification as read
-    setNotifications((prev: any[]) => 
-      prev.map(notif => 
-        notif.id === notificationId 
-          ? { ...notif, isRead: true }
-          : notif
-      )
-    );
-  };
-
-  const handleMarkAllAsRead = () => {
-    setNotifications((prev: any[]) => 
-      prev.map(notif => ({ ...notif, isRead: true }))
-    );
-  };
-
-    const notificationsArray = Array.isArray(notifications) ? notifications : [];
-    const filteredNotifications = filter === 'all'
-      ? notificationsArray
-      : notificationsArray.filter(notif => !notif.isRead);
-      const unreadCount = notificationsArray.filter(notif => !notif.isRead).length;
-
-  return (
-    <div className="absolute top-16 right-4 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 flex flex-col">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200 bg-teal-500 text-white rounded-t-lg">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold">Your notifications</h3>
-          <button
-            onClick={handleMarkAllAsRead}
-            className="text-sm hover:underline"
-          >
-            ✓ Mark all as read
-          </button>
-        </div>
-        
-        {/* Filter Tabs */}
-        <div className="flex mt-3">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-3 py-1 text-xs rounded ${
-              filter === 'all' 
-                ? 'bg-white text-teal-500' 
-                : 'bg-teal-400 text-white hover:bg-teal-300'
-            }`}
-          >
-            All {notifications.length > 0 && `${notifications.length}`}
-          </button>
-        </div>
-      </div>
-
-      {/* Notifications List */}
-      <div className="flex-1 overflow-y-auto">
-        {filteredNotifications.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
-            No notifications
+        {
+          id: '4',
+          type: 'game',
+          user: {
+            id: '1',
+            username: 'duva@duva.234e50',
+            avatar: '/images/avatars/user1.png'
+          },
+          timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+          message: 'wants to play a game with you',
+          isRead: true,
+          actions: [
+            { type: 'match', label: 'Matche 🔥', variant: 'primary' },
+            { type: 'refuse', label: 'refuse', variant: 'secondary' }
+          ]
+        }
+      ];
+    }, []);
+  
+    return (
+      <div className="absolute top-24 left-60 w-96 h-96 bg-[#5D9FA9]  opacity-95 rounded-lg shadow-xl   max-h-96 flex flex-col">
+        {/* Header */}
+        <div className="p-4 border-b border-[#4E92A2]  bg-[#5D9FA9] text-white rounded-t-lg">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold">Your notifications</h3>
+            <button
+              // onClick={handleMarkAllAsRead}
+              className="text-sm hover:underline"
+            >
+              ✓ Mark all as read
+            </button>
           </div>
-        ) : (
-          filteredNotifications.map((notification: Notification) => (
-            <NotificationItem
-              key={notification.id}
-              notification={notification}
-              onAction={handleAction}
-            />
-          ))
-        )}
+          
+          {/* Filter Tabs */}
+          <div className="flex mt-3">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-3 py-1 text-xs rounded ${
+                filter === 'all' 
+                  ? 'bg-white text-teal-500' 
+                  : 'bg-teal-400 text-white hover:bg-teal-300'
+              }`}
+            >
+              {/* All {notifications.length > 0 && `${notifications.length}`} */}
+            </button>
+          </div>
+        </div>
+  
+        {/* Notifications List */}
+        <div className="flex-1 overflow-y-auto">
+          {/* {filteredNotifications.length === 0 ? (
+            <div className="p-4 text-center text-gray-500">
+              No notifications
+            </div>
+          ) : (
+            filteredNotifications.map((notification: Notification) => (
+              <NotificationItem
+                key={notification.id}
+                notification={notification}
+                onAction={handleAction}
+              />
+            ))
+          )} */}
+        </div>
+  
+        {/* Footer */}
+        <div className="p-3 border-t border-gray-200 text-center">
+          <button className="text-sm text-teal-600 hover:underline">
+            See more notifications
+          </button>
+        </div>
       </div>
-
-      {/* Footer */}
-      <div className="p-3 border-t border-gray-200 text-center">
-        <button className="text-sm text-teal-600 hover:underline">
-          See more notifications
-        </button>
-      </div>
-    </div>
-  );
+    );
 };
 
 export const NotificationButton: ComponentFunction = () => 
 {
-  const [isOpen, setIsOpen] = useState(false);
-  const [unreadCount] = useState(3);
-
-  const togglePanel = () => 
-  {
-    setIsOpen(!isOpen);
-  };
-
-  return (
-    <div className="relative">
+  const [showNotif, setShowNotif] = useState(false);
+  const onNotifInput = () => {
+  setShowNotif(prev => !prev);
+};
+return (
+  <div>
       <button 
-        onClick={togglePanel}
+       onClick={onNotifInput} 
         className="flex items-center gap-2 md:px-3 py-1 overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95"
       >
         <img 
@@ -298,15 +235,13 @@ export const NotificationButton: ComponentFunction = () =>
           className="w-6 h-6 md:w-10 md:h-10" 
         />
       </button>
-      
-      {unreadCount > 0 && (
-        <span className="absolute top-3 right-6 block h-[6px] w-[6px] rounded-full bg-red-500 transition-transform duration-200 hover:scale-95"></span>
-      )}
-      {isOpen && (
-        <NotificationPanel isOpen={isOpen} onClose={() => setIsOpen(false)} />
-      )}
 
-    </div>
-  );
+    {showNotif && (
+      <div className="fixed inset-x-[550px] inset-y-0 z-50 pointer-events-none">
+          <NotificationPanel/>
+      </div>
+    )}
+  </div>
+);
 };
 

@@ -58,7 +58,9 @@ export const Header: ComponentFunction = () => {
       <div className="hidden sm:flex items-center justify-around w-1/2  md:px-2 h-[64px] relative left-12 top-1">
         <nav className="flex gap-3 md:gap-3 flex-none justify-center mr-[180px] min-w-0">
 
-        {/* <NotificationButton /> */}
+        
+          <NotificationButton />
+      
 
         <div className="min-w-0" >
           <button className="flex items-center gap-2   md:px-3 py-1    overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95">
@@ -93,11 +95,11 @@ export const Header: ComponentFunction = () => {
         </div>
         
       </div>
-      <div className="sm:hidden z-10">
+      {/* <div className="sm:hidden z-10">
         <button className="flex items-center gap-2 border px-2 py-1 rounded hover:bg-[#427970]">
           <img src="/images/home-assests/menu-icon.svg" alt="menu" className="w-6 h-6" />
         </button>
-      </div>
+      </div> */}
     </header>
 )
 }

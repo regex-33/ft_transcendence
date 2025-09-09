@@ -1,347 +1,311 @@
-import { useState } from "../../hooks/useState";
-import { useRef } from "../../hooks/useRef";
-import { useEffect } from "../../hooks/useEffect";
+import { h } from '../../vdom/createElement';
 import { ComponentFunction } from "../../types/global";
-import { h } from "../../vdom/createElement";
+import { useEffect } from '../../hooks/useEffect';
+import { useState } from '../../hooks/useState';
+import { 
+  Notification, 
+  NotificationAction, 
+  NotificationItemProps, 
+  NotificationPanelProps 
+} from './NotifTypes';
 
-type User = {
-  id: number;
-  username: string;
-  email: string;
-  avatar: string;
-  bio: string;
-  online: boolean;
-  location: string | null;
-  birthday: string | null;
-};
-
-type FriendStatus = 'none' | 'pending' | 'accepted' | 'blocked';
-
-type UserWithFriendStatus = User & {
-  friendStatus: FriendStatus;
-};
-
-export const Search: ComponentFunction = () => {
-  const [showSearch, setShowSearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [users, setUsers] = useState<UserWithFriendStatus[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const modalRef = useRef<HTMLDivElement | null>(null);
-
-  // Fetch current user data
-  const fetchCurrentUser = async () => {
-    try {
-      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`);
-      if (response.ok) {
-        const userData = await response.json();
-        setCurrentUser(userData);
-      }
-    } catch (err) {
-      console.error('Error fetching current user:', err);
-    }
+// export const NotificationItem: ComponentFunction<NotificationItemProps> = (props) => {
+//     const { notification, onAction } = props || {};
+export const NotificationItem: ComponentFunction<NotificationItemProps> = ({ 
+  notification, 
+  onAction 
+}) => {
+  const handleAction = (actionType: string) => {
+    onAction(notification.id, actionType);
   };
 
-  // Fetch users from API
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Fetch users and friends data
-      const [usersResponse, friendsResponse, pendingResponse, blockedResponse] = await Promise.all([
-        fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users`),
-        fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`),
-        fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/pending-friends`),
-        fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/blocked-users`)
-      ]);
-
-      if (!usersResponse.ok) {
-        throw new Error('Failed to fetch users');
-      }
-
-      const [allUsers, acceptedFriends, pendingFriends, blockedUsers] = await Promise.all([
-        usersResponse.json(),
-        friendsResponse.ok ? friendsResponse.json() : [],
-        pendingResponse.ok ? pendingResponse.json() : [],
-        blockedResponse.ok ? blockedResponse.json() : []
-      ]);
-
-      // Create maps for friend statuses
-      const acceptedMap = new Map(acceptedFriends.map((f: any) => [f.username, 'accepted']));
-      const pendingMap = new Map(pendingFriends.map((f: any) => [f.username, 'pending']));
-      const blockedMap = new Map(blockedUsers.map((f: any) => [f.username, 'blocked']));
-
-      // Add friend status to users and filter out current user
-      const usersWithStatus: UserWithFriendStatus[] = allUsers
-        .filter((user: User) => currentUser ? user.id !== currentUser.id : true)
-        .map((user: User) => ({
-          ...user,
-          friendStatus: (
-            acceptedMap.get(user.username) ||
-            pendingMap.get(user.username) ||
-            blockedMap.get(user.username) ||
-            'none'
-          ) as FriendStatus
-        }));
-
-      setUsers(usersWithStatus);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('Error fetching users:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle friend actions
-  const handleFriendAction = async (username: string, action: 'add' | 'cancel') => {
-    try {
-      let response;
-      
-      if (action === 'add') 
-      {
-        // Add friend
-        response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/add`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ username })
-        });
-      } 
-      else 
-      {
-        // Cancel friend request
-        response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ username, action: 'cancel' })
-        });
-      }
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${action} friend`);
-      }
-
-      // Refresh users data to update friend statuses
-      await fetchUsers();
-    } catch (err) {
-      alert(`Failed to ${action} friend`);
-      console.error(`Error performing ${action} action:`, err);
-    }
-  };
-
-  // Fetch current user when component mounts
-  useEffect(() => {
-    fetchCurrentUser();
-  }, []);
-
-  // Fetch users when search opens or current user is loaded
-  useEffect(() => {
-    if (showSearch && users.length === 0 && currentUser) {
-      fetchUsers();
-    }
-  }, [showSearch, currentUser]);
-
-  console.log('type:', typeof searchQuery, searchQuery);
-  const trimmed = (typeof searchQuery === 'string' ? searchQuery : '').trim().toLowerCase();
-  const isSearching = trimmed.length > 0;
-
-  const defaultUsers = users
-    .filter(u => u.online)
-    .concat(users.filter(u => !u.online))
-    .slice(0, 5);
-  
-  const filteredUsers = users.filter(u =>
-    u.username.toLowerCase().includes(trimmed)
-  );
-  
-  let displayUsers: UserWithFriendStatus[] = [];
-  let showNoResults = false;
-  
-  if (!isSearching) {
-    displayUsers = defaultUsers;
-  } else if (filteredUsers.length > 0) {
-    displayUsers = filteredUsers;
-  } else {
-    showNoResults = true;
-  }
-  
-  const handleCloseSearch = () => {
-    setShowSearch(false);
-    setSearchQuery('');
-  };
-  
-  const handleOverlayClick = (e: MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      handleCloseSearch();
-    }
-  };
-
-  useEffect(() => {
-    if (!showSearch) return;
+  const getTimeAgo = (timestamp: string): string => {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diff = Math.floor((now.getTime() - time.getTime()) / (1000 * 60 * 60));
     
-    const handleClickOutside = (e: Event) => {
-      const target = e.target as Element;
-      if (modalRef.current && !modalRef.current.contains(target)) {
-        setShowSearch(false);
-        setSearchQuery('');
-      }
-    };
-  
-    const timeoutId = setTimeout(() => {
-      document.addEventListener('click', handleClickOutside, true);
-    }, 200);
-    
-    return () => {
-      clearTimeout(timeoutId);
-      document.removeEventListener('click', handleClickOutside, true);
-    };
-  }, [showSearch]);
-
-  const onSearchInput = () => {
-    setShowSearch(true);
+    if (diff < 1) return 'Just now';
+    if (diff === 1) return '1 hour ago';
+    return `${diff} hours ago`;
   };
 
-  const renderActionButton = (user: UserWithFriendStatus) => {
-    if (user.friendStatus === 'blocked') {
-      return (
-        <div className="flex items-center text-red-400 font-semibold text-sm gap-1">
-        <i className="fa-solid fa-ban text-sm"></i>
-        <span>Blocked</span>
-      </div>      
-      );
-    } 
-  else if (user.friendStatus === 'accepted') {
-  return (
-    <span className="inline-flex items-center text-green-400 font-semibold text-sm gap-2">
-      <i className="fa-solid fa-user-check"></i>
-      Friends
-    </span>
-  );
-} 
-else if (user.friendStatus === 'pending') {
-  return (
-    <span className="inline-flex items-center text-blue-500 font-semibold text-sm gap-2">
-      <i className="fa-solid fa-user-clock"></i>
-      Requested
-    </span>
-  );
-}
- else {
-      // friendStatus === 'none'
-      return (
-        <button
-          onClick={() => handleFriendAction(user.username, 'add')}
-          className="
-            flex items-center gap-2 px-3 h-[30px]
-            bg-[url('/images/home-assests/bg-FriendsAdd.svg')]
-            bg-no-repeat bg-center bg-contain
-            text-white font-semibold text-sm
-            transition-transform duration-200 hover:scale-95 pl-1
-          ">
-          <img
-            src="/images/setting-assests/plus-friends.svg"
-            alt="Add"
-            className="w-7 h-7"
-          />
-          <span>Add Friend</span>
-        </button>
-      );
+  const getActionButtonClass = (variant: string): string => {
+    const baseClass = "px-4 py-1 rounded text-sm font-medium transition-colors duration-200";
+    switch (variant) {
+      case 'primary':
+        return `${baseClass} bg-green-500 hover:bg-green-600 text-white`;
+      case 'secondary':
+        return `${baseClass} bg-gray-300 hover:bg-gray-400 text-gray-700`;
+      case 'danger':
+        return `${baseClass} bg-red-500 hover:bg-red-600 text-white`;
+      default:
+        return `${baseClass} bg-blue-500 hover:bg-blue-600 text-white`;
     }
   };
 
   return (
-    <div>
-      <div className="min-w-0">
-        <button
-          onClick={onSearchInput}
-          className="flex items-center gap-2 md:px-3 py-1 overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95"
-        >
-          <img src="/images/home-assests/search-icon.svg" alt="search" className="w-6 h-6 md:w-10 md:h-10" />
-        </button>
+    <div className={`flex items-start gap-3 p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200 ${!notification.isRead ? 'bg-blue-50' : ''}`}>
+      {/* Avatar */}
+      <div className="flex-shrink-0">
+        <img
+          src={notification.user.avatar}
+          alt={notification.user.username}
+          className="w-10 h-10 rounded-full"
+        />
       </div>
-      {showSearch && (
-        <div 
-          className="fixed inset-0 bg-[#193D47] bg-opacity-70 flex justify-center items-center z-50"
-          onClick={handleOverlayClick}
-        >
-          <div
-            ref={modalRef}
-            className="bg-[#64B0C5] w-[500px] p-2 h-[450px] rounded-3xl shadow-lg relative focus:outline-none"
-            onClick={(e: MouseEvent) => e.stopPropagation()}
-          >
-            <div className="relative w-full">
-              <span className="absolute top-[42px] left-1 flex items-center pl-3">
-                <i className="fa-solid fa-magnifying-glass text-md text-[#D3DDE3]"></i>
-              </span>
-              <input
-                type="text"
-                placeholder="Search for a user"
-                className="w-full px-10 pb-3 mb-1 pt-10 placeholder-[#D3DDE3] border-b-[1px] border-[#FFFFFF] bg-transparent text-white focus:outline-none"
-                value={searchQuery}
-                onInput={(e: InputEvent) =>
-                  setSearchQuery((e.target as HTMLInputElement).value)
-                }
-                spellCheck={false}
-                autoFocus
-              />
-            </div>
 
-            {error && (
-              <div className="text-red-300 text-center mt-4 mb-2">
-                Error: {error}
-              </div>
-            )}
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-1">
+          <span className="font-medium text-gray-900 text-sm">
+            {notification.user.username}
+          </span>
+          <span className="text-xs text-gray-500">
+            {getTimeAgo(notification.timestamp)}
+          </span>
+        </div>
+        
+        <p className="text-sm text-gray-600 mb-3">
+          {notification.message}
+        </p>
 
-            {loading ? (
-              <div className="text-white text-center mt-40">
-                Loading users...
-              </div>
-            ) : showNoResults ? (
-              <div className="text-3xl font-irish text-gray-100 mt-40 ml-24">
-                No users found!
-              </div>
-            ) : (
-              <div className="max-h-[360px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-cyan-300">
-                <ul className="space-y-3">
-                  {displayUsers.map(user => (
-                    <li
-                      key={user.id}
-                      className="flex ml-5 w-[420px] items-center justify-between gap-3 pb-1 border-b border-[#91C7D6]"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="relative w-14 h-14 flex items-center justify-center bg-no-repeat bg-contain"
-                          style={{
-                            backgroundImage: user.online
-                              ? 'url("/images/home-assests/cir-online.svg")'
-                              : 'url("/images/home-assests/cir-offline.svg")'
-                          }}
-                        >
-                          <img
-                            src={user.avatar}
-                            alt="User Avatar"
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                        </div>
-                        <span className="font-irish text-white">{user.username}</span>
-                      </div>
-                      
-
-                      {renderActionButton(user)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+        {/* Action Buttons */}
+        {notification.actions && notification.actions.length > 0 && (
+          <div className="flex gap-2">
+            {notification.actions.map((action, index) => (
+              <button
+                key={index}
+                onClick={() => handleAction(action.type)}
+                className={getActionButtonClass(action.variant)}
+              >
+                {action.label}
+              </button>
+            ))}
           </div>
+        )}
+      </div>
+
+      {/* Unread Indicator */}
+      {!notification.isRead && (
+        <div className="flex-shrink-0">
+          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
         </div>
       )}
+    </div>
+  );
+};
+
+// NotificationPanel Component
+export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ 
+  isOpen, 
+  onClose 
+}) => {
+  // const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  const [notifications, _setNotifications] = useState<Notification[] | any>([]);
+
+const setNotifications = (value: any) => {
+  if (typeof value !== 'function' && !Array.isArray(value)) {
+    console.warn('setNotifications called with non-array:', value);
+    console.trace();
+  }
+  return _setNotifications(value);
+};
+
+
+  // Mock data - replace with actual API call
+  useEffect(() => {
+    const mockNotifications: Notification[] = [
+      {
+        id: '1',
+        type: 'friend_request',
+        user: {
+          id: '1',
+          username: 'duva@duva.234e50',
+          avatar: '/images/avatars/user1.png'
+        },
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        message: 'is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text since the 1500s',
+        isRead: false,
+        actions: []
+      },
+      {
+        id: '2',
+        type: 'friend_request',
+        user: {
+          id: '2',
+          username: '@abdo_847848',
+          avatar: '/images/avatars/user2.png'
+        },
+        timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+        message: 'sent you a friend request',
+        isRead: false,
+        actions: [
+          { type: 'refuse', label: 'refuse', variant: 'secondary' },
+          { type: 'accept', label: 'Add', variant: 'primary' }
+        ]
+      },
+      {
+        id: '3',
+        type: 'message',
+        user: {
+          id: '3',
+          username: '@wahlba_tv_373',
+          avatar: '/images/avatars/user3.png'
+        },
+        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+        message: 'is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the...',
+        isRead: false,
+        actions: []
+      },
+      {
+        id: '4',
+        type: 'game',
+        user: {
+          id: '1',
+          username: 'duva@duva.234e50',
+          avatar: '/images/avatars/user1.png'
+        },
+        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+        message: 'wants to play a game with you',
+        isRead: true,
+        actions: [
+          { type: 'match', label: 'Matche 🔥', variant: 'primary' },
+          { type: 'refuse', label: 'refuse', variant: 'secondary' }
+        ]
+      }
+    ];
+
+    setNotifications(mockNotifications);
+  }, []);
+
+  const handleAction = (notificationId: string, actionType: string) => {
+    console.log(`Action ${actionType} for notification ${notificationId}`);
+    
+    
+    switch (actionType) {
+      case 'accept':
+        // Handle friend request 
+        break;
+      case 'refuse':
+        // Handle refusal
+        break;
+      case 'match':
+        // Handle game match
+        break;
+      case 'view':
+        // Handle view action
+        break;
+    }
+
+    // Mark notification as read
+    setNotifications((prev: any[]) => 
+      prev.map(notif => 
+        notif.id === notificationId 
+          ? { ...notif, isRead: true }
+          : notif
+      )
+    );
+  };
+
+  const handleMarkAllAsRead = () => {
+    setNotifications((prev: any[]) => 
+      prev.map(notif => ({ ...notif, isRead: true }))
+    );
+  };
+
+    const notificationsArray = Array.isArray(notifications) ? notifications : [];
+    const filteredNotifications = filter === 'all'
+      ? notificationsArray
+      : notificationsArray.filter(notif => !notif.isRead);
+      const unreadCount = notificationsArray.filter(notif => !notif.isRead).length;
+
+  return (
+    <div className="absolute top-16 right-4 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 flex flex-col">
+      {/* Header */}
+      <div className="p-4 border-b border-gray-200 bg-teal-500 text-white rounded-t-lg">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold">Your notifications</h3>
+          <button
+            onClick={handleMarkAllAsRead}
+            className="text-sm hover:underline"
+          >
+            ✓ Mark all as read
+          </button>
+        </div>
+        
+        {/* Filter Tabs */}
+        <div className="flex mt-3">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-3 py-1 text-xs rounded ${
+              filter === 'all' 
+                ? 'bg-white text-teal-500' 
+                : 'bg-teal-400 text-white hover:bg-teal-300'
+            }`}
+          >
+            All {notifications.length > 0 && `${notifications.length}`}
+          </button>
+        </div>
+      </div>
+
+      {/* Notifications List */}
+      <div className="flex-1 overflow-y-auto">
+        {filteredNotifications.length === 0 ? (
+          <div className="p-4 text-center text-gray-500">
+            No notifications
+          </div>
+        ) : (
+          filteredNotifications.map((notification: Notification) => (
+            <NotificationItem
+              key={notification.id}
+              notification={notification}
+              onAction={handleAction}
+            />
+          ))
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="p-3 border-t border-gray-200 text-center">
+        <button className="text-sm text-teal-600 hover:underline">
+          See more notifications
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export const NotificationButton: ComponentFunction = () => 
+{
+  const [isOpen, setIsOpen] = useState(false);
+  const [unreadCount] = useState(3);
+
+  const togglePanel = () => 
+  {
+    setIsOpen(!isOpen);
+  };
+
+  return (
+    <div className="relative">
+      <button 
+        onClick={togglePanel}
+        className="flex items-center gap-2 md:px-3 py-1 overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95"
+      >
+        <img 
+          src="/images/home-assests/notif-icon.svg" 
+          alt="notif" 
+          className="w-6 h-6 md:w-10 md:h-10" 
+        />
+      </button>
+      
+      {unreadCount > 0 && (
+        <span className="absolute top-3 right-6 block h-[6px] w-[6px] rounded-full bg-red-500 transition-transform duration-200 hover:scale-95"></span>
+      )}
+      {isOpen && (
+        <NotificationPanel isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      )}
+
     </div>
   );
 };

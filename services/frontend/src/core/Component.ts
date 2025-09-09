@@ -89,7 +89,7 @@ export abstract class Component<
       }
     } catch (error: unknown) {
       const err = error as Error;
-      console.error("Component render error:", err);
+      // console.error("Component render error:", err);
       this.renderErrorState(err);
     } finally {
       this.hooksManager.clearCurrentComponent();

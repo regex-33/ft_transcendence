@@ -45,14 +45,11 @@ export const Search: ComponentFunction = () => {
 
       const allUsers = await usersResponse.json();
 
-      // Map users and use status directly from API response
-      const usersWithStatus: UserWithFriendStatus[] = allUsers.map((user: User) => ({
-        ...user,
-        friendStatus: user.status || 'none' // Use status from API, default to 'none' if null
-      }));
-
+      const usersArray = Array.isArray(allUsers) ? allUsers : [];
+      const usersWithStatus = usersArray.map(u => ({ ...u, friendStatus: u.status ?? 'none' }));
       console.log("all users", usersWithStatus);
       setUsers(usersWithStatus);
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       console.error('Error fetching users:', err);
@@ -98,23 +95,30 @@ export const Search: ComponentFunction = () => {
 
   // Fetch users when component mounts or when search opens
   useEffect(() => {
-    if (showSearch && users.length === 0) {
+    if (showSearch && (!Array.isArray(users) || users.length === 0)) {
       fetchUsers();
     }
   }, [showSearch]);
+  
 
   console.log('type:', typeof searchQuery, searchQuery);
   const trimmed = (typeof searchQuery === 'string' ? searchQuery : '').trim().toLowerCase();
   const isSearching = trimmed.length > 0;
 
-  const defaultUsers = users
-    .filter(u => u.online)
-    .concat(users.filter(u => !u.online))
-    .slice(0, 5);
-  
-  const filteredUsers = users.filter(u =>
-    u.username.toLowerCase().includes(trimmed)
-  );
+  console.log('users at render', users, Array.isArray(users))
+  // at top of render
+const safeUsers = Array.isArray(users) ? users : [];
+
+// use safeUsers everywhere instead of users
+const defaultUsers = safeUsers
+  .filter(u => u.online)
+  .concat(safeUsers.filter(u => !u.online))
+  .slice(0, 5);
+
+const filteredUsers = safeUsers.filter(u =>
+  u.username.toLowerCase().includes(trimmed)
+);
+
   
   let displayUsers: UserWithFriendStatus[] = [];
   let showNoResults = false;
@@ -272,11 +276,11 @@ else if (user.friendStatus === 'request')
               />
             </div>
 
-            {error && (
+            {/* {error && (
               <div className="text-red-300 text-center mt-4 mb-2">
                 Error: {error}
               </div>
-            )}
+            )} */}
 
             {loading ? (
               <div className="text-white text-center mt-40">
