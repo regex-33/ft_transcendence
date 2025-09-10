@@ -95,138 +95,130 @@ export const NotificationItem: ComponentFunction<NotificationItemProps> = ({
 };
 
 export const NotificationPanel: ComponentFunction = () => {
-
   const [filter, setFilter] = useState<'all' | 'unread'>('all');  
-    // Mock data - replace with actual API call
-    useEffect(() => {
-      const mockNotifications: Notification[] = [
-        {
+  
+  // Mock data - replace with actual API call
+  useEffect(() => {
+    const mockNotifications: Notification[] = [
+      {
+        id: '1',
+        type: 'friend_request',
+        user: {
           id: '1',
-          type: 'friend_request',
-          user: {
-            id: '1',
-            username: 'duva@duva.234e50',
-            avatar: '/images/avatars/user1.png'
-          },
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          message: 'is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text since the 1500s',
-          isRead: false,
-          actions: []
+          username: 'duva@duva.234e50',
+          avatar: '/images/avatars/user1.png'
         },
-        {
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        message: 'is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text since the 1500s',
+        isRead: false,
+        actions: []
+      },
+      {
+        id: '2',
+        type: 'friend_request',
+        user: {
           id: '2',
-          type: 'friend_request',
-          user: {
-            id: '2',
-            username: '@abdo_847848',
-            avatar: '/images/avatars/user2.png'
-          },
-          timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-          message: 'sent you a friend request',
-          isRead: false,
-          actions: [
-            { type: 'refuse', label: 'refuse', variant: 'secondary' },
-            { type: 'accept', label: 'Add', variant: 'primary' }
-          ]
+          username: '@abdo_847848',
+          avatar: '/images/avatars/user2.png'
         },
-        {
+        timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+        message: 'sent you a friend request',
+        isRead: false,
+        actions: [
+          { type: 'refuse', label: 'refuse', variant: 'secondary' },
+          { type: 'accept', label: 'Add', variant: 'primary' }
+        ]
+      },
+      {
+        id: '3',
+        type: 'message',
+        user: {
           id: '3',
-          type: 'message',
-          user: {
-            id: '3',
-            username: '@wahlba_tv_373',
-            avatar: '/images/avatars/user3.png'
-          },
-          timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-          message: 'is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the...',
-          isRead: false,
-          actions: []
+          username: '@wahlba_tv_373',
+          avatar: '/images/avatars/user3.png'
         },
-        {
-          id: '4',
-          type: 'game',
-          user: {
-            id: '1',
-            username: 'duva@duva.234e50',
-            avatar: '/images/avatars/user1.png'
-          },
-          timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-          message: 'wants to play a game with you',
-          isRead: true,
-          actions: [
-            { type: 'match', label: 'Matche 🔥', variant: 'primary' },
-            { type: 'refuse', label: 'refuse', variant: 'secondary' }
-          ]
-        }
-      ];
-    }, []);
-  
-    return (
-      <div className="absolute top-24 left-60 w-96 h-96 bg-[#5D9FA9]  opacity-95 rounded-lg shadow-xl   max-h-96 flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b border-[#4E92A2]  bg-[#5D9FA9] text-white rounded-t-lg">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold">Your notifications</h3>
-            <button
-              // onClick={handleMarkAllAsRead}
-              className="text-sm hover:underline"
-            >
-              ✓ Mark all as read
-            </button>
-          </div>
-          
-          {/* Filter Tabs */}
-          <div className="flex mt-3">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-3 py-1 text-xs rounded ${
-                filter === 'all' 
-                  ? 'bg-white text-teal-500' 
-                  : 'bg-teal-400 text-white hover:bg-teal-300'
-              }`}
-            >
-              {/* All {notifications.length > 0 && `${notifications.length}`} */}
-            </button>
-          </div>
+        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+        message: 'is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the...',
+        isRead: false,
+        actions: []
+      },
+      {
+        id: '4',
+        type: 'game',
+        user: {
+          id: '1',
+          username: 'duva@duva.234e50',
+          avatar: '/images/avatars/user1.png'
+        },
+        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+        message: 'wants to play a game with you',
+        isRead: true,
+        actions: [
+          { type: 'match', label: 'Matche 🔥', variant: 'primary' },
+          { type: 'refuse', label: 'refuse', variant: 'secondary' }
+        ]
+      }
+    ];
+  }, []);
+
+  return (
+    <div className="absolute top-full right-0 mt-2 w-96 h-96 bg-[#5D9FA9] opacity-95 rounded-lg shadow-xl max-h-96 flex flex-col z-[9999]">
+      {/* Header */}
+      <div className="p-4 border-b border-[#4E92A2] bg-[#5D9FA9] text-white rounded-t-lg">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold">Your notifications</h3>
+          <button
+            // onClick={handleMarkAllAsRead}
+            className="text-sm hover:underline"
+          >
+            ✓ Mark all as read
+          </button>
         </div>
-  
-        {/* Notifications List */}
-        <div className="flex-1 overflow-y-auto">
-          {/* {filteredNotifications.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">
-              No notifications
-            </div>
-          ) : (
-            filteredNotifications.map((notification: Notification) => (
-              <NotificationItem
-                key={notification.id}
-                notification={notification}
-                onAction={handleAction}
-              />
-            ))
-          )} */}
-        </div>
-  
-        {/* Footer */}
-        <div className="p-3 border-t border-gray-200 text-center">
-          <button className="text-sm text-teal-600 hover:underline">
-            See more notifications
+        
+        {/* Filter Tabs */}
+        <div className="flex mt-3">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-3 py-1 text-xs rounded ${
+              filter === 'all' 
+                ? 'bg-white text-teal-500' 
+                : 'bg-teal-400 text-white hover:bg-teal-300'
+            }`}
+          >
+            All
           </button>
         </div>
       </div>
-    );
+
+      {/* Notifications List */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Add your notification items here */}
+        <div className="p-4 text-center text-gray-500">
+          No notifications
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="p-3 border-t border-gray-200 text-center">
+        <button className="text-sm text-teal-600 hover:underline">
+          See more notifications
+        </button>
+      </div>
+    </div>
+  );
 };
 
-export const NotificationButton: ComponentFunction = () => 
-{
+export const NotificationButton: ComponentFunction = () => {
   const [showNotif, setShowNotif] = useState(false);
+  
   const onNotifInput = () => {
-  setShowNotif(prev => !prev);
-};
-return (
-  <div>
+    setShowNotif(prev => !prev);
+  };
+
+  return (
+    <div className="relative">
       <button 
-       onClick={onNotifInput} 
+        onClick={onNotifInput} 
         className="flex items-center gap-2 md:px-3 py-1 overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95"
       >
         <img 
@@ -236,12 +228,8 @@ return (
         />
       </button>
 
-    {showNotif && (
-      <div className="fixed inset-x-[550px] inset-y-0 z-50 pointer-events-none">
-          <NotificationPanel/>
-      </div>
-    )}
-  </div>
-);
+      {showNotif && <NotificationPanel />}
+    </div>
+  );
 };
 

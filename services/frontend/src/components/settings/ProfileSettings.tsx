@@ -15,35 +15,114 @@ interface Profile {
 
 export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) => {
   const [profile, setProfile] = useState<Profile>({
-    id: 1,
-    username: "",
-    email: "",
-    birthday: "",
-    location: "",
+    id:  1,
+    username:  "",
+    email:  "",
+    birthday:  "",
+    location:  "",
     bio: "",
-    avatar: ''
+    avatar:  ''
   });
+  
   const [initialProfile, setInitialProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [previewAvatar, setPreviewAvatar] = useState('');
+  const [loading, setLoading] = useState(false); // Start as false since we have profileData
+  const [previewAvatar, setPreviewAvatar] = useState(profileData?.avatar || '');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [error, setError] = useState('');
+  // const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/update`)
-      .then((res) => res.json())
-      .then((data) => {
-        setProfile(data);
-        setInitialProfile(data);
-        setPreviewAvatar(data.avatar || "");
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError('Failed to load profile data');
-        setLoading(false);
-      });
-  }, []);
+    if (profileData && Object.keys(profileData).length > 0) {
+      const profileFromData = {
+        id:  1,
+        username: "",
+        email:  "",
+        birthday:  "",
+        location:  "",
+        bio:  "",
+        avatar:  ''
+      };
+      
+      setProfile(profileFromData);
+      setInitialProfile(profileFromData);
+      setPreviewAvatar(profileData.avatar || "");
+      setLoading(false);
+    }
+  }, [profileData]);
+
+
+  const handleReset = () => {
+    if (!initialProfile) {
+      console.warn("No initial profile data to reset to");
+      return;
+    }
+    const profileFromData = {
+      id:  1,
+      username: "",
+      email:  "",
+      birthday:  "",
+      location:  "",
+      bio:  "",
+      avatar:  ''
+    };
+    setInitialProfile(profileFromData);
+    
+    setProfile(profileFromData);
+    setPreviewAvatar(initialProfile.avatar || profileData?.avatar || "");
+    setAvatarFile(null);
+  };
+
+
+  //   // Only fetch if profileData is not available or incomplete
+  //   setLoading(true);
+  //   fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/update`, {
+  //     credentials: 'include' // Add credentials for authentication
+  //   })
+  //     .then(async (res) => {
+  //       if (!res.ok) {
+  //         throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+  //       }
+  //       return res.json();
+  //     })
+  //     .then((data) => {
+  //       // Validate that data is properly structured
+  //       if (!data || typeof data !== 'object') {
+  //         throw new Error('Invalid data received from server');
+  //       }
+        
+  //       const validatedData = {
+  //         id: data.id || 1,
+  //         username: data.username || "",
+  //         email: data.email || "",
+  //         birthday: data.birthday || "",
+  //         location: data.location || "",
+  //         bio: data.bio || "",
+  //         avatar: data.avatar || ""
+  //       };
+        
+  //       setProfile(validatedData);
+  //       setInitialProfile(validatedData);
+  //       setPreviewAvatar(data.avatar || "");
+  //       setLoading(false);
+  //     })
+  //     .catch((err) => {
+  //       console.error('Fetch error:', err);
+  //       setError('Failed to load profile data');
+  //       setLoading(false);
+        
+  //       // Set default profile even on error
+  //       const defaultProfile = {
+  //         id: 1,
+  //         username: "",
+  //         email: "",
+  //         birthday: "",
+  //         location: "",
+  //         bio: "",
+  //         avatar: ""
+  //       };
+  //       setProfile(defaultProfile);
+  //       setInitialProfile(defaultProfile);
+  //     });
+  // }, [profileData]);
 
   const handleChange = (e: Event) => {
     const target = e.target as HTMLInputElement | HTMLTextAreaElement;
@@ -54,21 +133,18 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
     if (!initialProfile) return {};
     
     const changes: any = {};
-    if (profile.username !== initialProfile.username && profile.username.trim() !== '') {
-      changes.username = profile.username;
-    }
-    if (profile.email !== initialProfile.email && profile.email.trim() !== '') {
-      changes.email = profile.email;
-    }
-    if (profile.birthday !== initialProfile.birthday && profile.birthday.trim() !== '') {
-      changes.birthday = profile.birthday;
-    }
-    if (profile.location !== initialProfile.location && profile.location.trim() !== '') {
-      changes.location = profile.location;
-    }
-    if (profile.bio !== initialProfile.bio && profile.bio.trim() !== '') {
-      changes.bio = profile.bio;
-    }
+    
+    // Only include fields that have actually changed and are not empty
+    Object.keys(profile).forEach(key => {
+      if (key === 'id' || key === 'avatar') return; // Skip id and avatar
+      
+      const currentValue = (profile as any)[key];
+      const initialValue = (initialProfile as any)[key];
+      
+      if (currentValue !== initialValue && currentValue.trim() !== '') {
+        changes[key] = currentValue;
+      }
+    });
     
     return changes;
   };
@@ -78,17 +154,17 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
       const formData = new FormData();
       const changedFields = getChangedFields();
       
-
+      // Add changed fields to formData
       Object.keys(changedFields).forEach(key => {
         formData.append(key, changedFields[key]);
       });
       
-
+      // Add avatar if changed
       if (avatarFile) {
         formData.append('avatar', avatarFile);
       }
       
-    
+      // Check if there are any changes
       if (Object.keys(changedFields).length === 0 && !avatarFile) {
         alert("No changes to save!");
         return;
@@ -96,18 +172,21 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
       
       const res = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/update`, {
         method: "PUT",
+        credentials: 'include', // Add credentials
         body: formData,
       });
       
-      if (!res.ok) 
-        throw new Error("Failed to save profile");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to save profile");
+      }
+      
+      const updated = await res.json();
       
       alert("Profile saved!");
       
-    
+      // Update states with new data
       setUpdateAll(true);
-      
-      const updated = await res.json();
       setProfile(updated);
       setInitialProfile(updated);
       
@@ -118,8 +197,8 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
       setAvatarFile(null);
     } 
     catch (err) {
-      console.error(err);
-      alert("Error saving profile");
+      const error = err as Error;
+      alert(`Error saving profile: ${error.message}`);
     }
   };
 
@@ -138,28 +217,10 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
     }
   };
 
-  const handleReset = () => {
-    console.log("Reset button clicked!");
-    console.log("Profile before reset:", profile);
-    
+  
 
-    setProfile(prevProfile => ({
-      id: prevProfile.id || 1,
-      username: "",
-      email: "",
-      birthday: "",
-      location: "",
-      bio: "",
-      avatar: profileData.avatar || ''
-    }));
-    
-
-    setPreviewAvatar(profileData.avatar || "");
-    setAvatarFile(null);
-  };
-
-  if (loading) return <div className="text-gray-500">Loading...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
+  // if (loading) return <div className="text-gray-500">Loading...</div>;
+  // if (error) return <div className="text-red-500">{error}</div>;
 
   return (
     <div className="min-h-screen">
@@ -170,12 +231,9 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
             <div className="flex flex-col items-center mb-8">
               <div className="relative w-[140px] h-[140px] mb-1 rounded-full">
                 <img
-                  src={previewAvatar || profileData.avatar}
+                  src={previewAvatar || profileData?.avatar || "/default-avatar.png"}
                   className="absolute w-32 h-32 rounded-full object-cover z-10"
                   alt="Avatar"
-                  // onError={(e: { target: HTMLImageElement; }) => {
-                  //   (e.target as HTMLImageElement).src = "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg";
-                  // }}
                 />
                 <label className="absolute top-1 right-2 bg-white bg-opacity-65 w-8 h-8 flex items-center justify-center rounded-full cursor-pointer z-20">
                   <img 
@@ -220,7 +278,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
             <div className="grid grid-cols-2 gap-4">
               <input
                 name="username"
-                value={profile.username || ""}
+                value={profile.username}
                 onInput={handleChange}
                 className="w-full bg-[#91BFBF] border-0 rounded-lg 
                 px-4 py-2 focus:outline-none focus:ring-2
@@ -232,7 +290,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
             <div className="grid grid-cols-1 gap-4">
               <input
                 name="email"
-                value={profile.email || ""}
+                value={profile.email}
                 onInput={handleChange}
                 className="w-full bg-[#91BFBF] border-0 
                 rounded-lg px-4 py-2 focus:outline-none 
@@ -244,7 +302,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
             <div className="grid grid-cols-2 gap-4">
               <input
                 name="location"
-                value={profile.location || ""}
+                value={profile.location}
                 onInput={handleChange}
                 className="w-full bg-[#91BFBF] border-0 
                   rounded-lg px-4 py-2 focus:outline-none 
@@ -286,7 +344,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
             <div className="relative pt-[80px] z-10">
               <div className="mt-7 w-44 h-44 ml-9 rounded-full ring-4 ring-[#08BECE] shadow-lg overflow-hidden grid place-items-center">
                 <img
-                  src={profileData.avatar}
+                  src={profileData?.avatar || "/default-avatar.png"}
                   alt="Avatar"
                   className="w-full h-full object-cover"
                   onError={(e: any) => {
@@ -295,10 +353,10 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
                 />
               </div>
               <div className="mt-6 w-[260px] h-[130px] rounded-xl p-2 bg-[#91BFBF] backdrop-blur-sm border-4 border-[#08BECE] text-white text-left z-10 relative">
-                <p className="font-medium mb-1">{profileData.name || "User Name"}</p>
-                <p className="text-white/80 text-sm mb-1">{profileData.birthday|| "—"}</p>
-                <p className="text-white/70 text-xs mb-1">{profileData.email || "—"}</p>
-                <p className="text-white/70 text-xs">{profileData.location || "—"}</p>
+                <p className="font-medium mb-1">{profileData?.name || "User Name"}</p>
+                <p className="text-white/80 text-sm mb-1">{profileData?.birthday || "—"}</p>
+                <p className="text-white/70 text-xs mb-1">{profileData?.email || "—"}</p>
+                <p className="text-white/70 text-xs">{profileData?.location || "—"}</p>
               </div>
             </div>
           </div>
