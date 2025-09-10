@@ -30,7 +30,7 @@ export const Search: ComponentFunction = () => {
   const [error, setError] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement | null>(null);
 
-  // Fetch users from API
+  
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -93,7 +93,6 @@ export const Search: ComponentFunction = () => {
     }
   };
 
-  // Fetch users when component mounts or when search opens
   useEffect(() => {
     if (showSearch && (!Array.isArray(users) || users.length === 0)) {
       fetchUsers();
@@ -106,10 +105,10 @@ export const Search: ComponentFunction = () => {
   const isSearching = trimmed.length > 0;
 
   console.log('users at render', users, Array.isArray(users))
-  // at top of render
+
 const safeUsers = Array.isArray(users) ? users : [];
 
-// use safeUsers everywhere instead of users
+
 const defaultUsers = safeUsers
   .filter(u => u.online)
   .concat(safeUsers.filter(u => !u.online))

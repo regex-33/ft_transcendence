@@ -30,7 +30,7 @@ export const Sidebar: ComponentFunction = ({updateAll, profileData, setProfileDa
             aboutMe: data.bio || 'No bio available',
             birthday: data.birthday || 'Not specified',
             location: data.location || 'Not specified',
-            avatar: data.avatar || "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg"
+            avatar: data.avatar || ""
           });
         } else {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -44,7 +44,7 @@ export const Sidebar: ComponentFunction = ({updateAll, profileData, setProfileDa
           aboutMe: 'Could not load profile information. Please try refreshing the page.',
           birthday: 'Not available',
           location: 'Not available',
-          avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg"
+          avatar: ""
         });
       } finally {
         setIsLoading(false);
@@ -69,9 +69,9 @@ export const Sidebar: ComponentFunction = ({updateAll, profileData, setProfileDa
                 src={profileData.avatar}
                 className="absolute inset-[11px] w-20 h-20 rounded-full object-cover z-10"
                 alt="Avatar"
-                onError={(e: { target: HTMLImageElement; }) => {
-                  (e.target as HTMLImageElement).src = "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg";
-                }}
+                // onError={(e: { target: HTMLImageElement; }) => {
+                //   (e.target as HTMLImageElement).src = "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg";
+                // }}
               />
             </div>
             <h2 className="text-2xl font-bold truncate max-w-[120px]">

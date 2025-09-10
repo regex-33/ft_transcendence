@@ -16,12 +16,12 @@ interface Profile {
 export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) => {
   const [profile, setProfile] = useState<Profile>({
     id:  1,
-    username:  "",
-    email:  "",
-    birthday:  "",
-    location:  "",
-    bio: "",
-    avatar:  ''
+    username:  "Username",
+    email:  "Email",
+    birthday:  "Birthday",
+    location:  "Location",
+    bio: "Bio",
+    avatar:  "avatar",
   });
   
   const [initialProfile, setInitialProfile] = useState<Profile | null>(null);
@@ -34,12 +34,12 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
     if (profileData && Object.keys(profileData).length > 0) {
       const profileFromData = {
         id:  1,
-        username: "",
+        username:  "",
         email:  "",
         birthday:  "",
         location:  "",
-        bio:  "",
-        avatar:  ''
+        bio: "",
+        avatar:  "",
       };
       
       setProfile(profileFromData);
@@ -57,18 +57,18 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
     }
     const profileFromData = {
       id:  1,
-      username: "",
+      username:  "",
       email:  "",
       birthday:  "",
       location:  "",
-      bio:  "",
-      avatar:  ''
+      bio: "",
+      avatar:  "",
     };
     setInitialProfile(profileFromData);
     
     setProfile(profileFromData);
-    setPreviewAvatar(initialProfile.avatar || profileData?.avatar || "");
-    setAvatarFile(null);
+    // setPreviewAvatar(initialProfile.avatar || profileData?.avatar || "");
+    // setAvatarFile(null);
   };
 
 
@@ -130,24 +130,24 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
   };
 
   const getChangedFields = () => {
-    if (!initialProfile) return {};
-    
+    if (!initialProfile || !profile) return {};
+  
     const changes: any = {};
-    
-    // Only include fields that have actually changed and are not empty
+  
     Object.keys(profile).forEach(key => {
-      if (key === 'id' || key === 'avatar') return; // Skip id and avatar
-      
+      if (key === 'id' || key === 'avatar') return;
+  
       const currentValue = (profile as any)[key];
       const initialValue = (initialProfile as any)[key];
-      
-      if (currentValue !== initialValue && currentValue.trim() !== '') {
+  
+      if (typeof currentValue === "string" && currentValue !== initialValue && currentValue.trim() !== "") {
         changes[key] = currentValue;
-      }
+      }      
     });
-    
+  
     return changes;
   };
+  
 
   const handleSave = async () => {
     try {
@@ -231,7 +231,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
             <div className="flex flex-col items-center mb-8">
               <div className="relative w-[140px] h-[140px] mb-1 rounded-full">
                 <img
-                  src={previewAvatar || profileData?.avatar || "/default-avatar.png"}
+                  src={previewAvatar || profileData?.avatar || ""}
                   className="absolute w-32 h-32 rounded-full object-cover z-10"
                   alt="Avatar"
                 />
@@ -279,7 +279,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
               <input
                 name="username"
                 value={profile.username}
-                onInput={handleChange}
+                onChange={handleChange}
                 className="w-full bg-[#91BFBF] border-0 rounded-lg 
                 px-4 py-2 focus:outline-none focus:ring-2
                  focus:ring-cyan-500 transition-all placeholder-[#FFFFFF] bg-opacity-75"
@@ -315,7 +315,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
                 onInput={handleChange}
                 className="w-full bg-[#91BFBF] border-0 rounded-lg px-4 
                 py-2 focus:outline-none focus:ring-2
-                 focus:ring-cyan-500 transition-all placeholder-[#FFFFFF] bg-opacity-75"
+                 focus:ring-cyan-500 transition-all text-white placeholder-[#FFFFFF] bg-opacity-75"
                  placeholder="Birth Date"
               />
             </div>
@@ -344,12 +344,12 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
             <div className="relative pt-[80px] z-10">
               <div className="mt-7 w-44 h-44 ml-9 rounded-full ring-4 ring-[#08BECE] shadow-lg overflow-hidden grid place-items-center">
                 <img
-                  src={profileData?.avatar || "/default-avatar.png"}
+                  src={profileData?.avatar || ""}
                   alt="Avatar"
                   className="w-full h-full object-cover"
-                  onError={(e: any) => {
-                    e.target.src = "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg";
-                  }}
+                  // onError={(e: any) => {
+                  //   e.target.src = "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg";
+                  // }}
                 />
               </div>
               <div className="mt-6 w-[260px] h-[130px] rounded-xl p-2 bg-[#91BFBF] backdrop-blur-sm border-4 border-[#08BECE] text-white text-left z-10 relative">

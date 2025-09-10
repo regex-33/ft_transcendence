@@ -6,12 +6,12 @@ import { ComponentFunction } from "../../../types/global";
 export const Vanish: ComponentFunction = () => {
     const [starActive, setStarActive] = useState(true)
   let point = 150;
-useEffect(() => {
+// useEffect(() => {
     if (point === 150)
       setStarActive(true);
     else
       setStarActive(false);
-  }, [point]);
+  // }, [point]);
     return (
 
 <div className="flex flex-col items-center text-center w-full max-w-[180px] sm:max-w-[200px]">

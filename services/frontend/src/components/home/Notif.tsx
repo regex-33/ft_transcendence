@@ -43,9 +43,10 @@ export const NotificationItem: ComponentFunction<NotificationItemProps> = ({
   };
 
   return (
-    <div className={`flex items-start gap-3 p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200 ${!notification.isRead ? 'bg-blue-50' : ''}`}>
+    <div className={`flex items-start gap-3 p-4 border-b border-[#4E92A2] border-[1px]
+     hover:bg-gray-50  transition-colors duration-200 ${!notification.isRead ? 'bg-[#5D9FA9]' : ''}`}>
       {/* Avatar */}
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0  ">
         <img
           src={notification.user.avatar}
           alt={notification.user.username}
@@ -54,7 +55,7 @@ export const NotificationItem: ComponentFunction<NotificationItemProps> = ({
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1   min-w-0">
         <div className="flex items-center justify-between mb-1">
           <span className="font-medium text-gray-900 text-sm">
             {notification.user.username}
@@ -95,23 +96,36 @@ export const NotificationItem: ComponentFunction<NotificationItemProps> = ({
 };
 
 export const NotificationPanel: ComponentFunction = () => {
-  const [filter, setFilter] = useState<'all' | 'unread'>('all');  
-  
-  // Mock data - replace with actual API call
+  const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  const [notifications, _setNotifications] = useState<Notification[] | any>([]);
+
+const setNotifications = (value: any) => {
+  if (typeof value !== 'function' && !Array.isArray(value)) {
+    console.warn('setNotifications called with non-array:', value);
+    console.trace();
+  }
+  return _setNotifications(value);
+};
+
+
+
   useEffect(() => {
     const mockNotifications: Notification[] = [
       {
         id: '1',
         type: 'friend_request',
         user: {
-          id: '1',
-          username: 'duva@duva.234e50',
-          avatar: '/images/avatars/user1.png'
+          id: '2',
+          username: '@abdo_847848',
+          avatar: '/images/avatars/user2.png'
         },
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        message: 'is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text since the 1500s',
+        timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+        message: 'sent you a friend request',
         isRead: false,
-        actions: []
+        actions: [
+          { type: 'refuse', label: 'refuse', variant: 'secondary' },
+          { type: 'accept', label: 'Add', variant: 'primary' }
+        ]
       },
       {
         id: '2',
@@ -129,81 +143,103 @@ export const NotificationPanel: ComponentFunction = () => {
           { type: 'accept', label: 'Add', variant: 'primary' }
         ]
       },
-      {
-        id: '3',
-        type: 'message',
-        user: {
-          id: '3',
-          username: '@wahlba_tv_373',
-          avatar: '/images/avatars/user3.png'
-        },
-        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-        message: 'is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the...',
-        isRead: false,
-        actions: []
-      },
-      {
-        id: '4',
-        type: 'game',
-        user: {
-          id: '1',
-          username: 'duva@duva.234e50',
-          avatar: '/images/avatars/user1.png'
-        },
-        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-        message: 'wants to play a game with you',
-        isRead: true,
-        actions: [
-          { type: 'match', label: 'Matche 🔥', variant: 'primary' },
-          { type: 'refuse', label: 'refuse', variant: 'secondary' }
-        ]
-      }
     ];
+
+    setNotifications(mockNotifications);
   }, []);
 
-  return (
-    <div className="absolute top-full right-0 mt-2 w-96 h-96 bg-[#5D9FA9] opacity-95 rounded-lg shadow-xl max-h-96 flex flex-col z-[9999]">
-      {/* Header */}
-      <div className="p-4 border-b border-[#4E92A2] bg-[#5D9FA9] text-white rounded-t-lg">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold">Your notifications</h3>
-          <button
-            // onClick={handleMarkAllAsRead}
-            className="text-sm hover:underline"
-          >
-            ✓ Mark all as read
-          </button>
-        </div>
+  const handleAction = (notificationId: string, actionType: string) => {
+    console.log(`Action ${actionType} for notification ${notificationId}`);
+    
+    
+    switch (actionType) {
+      case 'accept':
+ 
+        break;
+      case 'refuse':
         
-        {/* Filter Tabs */}
-        <div className="flex mt-3">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-3 py-1 text-xs rounded ${
-              filter === 'all' 
-                ? 'bg-white text-teal-500' 
-                : 'bg-teal-400 text-white hover:bg-teal-300'
-            }`}
-          >
-            All
-          </button>
-        </div>
-      </div>
+        break;
+      case 'match':
+   
+        break;
+      case 'view':
+     
+        break;
+    }
 
-      {/* Notifications List */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Add your notification items here */}
-        <div className="p-4 text-center text-gray-500">
-          No notifications
-        </div>
-      </div>
+    setNotifications((prev: any[]) => 
+      prev.map(notif => 
+        notif.id === notificationId 
+          ? { ...notif, isRead: true }
+          : notif
+      )
+    );
+  };
 
-      {/* Footer */}
-      <div className="p-3 border-t border-gray-200 text-center">
-        <button className="text-sm text-teal-600 hover:underline">
-          See more notifications
-        </button>
+  const handleMarkAllAsRead = () => {
+    setNotifications((prev: any[]) => 
+      prev.map(notif => ({ ...notif, isRead: true }))
+    );
+  };
+
+    const notificationsArray = Array.isArray(notifications) ? notifications : [];
+    const filteredNotifications = filter === 'all'
+      ? notificationsArray
+      : notificationsArray.filter(notif => !notif.isRead);
+      const unreadCount = notificationsArray.filter(notif => !notif.isRead).length;
+
+
+  return (
+    <div className="absolute top-[58px] -right-40  mt-2 w-96 h-96 bg-[#5D9FA9] opacity-95 rounded-lg shadow-xl max-h-96 flex flex-col z-[9999]">
+      <div className="p-4 border-b border-[#4E92A2] border-[1px] bg-[#5D9FA9] text-white rounded-t-lg">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">Your notifications</h3>
+                <button
+                  onClick={handleMarkAllAsRead}
+                  className="text-sm hover:underline"
+                >
+                  ✓ Mark all as read
+                </button>
+              </div>
+              
+             
+              <div className="flex mt-3">
+                <button
+                  onClick={() => setFilter('all')}
+                  className={`px-3 py-1 text-xs rounded ${
+                    filter === 'all' 
+                      ? 'bg-white text-teal-500' 
+                      : 'bg-teal-400 text-white hover:bg-teal-300'
+                  }`}
+                >
+                  All {notifications.length > 0 && `${notifications.length}`}
+                </button>
+              </div>
       </div>
+      
+          
+            <div className="flex-1 overflow-y-auto">
+              {filteredNotifications.length === 0 ? (
+                <div className="p-4 text-center text-gray-500">
+                  No notifications
+                </div>
+              ) : (
+                filteredNotifications.map((notification: Notification) => (
+                  <NotificationItem
+                    key={notification.id}
+                    notification={notification}
+                    onAction={handleAction}
+                  />
+                ))
+              )}
+            </div>
+      
+            
+            <div className="p-3 border-t  border-[#4E92A2] border-[1px] text-center">
+              <button className="text-sm text-teal-600 hover:underline">
+                See more notifications
+              </button>
+            </div>
     </div>
   );
 };

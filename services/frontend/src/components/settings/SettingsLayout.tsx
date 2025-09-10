@@ -23,7 +23,7 @@ export const SettingsLayout: ComponentFunction<SettingsLayoutProps> = (props) =>
     email: '',
     birthday: '',
     location: '',
-    avatar: '/images/default-avatar.png'
+    avatar: ''
   });
   
   useEffect(() => {
