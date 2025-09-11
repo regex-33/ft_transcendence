@@ -9,33 +9,16 @@ export const Sidebar: ComponentFunction = ({updateAll, profileData, setProfileDa
   const [error, setError] = useState('');
   useEffect(() => {
     const fetchProfileData = async () => {
-      // print if 2fa is enabled from response headers
-      try {
-        const response = await fetch(
-          `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/2fa/status`,
-          {
-            method: 'GET'
-          }
-        );
-            // headers: {
-            //   'Content-Type': 'application/json',
-            // },
-            // credentials: 'include'
-        // print response status
-        console.log('Fetch 2FA status response status:', response.status);
-        console.log('Fetch 2FA status response ok:', response.ok);
-        //data from response
-        console.log('Fetch 2FA status response data:', await response.json());
-      } catch (error) {
-        console.error('Error fetching 2FA status:', error);
-      }
       try {
         setIsLoading(true);
         setError('');
         const response = await fetch(
           `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
           {
-            method: 'GET'
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
           }
         );
 
@@ -152,4 +135,3 @@ export const Sidebar: ComponentFunction = ({updateAll, profileData, setProfileDa
     </aside>
   );
 };
-

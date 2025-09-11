@@ -36,7 +36,7 @@ export class VirtualDOM {
     this.patchQueue = [];
     // console.log("+-------------------------");
     // console.log("-- Diffing Virtual DOM --");
-    logDiffComparison(oldVNode, newVNode);
+    // logDiffComparison(oldVNode, newVNode);
     // console.log("Old VNode:", oldVNode);
     // console.log("New VNode:", newVNode);
     // console.log("+-------------------------");

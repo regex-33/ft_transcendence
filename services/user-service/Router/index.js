@@ -40,7 +40,6 @@ async function FriendRoutes(fastify) {
   fastify.get("/blocked-users", getBlockedUsers);// /api/friends/blocked-users => who i block
 }
 
-
 async function OauthRoutes(fastify) {
   fastify.get("/github", github.redirect);
   fastify.get("/github/callback", github.handleAuthCallback);

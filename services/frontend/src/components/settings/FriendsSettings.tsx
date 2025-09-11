@@ -83,20 +83,6 @@ export const FriendsSettings: ComponentFunction = () => {
       ? friends
       : friends.filter(f => f.status === sortBy);
   const friendColumns = chunk(filteredFriends, 2);
-
-  function getStatusColor(status: string) {
-    switch (status) {
-      case 'friend':
-        return 'bg-green-500';
-      case 'pending':
-        return 'bg-yellow-500';
-      case 'blocked':
-        return 'bg-red-500';
-      default:
-        return 'bg-gray-400';
-    }
-  }
-
   function getActionButtons(friend: { id: number; username: string; avatar: string; status: string; }) {
     if (friend.status === "friend") {
       return (

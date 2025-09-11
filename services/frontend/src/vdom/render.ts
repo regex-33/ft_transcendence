@@ -51,7 +51,7 @@ export class Renderer {
     this.setProps(element, vnode.props);
 
     // Render children
-    vnode.children.forEach(child => {
+    vnode?.children?.forEach(child => {
       const childElement = this.createElement(child);
       element.appendChild(childElement);
     });

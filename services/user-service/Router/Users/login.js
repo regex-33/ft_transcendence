@@ -38,7 +38,6 @@ const login = async (request, reply) => {
       fillObject(request, "WARNING", "login", "unknown", false, validation.message, request.cookies?.token || null);
       return reply.status(400).send({ error: validation.message });
     }
-
     try {
       const user = await db.User.findOne({ where: { username } });
 
