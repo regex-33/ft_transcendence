@@ -1,0 +1,109 @@
+:root {
+    --body-bg: #F0F2F5;
+    --chat-bg: #FFFFFF;
+    --received-bubble-bg: #E4E6EB;
+    --primary-text-color: #050505;
+    --secondary-text-color: #606770;
+    --accent-blue: #0084FF;
+    --input-bg: #F0F2F5;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--body-bg);
+    color: var(--primary-text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+#chat-container {
+    width: 360px;
+    height: 90vh;
+    max-height: 700px;
+    background-color: var(--chat-bg);
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+#chat-header {
+    padding: 15px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--primary-text-color);
+    border-bottom: 1px solid #CED0D4;
+}
+
+#recive {
+    flex-grow: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.message {
+    padding: 10px 14px;
+    border-radius: 18px;
+    line-height: 1.4;
+    max-width: 85%;
+    background-color: var(--received-bubble-bg);
+    color: var(--primary-text-color);
+    align-self: flex-start;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 15px;
+}
+
+.message-time {
+    font-size: 0.75em;
+    color: var(--secondary-text-color);
+    white-space: nowrap;
+}
+
+#input-area {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-top: 1px solid #CED0D4;
+}
+
+#data {
+    flex-grow: 1;
+    padding: 10px 14px;
+    border: none;
+    background-color: var(--input-bg);
+    color: var(--primary-text-color);
+    border-radius: 20px;
+    outline: none;
+}
+
+#send {
+    padding: 8px 12px;
+    margin-left: 10px;
+    background-color: var(--accent-blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+#send:hover {
+    background-color: #0073e0;
+}
+
+.status-online {
+    color: var(--accent-blue);
+}
+.status-offline {
+    color: var(--secondary-text-color);
+}

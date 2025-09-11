@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        async function name(params) {
+            async function end(number) {
+                await fetch('/api/users/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                "username": `aghlimi${number}`,
+                'email': `d@f${number}`,
+                'password': '12345678'
+            })
+                })
+            }
+            async function addfriend(username) {
+                await fetch('/api/friends/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username
+                    })
+                });
+            }
+            async function login(username) {
+                await fetch('/api/users/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: '12345678'
+                    })
+                })
+            }
+            async function accept(username) {
+                await fetch('/api/friends/actions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username,
+                        action: 'accept'
+                    })
+                })
+            }
+            async function block(username) {
+                await fetch('/api/friends/actions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username,
+                        action: 'block'
+                    })
+                })
+            }
+            for (let index = 0; index < 1000; index++) {
+                await end(index);
+                
+            }
+
+            await login('aghlimi1');
+            await addfriend('aghlimi3');
+            await addfriend('aghlimi5');
+            await login('aghlimi3');
+            await accept('aghlimi1');
+            await login('aghlimi5');
+            await accept('aghlimi1');
+
+            await login('aghlimi4');
+            await addfriend('aghlimi1');
+            await login('aghlimi1');
+            await block('aghlimi2');
+        }
+        name().then().catch();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["DOM", "ESNext"],
+    "jsx": "react",  // or "react"
+    "jsxFactory": "h",         // <== this tells TS to use your `h()` function
+    "jsxFragmentFactory": "Fragment", // optional: if you want to support fragments <>
+    "strict": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "types": ["vite/client"],
+    "sourceMap": true
+  },
+  "include": [ "src/jsx.d.ts","src"],
+  "exclude": ["node_modules"]
+}
