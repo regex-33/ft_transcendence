@@ -22,7 +22,7 @@ export const Content: ComponentFunction = () => {
                  bg-no-repeat bg-contain bg-center
                  text-white font-bold 
                  transition-transform duration-200 hover:scale-95
-                 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
+                 focus:outline-none "
       style={{ backgroundImage: "url('/images/home-assests/bg-button.svg')" }}
     >
       <span className="font-irish text-white text-lg sm:text-xl md:text-2xl lg:text-4xl tracking-wide">
