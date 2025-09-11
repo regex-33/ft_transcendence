@@ -13,33 +13,33 @@ interface Profile {
   bio: string;
 }
 
+const defaultProfile: Profile = {
+  id: 1,
+  username: "",
+  email: "",
+  birthday: "",
+  location: "",
+  bio: "",
+  avatar: "",
+};
+
 export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) => {
-  const [profile, setProfile] = useState<Profile>({
-    id:  1,
-    username:  "Username",
-    email:  "Email",
-    birthday:  "Birthday",
-    location:  "Location",
-    bio: "Bio",
-    avatar:  "avatar",
-  });
-  
+  const [profile, setProfile] = useState<Profile>(defaultProfile);
   const [initialProfile, setInitialProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(false); // Start as false since we have profileData
+  const [loading, setLoading] = useState(false);
   const [previewAvatar, setPreviewAvatar] = useState(profileData?.avatar || '');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  // const [error, setError] = useState('');
 
   useEffect(() => {
     if (profileData && Object.keys(profileData).length > 0) {
       const profileFromData = {
-        id:  1,
-        username:  "",
-        email:  "",
-        birthday:  "",
-        location:  "",
-        bio: "",
-        avatar:  "",
+        id: profileData.id || 1,
+        username: profileData.username || "",
+        email: profileData.email || "",
+        birthday: profileData.birthday || "",
+        location: profileData.location || "",
+        bio: profileData.bio || "",
+        avatar: profileData.avatar || "",
       };
       
       setProfile(profileFromData);
@@ -49,80 +49,16 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
     }
   }, [profileData]);
 
-
   const handleReset = () => {
     if (!initialProfile) {
       console.warn("No initial profile data to reset to");
       return;
     }
-    const profileFromData = {
-      id:  1,
-      username:  "",
-      email:  "",
-      birthday:  "",
-      location:  "",
-      bio: "",
-      avatar:  "",
-    };
-    setInitialProfile(profileFromData);
     
-    setProfile(profileFromData);
-    // setPreviewAvatar(initialProfile.avatar || profileData?.avatar || "");
-    // setAvatarFile(null);
+    setProfile(initialProfile);
+    setPreviewAvatar(initialProfile.avatar || profileData?.avatar || "");
+    setAvatarFile(null);
   };
-
-
-  //   // Only fetch if profileData is not available or incomplete
-  //   setLoading(true);
-  //   fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/update`, {
-  //     credentials: 'include' // Add credentials for authentication
-  //   })
-  //     .then(async (res) => {
-  //       if (!res.ok) {
-  //         throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-  //       }
-  //       return res.json();
-  //     })
-  //     .then((data) => {
-  //       // Validate that data is properly structured
-  //       if (!data || typeof data !== 'object') {
-  //         throw new Error('Invalid data received from server');
-  //       }
-        
-  //       const validatedData = {
-  //         id: data.id || 1,
-  //         username: data.username || "",
-  //         email: data.email || "",
-  //         birthday: data.birthday || "",
-  //         location: data.location || "",
-  //         bio: data.bio || "",
-  //         avatar: data.avatar || ""
-  //       };
-        
-  //       setProfile(validatedData);
-  //       setInitialProfile(validatedData);
-  //       setPreviewAvatar(data.avatar || "");
-  //       setLoading(false);
-  //     })
-  //     .catch((err) => {
-  //       console.error('Fetch error:', err);
-  //       setError('Failed to load profile data');
-  //       setLoading(false);
-        
-  //       // Set default profile even on error
-  //       const defaultProfile = {
-  //         id: 1,
-  //         username: "",
-  //         email: "",
-  //         birthday: "",
-  //         location: "",
-  //         bio: "",
-  //         avatar: ""
-  //       };
-  //       setProfile(defaultProfile);
-  //       setInitialProfile(defaultProfile);
-  //     });
-  // }, [profileData]);
 
   const handleChange = (e: Event) => {
     const target = e.target as HTMLInputElement | HTMLTextAreaElement;
@@ -134,27 +70,27 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
   
     const changes: any = {};
   
-    Object.keys(profile).forEach(key => {
-      if (key === 'id' || key === 'avatar') return;
+
+    if (profile && typeof profile === 'object') {
+      Object.keys(profile).forEach(key => {
+        if (key === 'id' || key === 'avatar') return;
   
-      const currentValue = (profile as any)[key];
-      const initialValue = (initialProfile as any)[key];
+        const currentValue = (profile as any)[key];
+        const initialValue = (initialProfile as any)[key];
   
-      if (typeof currentValue === "string" && currentValue !== initialValue && currentValue.trim() !== "") {
-        changes[key] = currentValue;
-      }      
-    });
+        if (typeof currentValue === "string" && currentValue !== initialValue && currentValue.trim() !== "") {
+          changes[key] = currentValue;
+        }      
+      });
+    }
   
     return changes;
   };
-  
 
   const handleSave = async () => {
     try {
       const formData = new FormData();
-      const changedFields = getChangedFields();
-      
-      // Add changed fields to formData
+      const changedFields = getChangedFields() || {};  
       Object.keys(changedFields).forEach(key => {
         formData.append(key, changedFields[key]);
       });
@@ -172,7 +108,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
       
       const res = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/update`, {
         method: "PUT",
-        credentials: 'include', // Add credentials
+        credentials: 'include',
         body: formData,
       });
       
@@ -216,11 +152,6 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
       reader.readAsDataURL(file);
     }
   };
-
-  
-
-  // if (loading) return <div className="text-gray-500">Loading...</div>;
-  // if (error) return <div className="text-red-500">{error}</div>;
 
   return (
     <div className="min-h-screen">
@@ -278,7 +209,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
             <div className="grid grid-cols-2 gap-4">
               <input
                 name="username"
-                value={profile.username}
+                value={profile.username || ""}
                 onChange={handleChange}
                 className="w-full bg-[#91BFBF] border-0 rounded-lg 
                 px-4 py-2 focus:outline-none focus:ring-2
@@ -290,7 +221,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
             <div className="grid grid-cols-1 gap-4">
               <input
                 name="email"
-                value={profile.email}
+                value={profile.email || ""}
                 onInput={handleChange}
                 className="w-full bg-[#91BFBF] border-0 
                 rounded-lg px-4 py-2 focus:outline-none 
@@ -302,7 +233,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
             <div className="grid grid-cols-2 gap-4">
               <input
                 name="location"
-                value={profile.location}
+                value={profile.location || ""}
                 onInput={handleChange}
                 className="w-full bg-[#91BFBF] border-0 
                   rounded-lg px-4 py-2 focus:outline-none 
@@ -347,9 +278,6 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
                   src={profileData?.avatar || ""}
                   alt="Avatar"
                   className="w-full h-full object-cover"
-                  // onError={(e: any) => {
-                  //   e.target.src = "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg";
-                  // }}
                 />
               </div>
               <div className="mt-6 w-[260px] h-[130px] rounded-xl p-2 bg-[#91BFBF] backdrop-blur-sm border-4 border-[#08BECE] text-white text-left z-10 relative">
