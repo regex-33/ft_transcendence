@@ -23,115 +23,126 @@ const defaultProfile: Profile = {
   avatar: "",
 };
 
-export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) => {
+export const ProfileSettings: ComponentFunction = ({ setUpdateAll, profileData }) => {
   const [profile, setProfile] = useState<Profile>(defaultProfile);
   const [initialProfile, setInitialProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(false);
-  const [previewAvatar, setPreviewAvatar] = useState(profileData?.avatar || '');
+  const [previewAvatar, setPreviewAvatar] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [forceUpdate, setForceUpdate] = useState(0); // Force re-render
 
   useEffect(() => {
     if (profileData && Object.keys(profileData).length > 0) {
       const profileFromData = {
         id: profileData.id || 1,
-        username: profileData.username || "",
+        username: profileData.username || profileData.name || "",
         email: profileData.email || "",
         birthday: profileData.birthday || "",
         location: profileData.location || "",
-        bio: profileData.bio || "",
+        bio: profileData.bio || profileData.aboutMe || "",
         avatar: profileData.avatar || "",
       };
-      
+
       setProfile(profileFromData);
       setInitialProfile(profileFromData);
-      setPreviewAvatar(profileData.avatar || "");
+      setPreviewAvatar(profileFromData.avatar || "");
       setLoading(false);
     }
   }, [profileData]);
 
   const handleReset = () => {
-    if (!initialProfile) {
-      console.warn("No initial profile data to reset to");
-      return;
-    }
-    
-    setProfile(initialProfile);
-    setPreviewAvatar(initialProfile.avatar || profileData?.avatar || "");
+    // Reset all form fields to empty
+    const emptyProfile = {
+      id: 1,
+      username: "",
+      email: "",
+      birthday: "",
+      location: "",
+      bio: "",
+      avatar: "",
+    };
+
+    setProfile(emptyProfile);
+    setInitialProfile(emptyProfile);
+    setPreviewAvatar('');
     setAvatarFile(null);
+    
+    // Force component re-render to ensure inputs are cleared
+    setForceUpdate(prev => prev + 1);
+    
+    // Also clear file input
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
   };
 
   const handleChange = (e: Event) => {
     const target = e.target as HTMLInputElement | HTMLTextAreaElement;
-    setProfile({ ...profile, [target.name]: target.value });
+    const newProfile = { ...profile, [target.name]: target.value };
+    setProfile(newProfile);
   };
 
   const getChangedFields = () => {
     if (!initialProfile || !profile) return {};
-  
-    const changes: any = {};
-  
 
-    if (profile && typeof profile === 'object') {
-      Object.keys(profile).forEach(key => {
-        if (key === 'id' || key === 'avatar') return;
-  
-        const currentValue = (profile as any)[key];
-        const initialValue = (initialProfile as any)[key];
-  
-        if (typeof currentValue === "string" && currentValue !== initialValue && currentValue.trim() !== "") {
-          changes[key] = currentValue;
-        }      
-      });
-    }
-  
+    const changes: any = {};
+
+    Object.keys(profile).forEach(key => {
+      if (key === 'id' || key === 'avatar') return;
+
+      const currentValue = (profile as any)[key];
+      const initialValue = (initialProfile as any)[key];
+
+      if (typeof currentValue === "string" && currentValue !== initialValue && currentValue.trim() !== "") {
+        changes[key] = currentValue;
+      }
+    });
+
     return changes;
   };
 
   const handleSave = async () => {
     try {
       const formData = new FormData();
-      const changedFields = getChangedFields() || {};  
+      const changedFields = getChangedFields() || {};
       Object.keys(changedFields).forEach(key => {
         formData.append(key, changedFields[key]);
       });
-      
-      // Add avatar if changed
+
       if (avatarFile) {
         formData.append('avatar', avatarFile);
       }
-      
-      // Check if there are any changes
+
       if (Object.keys(changedFields).length === 0 && !avatarFile) {
         alert("No changes to save!");
         return;
       }
-      
+
       const res = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/update`, {
         method: "PUT",
         credentials: 'include',
         body: formData,
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to save profile");
       }
-      
+
       const updated = await res.json();
-      
       alert("Profile saved!");
-      
-      // Update states with new data
+
       setUpdateAll(true);
       setProfile(updated);
       setInitialProfile(updated);
-      
+
       if (updated.avatar) {
         setPreviewAvatar(updated.avatar);
       }
-      
+
       setAvatarFile(null);
-    } 
+    }
     catch (err) {
       const error = err as Error;
       alert(`Error saving profile: ${error.message}`);
@@ -143,7 +154,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
     const file = input.files?.[0];
     if (file) {
       setAvatarFile(file);
-      
+
       const reader = new FileReader();
       reader.onload = (event) => {
         const newAvatar = event.target?.result as string;
@@ -154,20 +165,24 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
   };
 
   return (
-    <div className="min-h-screen">
+    <div key={forceUpdate} className="min-h-screen">
       <div className="flex gap-5 w-[700px] h-[550px] translate-y-40">
-        
+
         <div className="bg-white bg-opacity-75 backdrop-blur-sm rounded-2xl p-4 pt-10 flex-1 shadow-xl">
           <div className="flex items-center justify-between mb-8">
             <div className="flex flex-col items-center mb-8">
               <div className="relative w-[140px] h-[140px] mb-1 rounded-full">
                 <img
-                  src={previewAvatar || profileData?.avatar || ""}
+                  src={previewAvatar || profile.avatar }
                   className="absolute w-32 h-32 rounded-full object-cover z-10"
                   alt="Avatar"
+                  onError={(e: Event) => {
+                    const img = e.target as HTMLImageElement;
+                    img.src = "/images/default.jpg";
+                  }}
                 />
                 <label className="absolute top-1 right-2 bg-white bg-opacity-65 w-8 h-8 flex items-center justify-center rounded-full cursor-pointer z-20">
-                  <img 
+                  <img
                     src="/images/setting-assests/camera-icone.svg"
                     alt="camera"
                   />
@@ -208,9 +223,10 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
           <div className="grid gap-2 -translate-y-16">
             <div className="grid grid-cols-2 gap-4">
               <input
+                key={`username-${forceUpdate}`}
                 name="username"
-                value={profile.username || ""}
-                onChange={handleChange}
+                value={profile.username}
+                onInput={handleChange}
                 className="w-full bg-[#91BFBF] border-0 rounded-lg 
                 px-4 py-2 focus:outline-none focus:ring-2
                  focus:ring-cyan-500 transition-all placeholder-[#FFFFFF] bg-opacity-75"
@@ -220,8 +236,9 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
 
             <div className="grid grid-cols-1 gap-4">
               <input
+                key={`email-${forceUpdate}`}
                 name="email"
-                value={profile.email || ""}
+                value={profile.email}
                 onInput={handleChange}
                 className="w-full bg-[#91BFBF] border-0 
                 rounded-lg px-4 py-2 focus:outline-none 
@@ -232,17 +249,19 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
 
             <div className="grid grid-cols-2 gap-4">
               <input
+                key={`location-${forceUpdate}`}
                 name="location"
-                value={profile.location || ""}
+                value={profile.location}
                 onInput={handleChange}
                 className="w-full bg-[#91BFBF] border-0 
                   rounded-lg px-4 py-2 focus:outline-none 
                   focus:ring-2 focus:ring-cyan-500 transition-all placeholder-[#FFFFFF] bg-opacity-75"
-                placeholder="location"
+                placeholder="Location"
               />
               <input
+                key={`birthday-${forceUpdate}`}
                 name="birthday"
-                value={profile.birthday || ""}
+                value={profile.birthday}
                 onInput={handleChange}
                 className="w-full bg-[#91BFBF] border-0 rounded-lg px-4 
                 py-2 focus:outline-none focus:ring-2
@@ -253,8 +272,9 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
 
             <div className="grid grid-cols-1 gap-4">
               <textarea
+                key={`bio-${forceUpdate}`}
                 name="bio"
-                value={profile.bio || ""}
+                value={profile.bio}
                 onInput={handleChange}
                 rows={7}
                 className="w-full bg-[#91BFBF] border-0 
@@ -268,31 +288,32 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
 
         {/* Profile Preview Card */}
         <div className="relative w-[400px] h-[600px] -top-8 shrink-0">
-          <div 
+          <div
             className="w-full h-full rounded-3xl overflow-hidden shadow-xl bg-cover bg-center bg-no-repeat p-6 flex flex-col items-center"
             style={{ backgroundImage: "url('/images/setting-assests/bg-card.png')" }}
           >
             <div className="relative pt-[80px] z-10">
               <div className="mt-7 w-44 h-44 ml-9 rounded-full ring-4 ring-[#08BECE] shadow-lg overflow-hidden grid place-items-center">
                 <img
-                  src={profileData?.avatar || ""}
+                  src={previewAvatar || profile.avatar }
                   alt="Avatar"
                   className="w-full h-full object-cover"
+                  onError={(e: Event) => {
+                    const img = e.target as HTMLImageElement;
+                    img.src = "/images/default.jpg";
+                  }}
                 />
               </div>
               <div className="mt-6 w-[260px] h-[130px] rounded-xl p-2 bg-[#91BFBF] backdrop-blur-sm border-4 border-[#08BECE] text-white text-left z-10 relative">
-                <p className="font-medium mb-1">{profileData?.name || "User Name"}</p>
-                <p className="text-white/80 text-sm mb-1">{profileData?.birthday || "—"}</p>
-                <p className="text-white/70 text-xs mb-1">{profileData?.email || "—"}</p>
-                <p className="text-white/70 text-xs">{profileData?.location || "—"}</p>
+                <p className="font-medium mb-1">{profile.username || "User Name"}</p>
+                <p className="text-white/80 text-sm mb-1">{profile.birthday || "—"}</p>
+                <p className="text-white/70 text-xs mb-1">{profile.email || "—"}</p>
+                <p className="text-white/70 text-xs">{profile.location || "—"}</p>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
 };
-
-

@@ -65,7 +65,7 @@ const register = async (request, reply) => {
     }
 
     const { username, password, email, avatar } = request.body;
-    let path = avatar ? avatar.path : `${request.protocol}://${request.headers.host}/uploads/default_profile_picture.png`;
+    let path = avatar ? avatar.path : `${request.protocol}://${request.headers.host}/uploads/default.jpg`;
 
     if (await checkUserExisting(reply, username, email, request)) return;
 

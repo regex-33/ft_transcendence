@@ -4,13 +4,11 @@ import { useEffect } from '../../hooks/useEffect';
 import { useState } from '../../hooks/useState';
 
 export const Sidebar: ComponentFunction = ({updateAll, profileData, setProfileData}) => {
-
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        setIsLoading(true);
         setError('');
         const response = await fetch(
           `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
@@ -19,19 +17,21 @@ export const Sidebar: ComponentFunction = ({updateAll, profileData, setProfileDa
             headers: {
               'Content-Type': 'application/json',
             },
+            credentials: 'include'
           }
         );
 
         if (response.ok) {
           const data = await response.json();
-          setProfileData({
-            name: data.username || 'Unknown User',
+          const newProfileData = {
+            name: data.username || '',
             email: data.email || '',
-            aboutMe: data.bio || 'No bio available',
-            birthday: data.birthday || 'Not specified',
-            location: data.location || 'Not specified',
+            aboutMe: data.bio || '',
+            birthday: data.birthday || '',
+            location: data.location || '',
             avatar: data.avatar || ""
-          });
+          };
+          setProfileData(newProfileData);
         } else {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -47,7 +47,7 @@ export const Sidebar: ComponentFunction = ({updateAll, profileData, setProfileDa
           avatar: ""
         });
       } finally {
-        setIsLoading(false);
+        // setIsLoading(false);
       }
     };
 
@@ -57,8 +57,12 @@ export const Sidebar: ComponentFunction = ({updateAll, profileData, setProfileDa
   return (
     <aside className="w-[30%] h-full p-2">
       <div className="w-[310px] h-[740px] bg-[#5E9CAB] rounded-xl bg-opacity-35 text-white p-3 shadow-lg relative ml-9 mt-10">
-        <div className="flex flex-col items-center text-center w-full pr-20">
-          <div className="flex items-center justify-center gap-2 w-full">
+        
+        {/* Fixed header section with proper flex layout */}
+        <div className="flex flex-col items-center text-center w-full">
+          <div className="flex items-center justify-center gap-2 w-full mb-4">
+            
+            {/* Avatar container with fixed positioning */}
             <div className="relative w-[100px] h-[100px] flex-shrink-0">
               <img
                 src="/images/home-assests/cir-online.svg"
@@ -66,68 +70,62 @@ export const Sidebar: ComponentFunction = ({updateAll, profileData, setProfileDa
                 alt="Online circle"
               />
               <img
-                src={profileData.avatar}
+                src={profileData?.avatar || "/images/default.jpg"}
                 className="absolute inset-[11px] w-20 h-20 rounded-full object-cover z-10"
                 alt="Avatar"
-                // onError={(e: { target: HTMLImageElement; }) => {
-                //   (e.target as HTMLImageElement).src = "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg";
-                // }}
+                onError={(e: Event) => {
+                  const img = e.target as HTMLImageElement;
+                  img.src = "/images/default.jpg";
+                }}
               />
             </div>
-            <h2 className="text-2xl font-bold truncate max-w-[120px]">
-              {profileData.name}
-            </h2>
+            
+            {/* Name with fixed width to prevent layout shift */}
+            <div className="flex-1 max-w-[150px]">
+              <h2 className="text-2xl font-bold truncate">
+                {profileData?.name || 'Loading...'}
+              </h2>
+            </div>
           </div>
-          {/* <button
-            className="mt-2 flex items-center justify-between px-6 py-1 w-[180px] text-white bg-no-repeat bg-contain bg-center"
-            style={{ backgroundImage: "url('/images/setting-assests/bg-add-friends.svg')" }}
-          >
-            <span className="font-luckiest text-base pt-2 whitespace-nowrap">ADD AS FRIEND</span>
-            <img
-              src="/images/setting-assests/plus-friends.svg"
-              alt="Add"
-              className="w-8 h-8 ml-4 transition-transform duration-200 hover:scale-95"
-              
-            />
-          </button> */}
         </div>
         
+        {/* About Me section with fixed layout */}
         <div className="mt-8 space-y-4 pl-7">
           <h3 className="text-lg font-bold mb-2">About me</h3>
-          {isLoading ? (
-            <div className="animate-pulse">
-              <div className="h-4 bg-white/20 rounded mb-2"></div>
-              <div className="h-4 bg-white/20 rounded w-3/4"></div>
-            </div>
-          ) : error ? (
-            <p className="text-sm text-red-200 break-words">{error}</p>
-          ) : (
-            <p className="text-sm text-gray-200 break-words">
-              {profileData.aboutMe}
-            </p>
-          )}
+          
+          {/* Content container with min-height to prevent layout jumping */}
+          <div className="min-h-[60px]">
+            {error ? (
+              <p className="text-sm text-red-200 break-words">{error}</p>
+            ) : (
+              <p className="text-sm text-gray-200 break-words">
+                {profileData?.aboutMe || 'No bio available'}
+              </p>
+            )}
+          </div>
         </div>
         
+        {/* Info section with consistent spacing */}
         <div className="mt-6 space-y-2 text-sm pl-5">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-h-[32px]">
             <img
               src="/images/setting-assests/birthday.svg"
               alt="Birthday"
-              className="w-8 h-8"
+              className="w-8 h-8 flex-shrink-0"
             />
-            <span className="text-white">
-              {isLoading ? 'Loading...' : profileData.birthday}
+            <span className="text-white truncate">
+              {(profileData?.birthday || 'Not specified')}
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-h-[32px]">
             <img
               src="/images/setting-assests/location.svg"
               alt="Location"
-              className="w-8 h-8"
+              className="w-8 h-8 flex-shrink-0"
             />
-            <span className="text-white">
-              {isLoading ? 'Loading...' : profileData.location}
+            <span className="text-white truncate">
+              {(profileData?.location || 'Not specified')}
             </span>
           </div>  
         </div>

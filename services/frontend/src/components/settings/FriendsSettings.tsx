@@ -78,10 +78,12 @@ export const FriendsSettings: ComponentFunction = () => {
     fetchFriends();
   }, []);
 
+  // Ensure friends is always an array
+  const safeFriends = Array.isArray(friends) ? friends : [];
   const filteredFriends =
     sortBy === 'all'
-      ? friends
-      : friends.filter(f => f.status === sortBy);
+      ? safeFriends
+      : safeFriends.filter(f => f.status === sortBy);
   const friendColumns = chunk(filteredFriends, 2);
   function getActionButtons(friend: { id: number; username: string; avatar: string; status: string; }) {
     if (friend.status === "friend") {

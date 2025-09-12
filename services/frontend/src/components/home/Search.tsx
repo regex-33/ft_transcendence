@@ -22,21 +22,29 @@ type UserWithFriendStatus = User & {
   friendStatus: FriendStatus;
 };
 
-export const Search: ComponentFunction = () => {
-  const [showSearch, setShowSearch] = useState(false);
+interface SearchProps {
+  modalManager: {
+    activeModal: 'search' | 'notification' | null;
+    openModal: (modal: 'search' | 'notification') => void;
+    closeModal: () => void;
+    isModalOpen: (modal: 'search' | 'notification') => boolean;
+  };
+}
+
+export const Search: ComponentFunction<SearchProps> = ({ modalManager }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [users, setUsers] = useState<UserWithFriendStatus[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const modalRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
+  const showSearch = modalManager.isModalOpen('search');
   
   const fetchUsers = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Fetch users from single endpoint
       const usersResponse = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users`);
 
       if (!usersResponse.ok) {
@@ -58,7 +66,6 @@ export const Search: ComponentFunction = () => {
     }
   };
 
-  // Handle friend actions
   const handleFriendAction = async (username: string, action: 'add' | 'cancel') => {
     try {
       let response;
@@ -85,7 +92,6 @@ export const Search: ComponentFunction = () => {
         throw new Error(`Failed to ${action} friend`);
       }
 
-      // Refresh users data to update friend statuses
       await fetchUsers();
     } catch (err) {
       alert(`Failed to ${action} friend`);
@@ -98,27 +104,45 @@ export const Search: ComponentFunction = () => {
       fetchUsers();
     }
   }, [showSearch]);
-  
 
-  console.log('type:', typeof searchQuery, searchQuery);
+  // Handle click outside to close modal
+  useEffect(() => {
+    if (!showSearch) return;
+    
+    const handleClickOutside = (e: Event) => {
+      const target = e.target as Element;
+      
+      if (containerRef.current && !containerRef.current.contains(target)) {
+        modalManager.closeModal();
+        setSearchQuery('');
+      }
+    };
+  
+    // Add small delay to prevent immediate closing
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside, true);
+    }, 50);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('click', handleClickOutside, true);
+    };
+  }, [showSearch, modalManager]);
+
   const trimmed = (typeof searchQuery === 'string' ? searchQuery : '').trim().toLowerCase();
   const isSearching = trimmed.length > 0;
 
-  console.log('users at render', users, Array.isArray(users))
+  const safeUsers = Array.isArray(users) ? users : [];
 
-const safeUsers = Array.isArray(users) ? users : [];
+  const defaultUsers = safeUsers
+    .filter(u => u.online)
+    .concat(safeUsers.filter(u => !u.online))
+    .slice(0, 5);
 
+  const filteredUsers = safeUsers.filter(u =>
+    u.username.toLowerCase().includes(trimmed)
+  );
 
-const defaultUsers = safeUsers
-  .filter(u => u.online)
-  .concat(safeUsers.filter(u => !u.online))
-  .slice(0, 5);
-
-const filteredUsers = safeUsers.filter(u =>
-  u.username.toLowerCase().includes(trimmed)
-);
-
-  
   let displayUsers: UserWithFriendStatus[] = [];
   let showNoResults = false;
   
@@ -130,46 +154,26 @@ const filteredUsers = safeUsers.filter(u =>
     showNoResults = true;
   }
   
-  const handleCloseSearch = () => {
-    setShowSearch(false);
-    setSearchQuery('');
-  };
-  
   const handleOverlayClick = (e: MouseEvent) => {
     if (e.target === e.currentTarget) {
-      handleCloseSearch();
+      modalManager.closeModal();
+      setSearchQuery('');
     }
   };
 
-  useEffect(() => {
-    if (!showSearch) return;
+  const handleSearchButtonClick = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     
-    const handleClickOutside = (e: Event) => {
-      const target = e.target as Element;
-      if (modalRef.current && !modalRef.current.contains(target)) {
-        setShowSearch(false);
-        setSearchQuery('');
-      }
-    };
-  
-    const timeoutId = setTimeout(() => {
-      document.addEventListener('click', handleClickOutside, true);
-    }, 200);
-    
-    return () => {
-      clearTimeout(timeoutId);
-      document.removeEventListener('click', handleClickOutside, true);
-    };
-  }, [showSearch]);
-
-  const onSearchInput = () => {
-    setShowSearch(true);
+    if (showSearch) {
+      modalManager.closeModal();
+      setSearchQuery('');
+    } else {
+      modalManager.openModal('search');
+    }
   };
 
- 
   const renderActionButton = (user: UserWithFriendStatus) => {
-    console.log("actionssssssssssssssssssss" , user.friendStatus)
-    console.log("usernameeeeeeeeeeeeeeeeee", user.username)
     if (user.friendStatus === 'blocked') {
       return (
         <div className="flex items-center text-red-400 font-semibold text-sm gap-1">
@@ -200,7 +204,11 @@ else if (user.friendStatus === 'request')
   return (
       <button
       type="button"
-      onClick={() => handleFriendAction(user.username, 'cancel')}          
+      onClick={(e: MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleFriendAction(user.username, 'cancel');
+      }}          
           className="
           flex items-center gap-2 px-3 h-[50px]
           bg-[url('/images/home-assests/bg-cancel.svg')]
@@ -215,11 +223,14 @@ else if (user.friendStatus === 'request')
 
 }
  else {
-      // friendStatus === 'none'
       return (
         <button
         type="button"
-          onClick={() => handleFriendAction(user.username, 'add')}
+          onClick={(e: MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleFriendAction(user.username, 'add');
+          }}
           className="
             flex items-center gap-2 px-3 h-[30px]
             bg-[url('/images/home-assests/bg-FriendsAdd.svg')]
@@ -239,10 +250,10 @@ else if (user.friendStatus === 'request')
   };
 
   return (
-    <div>
+    <div ref={containerRef}>
       <div className="min-w-0">
         <button
-          onClick={onSearchInput}
+          onClick={handleSearchButtonClick}
           className="flex items-center gap-2 md:px-3 py-1 overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95"
         >
           <img src="/images/home-assests/search-icon.svg" alt="search" className="w-6 h-6 md:w-10 md:h-10" />
@@ -254,7 +265,6 @@ else if (user.friendStatus === 'request')
           onClick={handleOverlayClick}
         >
           <div
-            ref={modalRef}
             className="bg-[#64B0C5] w-[500px] p-2 h-[455px] rounded-3xl shadow-lg relative focus:outline-none"
             onClick={(e: MouseEvent) => e.stopPropagation()}
           >
@@ -274,12 +284,6 @@ else if (user.friendStatus === 'request')
                 autoFocus
               />
             </div>
-
-            {/* {error && (
-              <div className="text-red-300 text-center mt-4 mb-2">
-                Error: {error}
-              </div>
-            )} */}
 
             {loading ? (
               <div className="text-white text-center mt-40">
@@ -340,6 +344,3 @@ else if (user.friendStatus === 'request')
     </div>
   );
 };
-
-
-

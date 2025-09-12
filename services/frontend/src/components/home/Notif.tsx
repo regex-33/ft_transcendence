@@ -2,6 +2,7 @@ import { h } from '../../vdom/createElement';
 import { ComponentFunction } from "../../types/global";
 import { useEffect } from '../../hooks/useEffect';
 import { useState } from '../../hooks/useState';
+import { useRef } from '../../hooks/useRef';
 
 type Friend = {
   id: number;
@@ -10,7 +11,16 @@ type Friend = {
   online: boolean;
 };
 
-export const NotificationPanel: ComponentFunction = () => {
+interface NotificationPanelProps {
+  modalManager: {
+    activeModal: 'search' | 'notification' | null;
+    openModal: (modal: 'search' | 'notification') => void;
+    closeModal: () => void;
+    isModalOpen: (modal: 'search' | 'notification') => boolean;
+  };
+}
+
+export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ modalManager }) => {
   const [pendingFriends, setPendingFriends] = useState<Friend[]>([]);
   const [showAll, setShowAll] = useState(false);
 
@@ -27,7 +37,6 @@ export const NotificationPanel: ComponentFunction = () => {
   
       const data = await response.json();
   
-      // Ensure it's an array and add 'pending' status to each friend
       const friendsArray: Friend[] = Array.isArray(data)
         ? data.map((f: any) => ({ ...f, status: 'pending' }))
         : [];
@@ -35,14 +44,15 @@ export const NotificationPanel: ComponentFunction = () => {
       setPendingFriends(friendsArray);
     } catch (err) {
       console.error('Error fetching pending friends:', err);
-      setPendingFriends([]); // fallback
+      setPendingFriends([]);
     }
   };
-  
 
   useEffect(() => {
-    fetchPendingFriends();
-  }, []);
+    if (modalManager.isModalOpen('notification')) {
+      fetchPendingFriends();
+    }
+  }, [modalManager.isModalOpen('notification')]);
 
   const handleFriendAction = async (username: string, action: 'accept' | 'decline') => {
     try {
@@ -62,33 +72,43 @@ export const NotificationPanel: ComponentFunction = () => {
   };
 
   const renderActionButton = (friend: Friend) => {
-      return (
-        <div className="flex gap-2">
-          <button 
-            onClick={() => handleFriendAction(friend.username, 'accept')}
-            className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-accept.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
-          >
-            <i className="fa-solid fa-check text-sm"></i>
-            <span>Accept</span>
-          </button>
-          <button 
-            onClick={() => handleFriendAction(friend.username, 'decline')}
-            className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-decline.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
-          >
-            <i className="fa-solid fa-xmark text-sm"></i>
-            <span>Decline</span>
-          </button>
-        </div>
-      );
+    return (
+      <div className="flex gap-2">
+        <button 
+          onClick={(e: MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleFriendAction(friend.username, 'accept');
+          }}
+          className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-accept.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
+        >
+          <i className="fa-solid fa-check text-sm"></i>
+          <span>Accept</span>
+        </button>
+        <button 
+          onClick={(e: MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleFriendAction(friend.username, 'decline');
+          }}
+          className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-decline.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
+        >
+          <i className="fa-solid fa-xmark text-sm"></i>
+          <span>Decline</span>
+        </button>
+      </div>
+    );
   };
- console.log("type of pendingFriendssssssssss: ", typeof pendingFriends);
- console.log("arrrrrrrrrrrrrrrrrrrrrrrrrrrrr: ", Array.isArray(pendingFriends) );
- const displayUsers = showAll 
- ? (Array.isArray(pendingFriends) ? pendingFriends : []) 
- : (Array.isArray(pendingFriends) ? pendingFriends.slice(0,4) : []);
+
+  const displayUsers = showAll 
+    ? (Array.isArray(pendingFriends) ? pendingFriends : []) 
+    : (Array.isArray(pendingFriends) ? pendingFriends.slice(0,4) : []);
 
   return (
-    <div className="absolute top-[58px] -right-40 mt-2 w-96 h-96 bg-[#5D9FA9] opacity-95 rounded-lg shadow-xl flex flex-col z-[9999]">
+    <div 
+      className="absolute top-[58px] -right-40 mt-2 w-96 h-96 bg-[#5D9FA9] opacity-95 rounded-lg shadow-xl flex flex-col z-[9999]"
+      onClick={(e: MouseEvent) => e.stopPropagation()}
+    >
       <div className="p-4 border-b border-[#4E92A2] bg-[#5D9FA9] text-white rounded-t-lg">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">Your Notifications</h3>
@@ -120,7 +140,11 @@ export const NotificationPanel: ComponentFunction = () => {
       {pendingFriends.length > 4 && (
         <div className="p-3 border-t border-[#4E92A2] text-center">
           <button 
-            onClick={() => setShowAll(prev => !prev)}
+            onClick={(e: MouseEvent) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowAll(prev => !prev);
+            }}
             className="text-sm text-teal-600 hover:underline"
           >
             {showAll ? 'See less' : 'See more notifications'}
@@ -131,24 +155,65 @@ export const NotificationPanel: ComponentFunction = () => {
   );
 };
 
-export const NotificationButton: ComponentFunction = () => {
-  const [showNotif, setShowNotif] = useState(false);
+interface NotificationButtonProps {
+  modalManager: {
+    activeModal: 'search' | 'notification' | null;
+    openModal: (modal: 'search' | 'notification') => void;
+    closeModal: () => void;
+    isModalOpen: (modal: 'search' | 'notification') => boolean;
+  };
+}
 
-  const onNotifInput = (e?: Event) => {
-    if (e) e.stopPropagation();
-    setShowNotif(prev => !prev);
+export const NotificationButton: ComponentFunction<NotificationButtonProps> = ({ modalManager }) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const showNotif = modalManager.isModalOpen('notification');
+
+  const handleButtonClick = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (showNotif) {
+      modalManager.closeModal();
+    } else {
+      modalManager.openModal('notification');
+    }
   };
 
+  // Handle click outside to close modal
+  useEffect(() => {
+    if (!showNotif) return;
+
+    const handleClickOutside = (e: Event) => {
+      const target = e.target as Element;
+      
+      if (containerRef.current && !containerRef.current.contains(target)) {
+        modalManager.closeModal();
+      }
+    };
+
+    // Add a small delay to prevent immediate closing
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside, true);
+    }, 50);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('click', handleClickOutside, true);
+    };
+  }, [showNotif, modalManager]);
+
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <button 
-        onClick={onNotifInput} 
+        onClick={handleButtonClick}
         className="flex items-center gap-2 md:px-3 py-1 overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95"
       >
         <img src="/images/home-assests/notif-icon.svg" alt="notif" className="w-6 h-6 md:w-10 md:h-10" />
       </button>
-      {showNotif && <NotificationPanel key="notif-panel" />}
+      {showNotif && (
+        <NotificationPanel modalManager={modalManager} />
+      )}
     </div>
   );
 };
-
