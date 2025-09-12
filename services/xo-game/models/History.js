@@ -1,15 +1,21 @@
-const History = (() => {
-    let history = [];
-    return {
-        add: (state) => {
-            history.push(state);
+
+const history = (s, d) => {
+    return s.define('History', {
+        win: {
+            type: d.BOOLEAN,
+            defaultValue: false,
         },
-        get: () => {
-            return history;
+        player: {
+            type: d.INTEGER,
+            allowNull: false
         },
-        clear: () => {
-            history = [];
-        }
-    };
-})();
- 
+        map_: {
+            type: d.STRING,
+            defaultValue: '[["-","-","-"],["-","-","-"],["-","-","-"]]',
+            allowNull: true
+        },
+        finished: { type: d.BOOLEAN, defaultValue: false }
+    });
+}
+
+module.exports = history

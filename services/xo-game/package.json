@@ -10,8 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fastify/cookie": "^11.0.2",
     "fastify": "^5.5.0",
+    "pg": "^8.16.3",
     "sequelize": "^6.37.7"
   }
 }
-
