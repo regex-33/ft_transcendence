@@ -18,7 +18,10 @@ fastify.register(cors, {
       'http://localhost:3001',
       'http://localhost:3002',
       'http://localhost:3003',
-      'http://localhost:3004'
+      'http://localhost:3004',
+      'http://localhost',
+      'http://localhost:3000',
+      'http://localhost:8080'
     ];
 
     if (!origin || allowedOrigins.includes(origin)) {
@@ -105,7 +108,7 @@ function broadcast_all(data_send) {
 }
 
 
-fastify.get('/api/me', async (req, reply) => {
+fastify.get('/api/chat/me', async (req, reply) => {
   try {
     const cookie = req.headers.cookie || '';
     const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:8001';
@@ -122,7 +125,7 @@ fastify.get('/api/me', async (req, reply) => {
   }
 });
 
-fastify.get('/api/friends', async (req, reply) => {
+fastify.get('/api/chat/friends', async (req, reply) => {
   try {
     const cookie = req.headers.cookie || '';
     const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:8001';
@@ -146,7 +149,7 @@ fastify.get('/api/friends', async (req, reply) => {
   }
 });
 
-fastify.get('/api/messages/:userId', async (req, reply) => {
+fastify.get('/api/chat/messages/:userId', async (req, reply) => {
   const userId = parseInt(req.params.userId);
   try {
     const messages = await prisma.message.findMany({
@@ -160,7 +163,7 @@ fastify.get('/api/messages/:userId', async (req, reply) => {
   }
 });
 
-fastify.get('/api/blocked/:id', async (req, reply) => {
+fastify.get('/api/chat/blocked/:id', async (req, reply) => {
   try {
     const cookie = req.headers.cookie || '';
     const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:8001';
@@ -179,7 +182,9 @@ fastify.get('/api/blocked/:id', async (req, reply) => {
 
 fastify.register(async function (fastify){
   fastify.get('/ws/chat', { websocket: true }, (connection) => {
+    console.log("jaaaaaaat connection")
     connection.on('message', async (message) => {
+      console.log("ja message")
       const now = new Date();
       const hours = String(now.getHours()).padStart(2,'0');
       const minutes = String(now.getMinutes()).padStart(2,'0');
