@@ -17,13 +17,14 @@ async function safeFetch(url: string, options: any) {
         if (!res.ok) return null;
         return await res.json();
     } catch {
-        return null; // swallow silently
+        return null;
     }
 }
 
 const click = (i: number, j: number, setMap: any) => {
     safeFetch('/xo-game/play', {
         method: 'POST',
+        credentials: "include",
         headers: {
             'Content-Type': 'application/json',
         },
@@ -43,7 +44,9 @@ const click = (i: number, j: number, setMap: any) => {
 
 const reset = (setMap: any) => {
     fetch('/xo-game/reset', {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: "include",
+
     })
         .then(data => data.json())
         .then(data => {
@@ -62,7 +65,8 @@ const Xo: ComponentFunction = () => {
         const datafetching = async () => {
             try {
                 const response = await fetch('/xo-game/create', {
-                    method: 'POST'
+                    method: 'POST',
+                    credentials: "include",
                 });
                 if (!response.ok)
                     return;
