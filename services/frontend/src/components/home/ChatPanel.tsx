@@ -3,7 +3,7 @@ import { useRef } from "../../hooks/useRef";
 import { useState } from "../../hooks/useState";
 import { h } from '../../vdom/createElement';
 import { ComponentFunction } from "../../types/global";
-
+import Xo from "./xo/Xo";
 
 interface Friend {
   id: number;
@@ -91,6 +91,7 @@ export const ChatPanel: ComponentFunction = () => {
             </div>
           </div>
         </div>
+        <Xo />
       </aside>
     );
   }
@@ -135,6 +136,7 @@ export const ChatPanel: ComponentFunction = () => {
           </div>
         </div>
       </div>
+      <Xo />
     </aside>
   );
 }

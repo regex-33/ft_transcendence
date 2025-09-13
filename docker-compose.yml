@@ -54,11 +54,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-
-      # - DB_PASSWORD=1234
-      # - DB_USER=aghlimi
-      # - DB_NAME=db
-
+      - DB_DIALECT=${DB_DIALECT:-postgres}
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
       - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
       - INTRA_CLIENT_ID=${INTRA_CLIENT_ID}
@@ -113,6 +109,7 @@ services:
     depends_on:
       - user-service
       - chat-service
+      - xo-game
     networks:
       - transcendence-network
     volumes:
@@ -163,7 +160,28 @@ services:
       - transcendence-network
       # - elk-network
     profiles: ["database", "dev"]
-
+  xo-game:
+    build:
+      context: ./services/xo-game
+      dockerfile: Dockerfile
+    container_name: transcendence-xo-game
+    ports:
+      - "${XO_GAME_PORT:-8083}:${XO_GAME_PORT:-8083}"
+    networks:
+      - transcendence-network
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${USER_SERVICE_PORT:-8001}
+      - JWT_SECRET=${JWT_SECRET}
+      - TIME_TOKEN_EXPIRATION=${TIME_TOKEN_EXPIRATION:-3600}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - INTRA_CALLBACK_URL=${INTRA_CALLBACK_URL:-http://localhost/api/oauth/intra/callback}
+      # - INTRA_CALLBACK_URL=${INTRA_CALLBACK_URL:-http://localhost:8080/api/oauth/intra/callback}
+      - HOME_PAGE=${HOME_PAGE:-/home}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_DIALECT=${DB_DIALECT:-postgres}
 volumes:
   ## DATABASES
   redis_data:
