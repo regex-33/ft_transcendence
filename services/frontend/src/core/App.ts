@@ -26,6 +26,7 @@ import { SettingsPage } from '../components/settings/SettingsPage';
 import  { SecuritySettings } from '../components/settings/SecuritySettings';
 import { Background } from "../components/chat_front/background";
 import { ChatService } from "../components/chat_front/ChatLayouts";
+import { OverviewSettings } from "../components/settings/OverviewSettings";
 
 
 
@@ -273,7 +274,9 @@ private setupRoutes(): void {
 // );
 
 // Router configuration
-
+this.router.addRoute('/Profile', () => 
+  this.createFunctionalComponent(SettingsPage, { defaultTab: 'overview' })
+); 
 this.router.addRoute("/Chat-Friend", () => 
   this.createFunctionalComponent(ChatService)
 );

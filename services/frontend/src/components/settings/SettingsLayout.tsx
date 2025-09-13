@@ -20,7 +20,7 @@ export const SettingsLayout: ComponentFunction<SettingsLayoutProps> = (props) =>
   const [activeTab, setActiveTab] = useState<'profile'|'friends'|'achievements'|'matchHistory'|'overview'|'security'>(defaultTab);
   const [updateAll, setUpdateAll] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: 'Loading...',
+    name: '',
     email: '',
     birthday: '',
     location: '',
@@ -32,8 +32,7 @@ export const SettingsLayout: ComponentFunction<SettingsLayoutProps> = (props) =>
   }, [defaultTab]);
 
   useEffect(() => {
-    if (updateAll)
-      {
+    if (updateAll) {
       const timer = setTimeout(() => {
         setUpdateAll(false);
       }, 100);
@@ -42,22 +41,34 @@ export const SettingsLayout: ComponentFunction<SettingsLayoutProps> = (props) =>
     }
   }, [updateAll]);
 
-  const renderTab = () => {
-    switch (activeTab) {
-      case 'profile':      return <ProfileSettings setUpdateAll={setUpdateAll} profileData={profileData} />;
-      case 'friends':      return <FriendsSettings />;
-      case 'matchHistory': return <MatchHistory />;
-      case 'overview':     return <OverviewSettings />;
-      case 'security':        return  <SecuritySettings/>;
-      default:             return null;
-    }
-  };
+  const renderAllTabs = () => (
+    <div>
+      <div className={`transition-opacity duration-200 ${activeTab === 'profile' ? 'opacity-100' : 'opacity-0 absolute invisible'}`}>
+        <ProfileSettings setUpdateAll={setUpdateAll} profileData={profileData} />
+      </div>
+      
+      <div className={`transition-opacity duration-200 ${activeTab === 'friends' ? 'opacity-100' : 'opacity-0 absolute invisible'}`}>
+        <FriendsSettings />
+      </div>
+      
+      <div className={`transition-opacity duration-200 ${activeTab === 'matchHistory' ? 'opacity-100' : 'opacity-0 absolute invisible'}`}>
+        <MatchHistory />
+      </div>
+      
+      <div className={`transition-opacity duration-200 ${activeTab === 'overview' ? 'opacity-100' : 'opacity-0 absolute invisible'}`}>
+        <OverviewSettings />
+      </div>
+      
+      <div className={`transition-opacity duration-200 ${activeTab === 'security' ? 'opacity-100' : 'opacity-0 absolute invisible'}`}>
+        <SecuritySettings />
+      </div>
+    </div>
+  );
 
   const handleTabClick = (tab: typeof activeTab, e: Event) => {
     e.preventDefault();
     setActiveTab(tab);
-    window.history.pushState({}, '', `/settings/${tab}`);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    window.history.replaceState({}, '', `/settings/${tab}`);
   };
 
   return (
@@ -106,8 +117,8 @@ export const SettingsLayout: ComponentFunction<SettingsLayoutProps> = (props) =>
           </button>
         </nav>
         
-        <div className="flex-1 w-full">
-          {renderTab()}
+        <div className="flex-1 w-full relative">
+          {renderAllTabs()}
         </div>
       </main>
     </div>
