@@ -9,6 +9,8 @@ RUN npm install
 
 COPY . .
 
+RUN npx prisma generate
+
 EXPOSE 8002
 
-CMD [ "node", "src/index.js" ]
+CMD [ "npm", "start" ]
