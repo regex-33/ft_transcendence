@@ -33,7 +33,7 @@ export interface VNodeProps {
 }
 
 // Make ComponentFunction generic to accept different prop types
-export type ComponentFunction<P = VNodeProps> = (props: P) => VNode;
+export type ComponentFunction<P = VNodeProps> = (props: P) => VNode ;
 
 declare const process: {
   env: {

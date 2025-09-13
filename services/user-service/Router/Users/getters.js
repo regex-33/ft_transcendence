@@ -17,7 +17,7 @@ const getbyusername = async (request, reply) => {
 
   const { username } = request.params;
 
-  if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+  if (!username || typeof username !== "string" || username.length < 3) {
     fillObject(request, "WARNING", "getbyusername", "unknown", false, "Invalid username format.", request.cookies?.token || null);
     return reply.status(400).send({ error: "Invalid username format." });
   }

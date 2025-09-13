@@ -4,6 +4,7 @@ import { useModalManager } from './ModalManager';
 import { h } from '../../vdom/createElement';
 import { ComponentFunction } from "../../types/global";
 import { useEffect } from "../../hooks/useEffect";
+import { Bchat } from "../chat_front/Bchat";
 
 export const Header: ComponentFunction = () => {
   const modalManager = useModalManager();
@@ -30,6 +31,12 @@ export const Header: ComponentFunction = () => {
   const handleSettingsClick = (e: Event) => {
     e.preventDefault();
     window.history.pushState({}, '', '/settings');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
+
+  const handleChatClick = (e: Event) => {
+    e.preventDefault();
+    window.history.pushState({}, '', '/Chat-Friend');
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
   
@@ -68,10 +75,12 @@ export const Header: ComponentFunction = () => {
         </a>
           </button>
         </div>
-
+          {/* <Bchat/> */}
           <div className="relative min-w-0">
           <button className="flex items-center gap-2   md:px-3 py-1    overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95 ">
+          <a  onClick={handleChatClick}>
             <img src="/images/home-assests/chat-icon.svg" alt="chat" className="w-6 h-6 md:w-10 md:h-10" />
+          </a>
           </button>
           <span className="absolute top-3 right-5 block h-[6px] w-[6px] rounded-full bg-red-500 transition-transform duration-200 hover:scale-95 "></span>
         </div>
