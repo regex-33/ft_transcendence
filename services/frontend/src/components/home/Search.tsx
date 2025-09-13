@@ -204,11 +204,7 @@ else if (user.friendStatus === 'request')
   return (
       <button
       type="button"
-      onClick={(e: MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        handleFriendAction(user.username, 'cancel');
-      }}          
+      onClick={() => handleFriendAction(user.username, 'cancel')}        
           className="
           flex items-center gap-2 px-3 h-[50px]
           bg-[url('/images/home-assests/bg-cancel.svg')]
@@ -226,11 +222,7 @@ else if (user.friendStatus === 'request')
       return (
         <button
         type="button"
-          onClick={(e: MouseEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleFriendAction(user.username, 'add');
-          }}
+        onClick={() => handleFriendAction(user.username, 'add')}  
           className="
             flex items-center gap-2 px-3 h-[30px]
             bg-[url('/images/home-assests/bg-FriendsAdd.svg')]

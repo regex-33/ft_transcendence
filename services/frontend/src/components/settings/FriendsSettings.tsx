@@ -27,7 +27,11 @@ export const FriendsSettings: ComponentFunction = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users`);
+      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users`,{
+            method: "GET",
+            credentials: 'include'
+          }
+        );
 
       if (!response.ok) {
         throw new Error('Failed to fetch users data');
@@ -60,6 +64,7 @@ export const FriendsSettings: ComponentFunction = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ username, action })
       });
 
@@ -144,7 +149,27 @@ export const FriendsSettings: ComponentFunction = () => {
           </button>
         </div>
       );
-    } else if (friend.status === "blocked") {
+    }
+  else if (friend.status === 'request')
+{
+  return (
+      <button
+      type="button"
+      onClick={() => handleFriendAction(friend.username, 'cancel')}        
+          className="
+          flex items-center gap-2 px-3 h-[50px]
+          bg-[url('/images/home-assests/bg-cancel.svg')]
+          bg-no-repeat bg-center bg-contain
+          text-white font-semibold text-sm
+          transition-transform duration-200 hover:scale-95 p-5
+        ">
+        <i className="fa-solid fa-xmark text-md"></i>
+        <span>Cancel</span>
+    </button>
+  );
+
+} 
+    else if (friend.status === "blocked") {
       return (
         <button 
           onClick={() => handleFriendAction(friend.username, 'unblock')}
