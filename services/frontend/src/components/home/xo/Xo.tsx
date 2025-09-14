@@ -2,6 +2,7 @@ import { useEffect } from "../../../hooks/useEffect";
 import { useState } from "../../../hooks/useState";
 import { ComponentFunction, VNode } from "../../../types/global";
 import { h } from "../../../vdom/createElement";
+import { Background } from "../../chat_front/background";
 let turn = 'X';
 let aimode = false;
 let reset_class = "";
@@ -91,7 +92,8 @@ const Xo: ComponentFunction = () => {
             const td = <td
                 id={`cell-${x}-${y}`}
                 onclick={() => click(x, y, setMap, map)}
-                className={`bg-[url(/images/xo/${map[x][y]}.png)] ${td_class}`}
+                style={{ backgroundImage: `url(/images/xo/${map[x][y]}.png)` }}
+                className={`${td_class}`}
             >
             </td>;
             tr.children.push(td);
@@ -103,7 +105,7 @@ const Xo: ComponentFunction = () => {
             <button
 
                 type="button"
-                className={`bg-[url(/images/xo/ai.png)] w-[42px] bg-center h-[52px] absolute top-3 left-0bg-center bg-no-repeat ${ai_class}`}
+                className={`bg-[url(/images/xo/ai.png)] w-[42px] h-[52px] absolute top-3  left-[-150px] bg-center bg-no-repeat ${ai_class}`}
                 onclick={() => {
                     aimode = true;
                     reset(setMap);

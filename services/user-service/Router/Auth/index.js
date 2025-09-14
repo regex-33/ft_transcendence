@@ -9,7 +9,6 @@ async function AuthRoutes(fastify) {
   fastify.delete("/sessions", terminateAllOtherSessions);
 
   // Password management routes
-  fastify.post("/validate-password", validatePassword);
   fastify.post("/change-password", changePassword);
 }
 
