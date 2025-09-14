@@ -103,7 +103,7 @@ const Xo: ComponentFunction = () => {
             <button
 
                 type="button"
-                className={`bg-[url(/images/xo/ai.png)] w-[52px] h-[52px] absolute top-4 left-0 bg-center bg-no-repeat ${ai_class}`}
+                className={`bg-[url(/images/xo/ai.png)] w-[52px] h-[52px] absolute top-4 left-[-150px] bg-center bg-no-repeat ${ai_class}`}
                 onclick={() => {
                     aimode = true;
                     reset(setMap);
