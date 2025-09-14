@@ -71,6 +71,16 @@ rebuild-test:
 	docker-compose -f docker-compose.yml --profile dev build --no-cache
 	docker-compose -f docker-compose.yml --profile dev up
 
+rebuild-service:
+	@echo "Rebuilding specific service..."
+	@read -p "Enter service name to rebuild: " service; \
+	if [ ! -z "$$service" ]; then \
+		docker-compose -f docker-compose.yml --profile dev build --no-cache $$service; \
+		docker-compose -f docker-compose.yml --profile dev up -d $$service; \
+	else \
+		echo "No service name provided. Aborting."; \
+	fi
+
 
 # ==========================================================
 

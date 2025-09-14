@@ -113,8 +113,8 @@ services:
       - xo-game
     networks:
       - transcendence-network
-    volumes:
-      - ./services/devops/nginx/config/nginx.conf:/etc/nginx/nginx.conf
+    # volumes:
+      # - ./services/devops/nginx/config/nginx.conf:/etc/nginx/nginx.conf
       # don't forget logs for elk
       # - ./services/devops/nginx/conf.d:/etc/nginx/conf.d
     profiles: ["nginx", "dev"]

@@ -1,5 +1,6 @@
 FROM node:18-alpine
 
+RUN apk add --no-cache bash
 WORKDIR /app
 
 COPY package*.json ./
@@ -7,7 +8,7 @@ COPY package*.json ./
 
 COPY . .
 
-RUN npm i nodemon -g 
+RUN npm i nodemon -g
 
 RUN npm install
 
