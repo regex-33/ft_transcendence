@@ -24,7 +24,7 @@ const handleAuthCallback = async (req, reply) => {
         const { code } = req.query;
         if (!code) {
             fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "no code provided", req.cookies?.token || null);
-            return reply.code(400).send({ error: "Missing code" });
+            return reply.status(400).send({ error: "Missing code" });
         }
 
         const tokenRes = await request(
@@ -48,7 +48,7 @@ const handleAuthCallback = async (req, reply) => {
         const token = tokenData?.access_token;
         if (!token) {
             fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "invalid Google code", req.cookies?.token || null);
-            return reply.code(401).send({ error: "Invalid token" });
+            return reply.status(401).send({ error: "Invalid token" });
         }
 
         const userRes = await request("https://www.googleapis.com/oauth2/v1/userinfo", {
@@ -65,7 +65,7 @@ const handleAuthCallback = async (req, reply) => {
         if (user && user.identifier !== `google-${id}`) {
             fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "Username or email already exists", req.cookies?.token || null);
             return reply
-                .code(400)
+                .status(400)
                 .send({ error: "Username or email already exists" });
         }
         let created = false;
@@ -85,21 +85,21 @@ const handleAuthCallback = async (req, reply) => {
             });
             if (!user) {
                 fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "Failed to create user", req.cookies?.token || null);
-                return reply.code(500).send({ error: "Failed to create user" });
+                return reply.status(500).send({ error: "Failed to create user" });
             }
         }
 
         const jwtToken = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: TIME_TOKEN_EXPIRATION });
         if (!jwtToken) {
             fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "Failed to generate token", req.cookies?.token || null);
-            return reply.code(500).send({ error: "Failed to generate token" });
+            return reply.status(500).send({ error: "Failed to generate token" });
         }
         fillObject(req, "INFO", created ? "createUser" : "loginUser", user.username, true, "", req.cookies?.token || null);
         return Cookies(reply, jwtToken, user.id).redirect(process.env.HOME_PAGE);
 
     } catch (error) {
         console.error("Error during Google OAuth callback:", error);
-        reply.code(500).send({ error: "Internal Server Error" });
+        reply.status(500).send({ error: "Internal Server Error" });
     }
 }
 

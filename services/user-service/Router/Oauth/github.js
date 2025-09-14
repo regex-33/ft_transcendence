@@ -18,7 +18,7 @@ const handleAuthCallback = async (req, reply) => {
 
   if (!code) {
     fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "no code provided", req.cookies?.token || null);
-    return reply.code(400).send({ error: "Missing code" });
+    return reply.status(400).send({ error: "Missing code" });
   }
 
   const tokenRes = await request(
@@ -41,7 +41,7 @@ const handleAuthCallback = async (req, reply) => {
 
   if (!tokenData.access_token) {
     fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "invalid GitHub code", req.cookies?.token || null);
-    return reply.code(401).send({ error: "Invalid GitHub code" });
+    return reply.status(401).send({ error: "Invalid GitHub code" });
   }
 
   const userRes = await request("https://api.github.com/user", {
@@ -66,13 +66,13 @@ const handleAuthCallback = async (req, reply) => {
     if (user && user.identifier !== `github-${id}`) {
       fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "username or email already exists", req.cookies?.token || null);
       return reply
-        .code(400)
+        .status(400)
         .send({ error: "Username or email already exists" });
     }
   } catch (err) {
     console.error("Error checking user:", err);
     fillObject(req, "ERROR", "handleAuthCallback", "unknown", false, err.message, req.cookies?.token || null);
-    return reply.code(500).send({ error: "Internal server error" });
+    return reply.status(500).send({ error: "Internal server error" });
   }
   try {
     const [user, created] = await db.User.findOrCreate({
@@ -96,7 +96,7 @@ const handleAuthCallback = async (req, reply) => {
     );
     if (!token) {
       fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "Failed to generate token", req.cookies?.token || null);
-      return reply.code(500).send({ error: "Failed to generate token" });
+      return reply.status(500).send({ error: "Failed to generate token" });
     }
     fillObject(req, "INFO", created ? "createUser" : "loginUser", user.username, true, "", req.cookies?.token || null);
     return Cookies(reply, token, user.id).redirect(process.env.HOME_PAGE);
@@ -104,7 +104,7 @@ const handleAuthCallback = async (req, reply) => {
   } catch (err) {
     fillObject(req, "ERROR", "handleAuthCallback", "unknown", false, err.message, req.cookies?.token || null);
     console.error("Error creating or finding user:", err);
-    return reply.code(500).send({ error: "Internal server error" });
+    return reply.status(500).send({ error: "Internal server error" });
   }
 };
 module.exports = {
