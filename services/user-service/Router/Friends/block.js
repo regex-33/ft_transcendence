@@ -11,8 +11,7 @@ const blockUser = async (req, reply, payload, userId, username) => {
     if (user.id === payload.id) {
       return reply.status(400).send({ error: "You cannot block yourself." });
     }
-    console.log('block user:', userId, 'by:', payload.id);
-    const rel = await db.Relationship.findOne({
+    await db.Relationship.destroy({
       where: {
         [db.Sequelize.Op.or]: [
           { userId: user.id, otherId: payload.id },
@@ -20,11 +19,18 @@ const blockUser = async (req, reply, payload, userId, username) => {
         ]
       }
     });
-    if (!rel || rel.status == 'blocked') {
-      return reply.status(404).send({ 'message': 'this user not friend.' });
+    try {
+      const rel = await db.Relationship.create({
+        userId: payload.id,
+        otherId: user.id,
+        status: 'blocked'
+      });
+      rel.status = 'blocked';
+      await rel.save();
+    } catch (error) {
+      console.log('block create error:', error.message);
+      return reply.status(500).send({ error: 'internal server error' });
     }
-    rel.status = 'blocked';
-    await rel.save();
     return reply.send({ 'message': 'success' });
 
   } catch (error) {
