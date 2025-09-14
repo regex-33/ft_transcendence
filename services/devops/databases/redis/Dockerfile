@@ -1,5 +1,6 @@
 FROM redis:7.2-alpine
 
+RUN apk add --no-cache bash
 RUN mkdir -p /var/log/redis && \
     chown redis:redis /var/log/redis
 

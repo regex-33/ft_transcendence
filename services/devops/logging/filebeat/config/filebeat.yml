@@ -1,0 +1,246 @@
+# ======================== Filebeat Configuration 8.15.0 ============================
+
+# ============================== Filebeat inputs ===============================
+filebeat.inputs:
+
+# Auth service logs - CORRECTED PATHS
+- type: filestream
+  id: auth-service-logs
+  enabled: true
+  paths:
+    - /var/log/ft-transcendence/auth-service/auth.log
+    - /var/log/ft-transcendence/auth-service/auth-access.log
+    - /var/log/ft-transcendence/auth-service/auth-error.log
+  fields:
+    logtype: auth-service
+    service: auth-service
+    environment: "${ENVIRONMENT:development}"
+    service_group: ft-transcendence
+    datacenter: "${DATACENTER:local}"
+  fields_under_root: true
+  json.keys_under_root: false
+  json.add_error_key: true
+
+# Auth security logs
+- type: filestream
+  id: auth-security-logs
+  enabled: true
+  paths:
+    - /var/log/ft-transcendence/auth-service/auth-security.log
+    - /var/log/ft-transcendence/auth-service/security-events.log
+    - /var/log/ft-transcendence/security/*.log
+  fields:
+    logtype: security-events
+    service: auth-service
+    environment: "${ENVIRONMENT:development}"
+    service_group: ft-transcendence
+    datacenter: "${DATACENTER:local}"
+  fields_under_root: true
+  json.keys_under_root: false
+  json.add_error_key: true
+
+# API Gateway logs - CREATE THESE DIRECTORIES IF THEY DON'T EXIST
+- type: filestream
+  id: api-gateway-logs
+  enabled: true
+  paths:
+    - /var/log/ft-transcendence/api-gateway/*.log
+    - /var/log/nginx/ft-transcendence-*.log
+  fields:
+    logtype: api-gateway
+    service: api-gateway
+    environment: "${ENVIRONMENT:development}"
+    service_group: ft-transcendence
+    datacenter: "${DATACENTER:local}"
+  fields_under_root: true
+  json.keys_under_root: false
+  json.add_error_key: true
+  multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+  multiline.negate: true
+  multiline.match: after
+
+# Chat messages logs
+- type: filestream
+  id: chat-messages-logs
+  enabled: true
+  paths:
+    - /var/log/ft-transcendence/chat-service/messages/*.log
+    - /var/log/ft-transcendence/chat-messages/*.log
+  fields:
+    logtype: chat-messages
+    service: chat-service
+    environment: "${ENVIRONMENT:development}"
+    service_group: ft-transcendence
+    datacenter: "${DATACENTER:local}"
+  fields_under_root: true
+  json.keys_under_root: false
+  json.add_error_key: true
+
+# Game events logs
+- type: filestream
+  id: game-events-logs
+  enabled: true
+  paths:
+    - /var/log/ft-transcendence/game-service/events/*.log
+    - /var/log/ft-transcendence/game-events/*.log
+  fields:
+    logtype: game-events
+    service: game-service
+    environment: "${ENVIRONMENT:development}"
+    service_group: ft-transcendence
+    datacenter: "${DATACENTER:local}"
+  fields_under_root: true
+  json.keys_under_root: false
+  json.add_error_key: true
+
+# User service logs
+- type: filestream
+  id: user-service-logs
+  enabled: true
+  paths:
+    - /var/log/ft-transcendence/user-service/*.log
+  fields:
+    logtype: user-service
+    service: user-service
+    environment: "${ENVIRONMENT:development}"
+    service_group: ft-transcendence
+    datacenter: "${DATACENTER:local}"
+  fields_under_root: true
+  json.keys_under_root: false
+  json.add_error_key: true
+
+# Other microservices logs
+- type: filestream
+  id: other-microservices-logs
+  enabled: true
+  paths:
+    - /var/log/ft-transcendence/tournament-service/*.log
+    - /var/log/ft-transcendence/notification-service/*.log
+    - /var/log/ft-transcendence/file-service/*.log
+    - /var/log/ft-transcendence/stats-service/*.log
+    - /var/log/ft-transcendence/match-service/*.log
+  fields:
+    logtype: microservices
+    environment: "${ENVIRONMENT:development}"
+    service_group: ft-transcendence
+    datacenter: "${DATACENTER:local}"
+  fields_under_root: true
+  json.keys_under_root: false
+  json.add_error_key: true
+  processors:
+    - script:
+        lang: javascript
+        id: extract_service_from_path
+        source: >
+          function process(event) {
+            var logPath = event.Get("log.file.path");
+            if (logPath && logPath.includes("/ft-transcendence/")) {
+              var match = logPath.match(/\/ft-transcendence\/([^\/]+)\//);
+              if (match && match[1]) {
+                event.Put("service", match[1]);
+              }
+            }
+          }
+
+# Docker container logs
+- type: container
+  id: docker-logs
+  enabled: true
+  paths:
+    - /var/lib/docker/containers/*/*.log
+  stream: all
+  fields:
+    logtype: container
+    environment: "${ENVIRONMENT:development}"
+    service_group: ft-transcendence
+    datacenter: "${DATACENTER:local}"
+  fields_under_root: true
+  processors:
+    - script:
+        lang: javascript
+        id: extract_service_from_container
+        source: >
+          function process(event) {
+            var containerName = event.Get("container.name");
+            if (containerName && containerName.startsWith("ft-")) {
+              var serviceName = containerName.replace(/^ft-/, "").replace(/-[0-9]+$/, "");
+              event.Put("service", serviceName);
+            }
+          }
+
+# ============================== Filebeat modules ===============================
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+# ================================ Global Processors ===============================
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_docker_metadata:
+      host: "unix:///var/run/docker.sock"
+  - drop_event:
+      when:
+        regexp:
+          message: "^\\s*$"
+  - drop_fields:
+      fields: ["agent.ephemeral_id", "agent.id", "ecs.version", "host.architecture", "host.os.family", "host.os.version", "host.os.kernel"]
+      ignore_missing: true
+  - timestamp:
+      field: "@timestamp"
+      layouts:
+        - '2006-01-02T15:04:05.000Z'
+        - '2006-01-02T15:04:05Z'
+        - '2006-01-02 15:04:05'
+      test:
+        - '2023-12-25T09:30:00.000Z'
+
+# ================================ Output Configuration ===============================
+output.logstash:
+  hosts: ["logstash:5044"]
+  worker: 1
+  compression_level: 3
+  timeout: 30s
+  bulk_max_size: 512
+  ttl: 30s
+  pipelining: 2
+
+# ================================ Logging ===============================
+logging.level: debug
+logging.to_files: true
+logging.files:
+  path: /usr/share/filebeat/logs
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
+  rotateeverybytes: 10485760
+
+# ================================ HTTP Monitoring ===============================
+http.enabled: true
+http.host: 0.0.0.0
+http.port: 5066
+
+# ================================ General ===============================
+name: ft-transcendence-filebeat
+tags: ["ft-transcendence", "microservices"]
+
+# ================================ Template ===============================
+setup.template.enabled: false
+setup.ilm.enabled: false
+
+# ================================ Kibana ===============================
+# setup.kibana:
+#   host: "kibana:5601"
+#   protocol: "http"
+setup.kibana:
+  host: "https://kibana:5601"
+  protocol: "https"
+  ssl.verification_mode: "none"  # Skip SSL verification for self-signed certificates
+  username: "${KIBANA_USERNAME:-elastic}"  # Use environment variable or default to 'elastic'
+  password: "${KIBANA_PASSWORD:-changeme}"  # Use environment variable or default to 'changeme'
+
+# ================================ Paths ===============================
+path.home: /usr/share/filebeat
+path.config: /usr/share/filebeat
+path.data: /usr/share/filebeat/data
+path.logs: /var/log/filebeat

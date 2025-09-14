@@ -1,0 +1,59 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      timeInterval: "5s"
+      queryTimeout: "60s"
+      httpMethod: "GET"
+    secureJsonData: {}
+
+  - name: Elasticsearch
+    type: elasticsearch
+    access: proxy
+    url: https://elasticsearch:9200
+    database: "filebeat-*"
+    editable: true
+    jsonData:
+      esVersion: 8
+      timeField: "@timestamp"
+      interval: "Daily"
+      maxConcurrentShardRequests: 5
+      httpMode: "POST"
+      tlsSkipVerify: false
+      basicAuth: true
+    secureJsonData:
+      basicAuthPassword: ${ELASTICSEARCH_PASSWORD:-changeme}
+      basicAuthUser: ${ELASTICSEARCH_USER:-elastic}
+
+# apiVersion: 1
+
+# datasources:
+#   - name: Prometheus
+#     type: prometheus
+#     access: proxy
+#     url: http://prometheus:9090
+#     isDefault: true
+#     editable: true
+#     jsonData:
+#       timeInterval: "5s"
+#       queryTimeout: "60s"
+#       httpMethod: "GET"
+#     secureJsonData: {}
+
+#   - name: Elasticsearch
+#     type: elasticsearch
+#     access: proxy
+#     url: http://elasticsearch:9200
+#     database: "filebeat-*"
+#     jsonData:
+#       interval: "Daily"
+#       timeField: "@timestamp"
+#       esVersion: "8.0.0"
+#       maxConcurrentShardRequests: 5
+#     editable: true

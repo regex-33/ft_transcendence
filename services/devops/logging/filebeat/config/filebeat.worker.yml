@@ -1,0 +1,84 @@
+filebeat.inputs:
+# Docker container logs only for worker nodes
+- type: container
+  enabled: true
+  paths:
+    - '/var/lib/docker/containers/*/*.log'
+  processors:
+    - add_docker_metadata:
+        host: "unix:///var/run/docker.sock"
+        match_fields: ["container.id"]
+    - decode_json_fields:
+        fields: ["message"]
+        target: ""
+        overwrite_keys: true
+  fields:
+    node_type: ${NODE_TYPE:worker}
+    environment: production
+  fields_under_root: true
+
+# System logs for worker nodes
+- type: log
+  enabled: true
+  paths:
+    - /var/log/syslog
+    - /var/log/auth.log
+  fields:
+    service: system
+    node_type: ${NODE_TYPE:worker}
+    environment: production
+  fields_under_root: true
+
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - timestamp:
+      field: json.time
+      layouts:
+        - '2006-01-02T15:04:05.999999999Z07:00'
+        - '2006-01-02T15:04:05.999Z'
+        - '2006-01-02T15:04:05Z'
+      test:
+        - '2019-06-22T16:33:51Z'
+
+# Filter out filebeat's own logs to prevent recursion
+processors:
+  - drop_event:
+      when:
+        contains:
+          container.image.name: "ft_transcendence/filebeat"
+
+# Output configuration
+output.logstash:
+  hosts: ["logstash:5044"]
+  compression_level: 3
+  bulk_max_size: 1024
+
+# Logging configuration
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
+  rotateeverybytes: 10485760
+
+# Monitoring
+monitoring.enabled: true
+monitoring.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+
+# Performance tuning
+queue.mem:
+  events: 2048
+  flush.min_events: 256
+  flush.timeout: 1s
+
+# Index lifecycle management
+setup.ilm.enabled: auto
+setup.ilm.rollover_alias: "filebeat-worker"
+setup.ilm.pattern: "{now/d}-000001"
+setup.ilm.policy: "filebeat-worker-policy"

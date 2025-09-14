@@ -1,0 +1,223 @@
+{
+  "index_patterns": [
+    "ft-transcendence-*"
+  ],
+  "priority": 500,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "refresh_interval": "5s",
+      "index.mapping.total_fields.limit": 2000,
+      "index.max_result_window": 100000,
+      "index.query.default_field": ["log_message", "message", "error_message"],
+      "analysis": {
+        "normalizer": {
+          "uppercase": {
+            "type": "custom",
+            "char_filter": [],
+            "filter": ["uppercase"]
+          }
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date",
+          "format": "strict_date_optional_time||epoch_millis"
+        },
+        "log_timestamp": {
+          "type": "date",
+          "format": "strict_date_optional_time||epoch_millis"
+        },
+        "log_level": {
+          "type": "keyword",
+          "normalizer": "uppercase"
+        },
+        "log_message": {
+          "type": "text",
+          "analyzer": "standard",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "service_name": {
+          "type": "keyword"
+        },
+        "logtype": {
+          "type": "keyword"
+        },
+        "request_id": {
+          "type": "keyword"
+        },
+        "user_id": {
+          "type": "keyword"
+        },
+        "username": {
+          "type": "keyword",
+          "fields": {
+            "text": {
+              "type": "text"
+            }
+          }
+        },
+        "session_id": {
+          "type": "keyword"
+        },
+        "action": {
+          "type": "keyword"
+        },
+        "success": {
+          "type": "boolean"
+        },
+        "request_method": {
+          "type": "keyword"
+        },
+        "request_url": {
+          "type": "keyword",
+          "fields": {
+            "text": {
+              "type": "text"
+            }
+          }
+        },
+        "request_ip": {
+          "type": "ip"
+        },
+        "request_user_agent": {
+          "type": "text",
+          "analyzer": "standard",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "response_status": {
+          "type": "integer"
+        },
+        "response_time": {
+          "type": "float"
+        },
+        "response_duration": {
+          "type": "float"
+        },
+        "response_bytes": {
+          "type": "long"
+        },
+        "error_message": {
+          "type": "text",
+          "analyzer": "standard",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "error_reason": {
+          "type": "keyword"
+        },
+        "error_code": {
+          "type": "keyword"
+        },
+        "game_id": {
+          "type": "keyword"
+        },
+        "match_id": {
+          "type": "keyword"
+        },
+        "tournament_id": {
+          "type": "keyword"
+        },
+        "event_type": {
+          "type": "keyword"
+        },
+        "message_id": {
+          "type": "keyword"
+        },
+        "channel_id": {
+          "type": "keyword"
+        },
+        "room_id": {
+          "type": "keyword"
+        },
+        "security_event": {
+          "type": "keyword"
+        },
+        "threat_level": {
+          "type": "keyword"
+        },
+        "source_ip": {
+          "type": "ip"
+        },
+        "env": {
+          "type": "keyword"
+        },
+        "dc": {
+          "type": "keyword"
+        },
+        "service": {
+          "type": "keyword"
+        },
+        "environment": {
+          "type": "keyword"
+        },
+        "datacenter": {
+          "type": "keyword"
+        },
+        "service_group": {
+          "type": "keyword"
+        },
+        "tags": {
+          "type": "keyword"
+        },
+        "input": {
+          "properties": {
+            "type": {
+              "type": "keyword"
+            }
+          }
+        },
+        "log": {
+          "properties": {
+            "file": {
+              "properties": {
+                "path": {
+                  "type": "keyword",
+                  "fields": {
+                    "text": {
+                      "type": "text"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "container": {
+          "properties": {
+            "name": {
+              "type": "keyword"
+            },
+            "id": {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    }
+  },
+  "composed_of": [],
+  "version": 1,
+  "_meta": {
+    "description": "Template for ft-transcendence microservices logs",
+    "created_by": "ft-transcendence-logging",
+    "created_date": "2024-01-01"
+  }
+}

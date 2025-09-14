@@ -1,0 +1,32 @@
+#!/bin/bash
+set -eo pipefail
+
+
+ELASTIC_USERNAME="${ELASTIC_USERNAME:-elastic}"
+ELASTIC_PASSWORD="${ELASTIC_PASSWORD:-changeme}"
+
+# Resolve the host
+#host="$(hostname --ip-address || echo '127.0.0.1')"
+host="localhost"
+
+# Perform the health check
+response=$(curl -fsSkL "https://$ELASTIC_USERNAME:$ELASTIC_PASSWORD@$host:5601/api/status" || echo "error")
+
+if [[ "$response" == "error" ]]; then
+  echo >&2 "Error: Failed to connect to Kibana at https://$host:5601/api/status"
+  exit 1
+fi
+
+# Parse the JSON response
+health=$(echo "$response" | python -c "import sys, json; print(json.load(sys.stdin).get('status', {}).get('overall', {}).get('level', 'unknown'))" 2>/dev/null || echo "invalid")
+
+if [[ "$health" == "available" ]]; then
+  echo "Kibana is healthy: $health"
+  exit 0
+elif [[ "$health" == "invalid" ]]; then
+  echo >&2 "Error: Invalid JSON response from Kibana"
+  exit 1
+else
+  echo >&2 "Unexpected health status: $health"
+  exit 1
+fi

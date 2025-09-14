@@ -1,0 +1,438 @@
+version: '3.8'
+
+services:
+  # Vault Agent for Logging Services
+  vault-agent-logging:
+    image: ft_transcendence/vault
+    user: root
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.labels.type == logging
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    volumes:
+      - vault-logging-secrets:/vault/secrets
+      - vault-logging-agent-data:/vault/agent/data
+    configs:
+      - source: vault-agent-logging-config
+        target: /vault/config/vault-agent.hcl
+    networks:
+      - vault-network
+      - logging-network
+    secrets:
+      - source: logging-role-id
+        target: /tmp/logging-role-id
+        mode: 0644
+      - source: logging-secret-id
+        target: /tmp/logging-secret-id
+        mode: 0644
+    environment:
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_SKIP_VERIFY=true
+    command: ["vault", "agent", "-config=/vault/config/vault-agent.hcl"]
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /vault/secrets/elasticsearch.env && test -f /vault/secrets/kibana.env"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Elasticsearch - Updated with Vault
+  elasticsearch:
+    image: ft_transcendence/elasticsearch
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+      - elasticsearch-logs:/usr/share/elasticsearch/logs
+      - vault-logging-secrets:/vault/secrets:ro
+    secrets:
+      - source: elasticsearch.keystore
+        target: /usr/share/elasticsearch/config/elasticsearch.keystore
+      - source: elasticsearch.service_tokens
+        target: /usr/share/elasticsearch/config/service_tokens
+      - source: elastic.ca
+        target: /usr/share/elasticsearch/config/certs/ca.crt
+      - source: elasticsearch.certificate
+        target: /usr/share/elasticsearch/config/certs/elasticsearch.crt
+      - source: elasticsearch.key
+        target: /usr/share/elasticsearch/config/certs/elasticsearch.key
+    environment:
+      # Keep non-sensitive config
+      - ELASTIC_CLUSTER_NAME=logging
+      - ELASTIC_NODE_NAME=logging-node-0
+      - ELASTIC_INIT_MASTER_NODE=logging-node-0
+      - ELASTIC_DISCOVERY_SEEDS=logging-node-0
+      - ELASTICSEARCH_PORT=9200
+      - ES_JAVA_OPTS=-Xmx512m -Xms512m -Des.enforce.bootstrap.checks=true -Dlog4j2.formatMsgNoLookups=true
+      - bootstrap.memory_lock=true
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.labels.type == logging
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+    networks:
+      - logging-network
+    depends_on:
+      - vault-agent-logging
+    command: ["bash", "-c", "set -a && source /vault/secrets/elasticsearch.env && set +a && /usr/local/bin/docker-entrypoint.sh"]
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    healthcheck:
+      test: ["CMD-SHELL", "set -a && source /vault/secrets/elasticsearch.env && set +a && curl -sf --insecure https://$$ELASTIC_USERNAME:$$ELASTIC_PASSWORD@localhost:$$ELASTICSEARCH_PORT/_cat/health | grep -ioE 'green|yellow' || echo 'not green/yellow cluster status'"]
+
+  # Kibana - Updated with Vault
+  kibana:
+    image: ft_transcendence/kibana
+    volumes:
+      - kibana-data:/usr/share/kibana/data
+      - vault-logging-secrets:/vault/secrets:ro
+    secrets:
+      - source: elastic.ca
+        target: /certs/ca.crt
+      - source: kibana.certificate
+        target: /certs/kibana.crt
+      - source: kibana.key
+        target: /certs/kibana.key
+    environment:
+      # Keep non-sensitive config
+      - KIBANA_PORT=5601
+      - SERVER_REWRITEBASEPATH=false
+      - KIBANA_INIT_TIMEOUT=300000
+      - SERVER_PUBLICBASEURL=https://logging.regex-33.com
+      - SERVER_HOST=0.0.0.0
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.labels.type == logging
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+      labels:
+        - "traefik.enable=true"
+        - "traefik.tcp.routers.kibana.rule=HostSNI(`logging.regex-33.com`)"
+        - "traefik.tcp.routers.kibana.entrypoints=websecure"
+        - "traefik.tcp.routers.kibana.tls.passthrough=true"
+        - "traefik.tcp.services.kibana.loadbalancer.server.port=5601"
+        - "traefik.docker.network=traefik-public"
+    env_file:
+      - ./services/devops/logging/secrets/.env.kibana.token
+    networks:
+      - traefik-public
+      - logging-network
+    depends_on:
+      - vault-agent-logging
+      - elasticsearch
+    entrypoint: |
+      bash -c "
+        echo 'Waiting for vault secrets...';
+        while [ ! -f /vault/secrets/kibana.env ] || [ ! -f /vault/secrets/elasticsearch.env ]; do 
+          echo 'Waiting for vault secrets to be available...'; 
+          sleep 5; 
+        done;
+        set -a && source /vault/secrets/kibana.env && source /vault/secrets/elasticsearch.env && set +a;
+        exec /usr/local/bin/kibana-docker
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f https://localhost:5601/api/status -k || exit 1"]
+
+
+
+  # Logstash - Updated with Vault
+  logstash:
+    image: ft_transcendence/logstash
+    volumes:
+      - logstash-data:/usr/share/logstash/data
+      - logstash-logs:/usr/share/logstash/logs
+      - vault-logging-secrets:/vault/secrets:ro
+    secrets:
+      - source: elastic.ca
+        target: /certs/ca.crt
+    environment:
+      # Keep non-sensitive config
+      - ENVIRONMENT=development
+      - LOG_LEVEL=info
+    ports:
+      - "5044:5044"
+      - "5045:5045"
+      - "5046:5046"
+      - "5047:5047"
+      - "5048:5048"
+      - "5003:5003"
+      - "8081:8081"
+      - "9600:9600"
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.labels.type == logging
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    networks:
+      - logging-network
+    depends_on:
+      - vault-agent-logging
+      - elasticsearch
+    command: ["bash", "-c", "set -a && source /vault/secrets/logstash.env && source /vault/secrets/elasticsearch.env && set +a && /usr/local/bin/docker-entrypoint"]
+
+  # Filebeat for Logging Node
+  filebeat-logging:
+    image: ft_transcendence/filebeat
+    user: root
+    deploy:
+      mode: global
+      placement:
+        constraints: 
+          - node.labels.type == logging
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log:/var/log/host:ro
+      - filebeat-logging-data:/usr/share/filebeat/data
+      - vault-logging-secrets:/vault/secrets:ro
+    configs:
+      - source: filebeat-worker-config
+        target: /usr/share/filebeat/filebeat.yml
+        mode: 0644
+    networks:
+      - logging-network
+    environment:
+      - LOGSTASH_HOSTS=logstash:5044
+      - NODE_TYPE=logging
+      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+    depends_on:
+      - vault-agent-logging
+      - logstash
+      - elasticsearch
+    entrypoint: |
+      bash -c "
+        echo 'Waiting for vault secrets...';
+        while [ ! -f /vault/secrets/elasticsearch.env ]; do 
+          echo 'Waiting for elasticsearch.env from vault...'; 
+          sleep 5; 
+        done;
+        echo 'Vault secrets found, sourcing environment variables...';
+        set -a && . /vault/secrets/elasticsearch.env && set +a;
+        echo 'Environment variables loaded, starting filebeat...';
+        exec /usr/share/filebeat/filebeat -e -c /usr/share/filebeat/filebeat.yml
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "filebeat test config || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Monitoring services for logging node
+  cadvisor-logging:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    deploy:
+      mode: global
+      placement:
+        constraints: 
+          - node.labels.type == logging
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - monitoring-network
+    command:
+      - '--housekeeping_interval=30s'
+      - '--docker_only=true'
+      - '--disable_metrics=cpu_topology,disk,memory_numa,tcp,udp,percpu,sched,process,hugetlb,referenced_memory,resctrl,cpuset,advtcp'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Elasticsearch Exporter for Monitoring
+  elasticsearch-exporter:
+    image: ft_transcendence/elasticsearch-exporter
+    ports:
+      - "9114:9114"
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.labels.type == logging
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    volumes:
+      - vault-logging-secrets:/vault/secrets:ro
+    networks:
+      - logging-network
+      - monitoring-network
+    depends_on:
+      - vault-agent-logging
+      - elasticsearch
+    entrypoint: |
+      bash -c "
+        echo 'Waiting for vault secrets...';
+        while [ ! -f /vault/secrets/elasticsearch.env ]; do 
+          echo 'Waiting for vault secrets to be available...'; 
+          sleep 5; 
+        done;
+        set -a && . /vault/secrets/elasticsearch.env && set +a;
+        exec elasticsearch_exporter --es.uri=https://$$ELASTIC_USERNAME:$$ELASTIC_PASSWORD@elasticsearch:9200 --es.all --es.indices --es.shards --es.timeout=30s --es.ssl-skip-verify
+      "
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9114/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  node-exporter-logging:
+    image: prom/node-exporter:v1.8.2 
+    deploy:
+      mode: global
+      placement:
+        constraints: 
+          - node.labels.type == logging 
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - monitoring-network
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9100/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# Network Definitions
+networks:
+  logging-network:
+    external: true
+  traefik-public:
+    external: true
+  monitoring-network:
+    external: true
+  vault-network:
+    external: true
+
+# Volume Definitions
+volumes:
+  elasticsearch-data:
+    driver: local
+  elasticsearch-logs:
+    driver: local
+  kibana-data:
+    driver: local
+  logstash-data:
+    driver: local
+  logstash-logs:
+    driver: local
+  filebeat-logging-data:
+    driver: local
+  vault-logging-secrets:
+    driver: local
+  vault-logging-agent-data:
+    driver: local
+
+# Config Definitions
+configs:
+  filebeat-worker-config:
+    external: true
+  vault-agent-logging-config:
+    external: true
+
+# Vault agent secrets
+secrets:
+  logging-role-id:
+    external: true
+  logging-secret-id:
+    external: true
+
+
+  # Elasticsearch secrets remain the same
+  elasticsearch.keystore:
+    file: ./services/devops/logging/secrets/keystore/elasticsearch.keystore
+  elasticsearch.service_tokens:
+    file: ./services/devops/logging/secrets/service_tokens
+  elastic.ca:
+    file: ./services/devops/logging/secrets/certs/ca/ca.crt
+  elasticsearch.certificate:
+    file: ./services/devops/logging/secrets/certs/elasticsearch/elasticsearch.crt
+  elasticsearch.key:
+    file: ./services/devops/logging/secrets/certs/elasticsearch/elasticsearch.key
+  kibana.certificate:
+    file: ./services/devops/logging/secrets/certs/kibana/kibana.crt
+  kibana.key:
+    file: ./services/devops/logging/secrets/certs/kibana/kibana.key

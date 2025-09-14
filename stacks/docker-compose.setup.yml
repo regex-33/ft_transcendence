@@ -1,0 +1,45 @@
+version: '3.5'
+
+services:
+  keystore:
+    build:
+      context: ./../services/devops/logging/elasticsearch/
+      args:
+        ELK_VERSION: ${ELK_VERSION}
+    command: bash /setup/setup-keystore.sh
+    environment:
+      ELASTIC_USERNAME: ${ELASTIC_USERNAME:-elastic}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
+      ELASTIC_CLUSTER_NAME: ${ELASTIC_CLUSTER_NAME:-logging}
+      ELASTIC_NODE_NAME: ${ELASTIC_NODE_NAME:-logging-node-0}
+      ELASTIC_INIT_MASTER_NODE: ${ELASTIC_INIT_MASTER_NODE:-logging-node-0}
+      ELASTIC_DISCOVERY_SEEDS: ${ELASTIC_DISCOVERY_SEEDS:-logging-node-0}
+      ELASTICSEARCH_PORT: ${ELASTICSEARCH_PORT:-9200}
+      ES_JAVA_OPTS: "-Xmx${ELASTICSEARCH_HEAP:-512m} -Xms${ELASTICSEARCH_HEAP:-512m} -Des.enforce.bootstrap.checks=true -Dlog4j2.formatMsgNoLookups=true"
+      bootstrap.memory_lock: "true"
+    user: "0"
+    volumes:
+      - ./../services/devops/logging/secrets:/secrets
+      - ./../services/devops/logging/setup:/setup
+
+  certs:
+    build:
+      context: ./../services/devops/logging/elasticsearch/
+      args:
+        ELK_VERSION: ${ELK_VERSION:-8.11.1}
+    command: bash /setup/setup-certs.sh
+    user: "0"
+    volumes:
+      - ./../services/devops/logging/secrets:/secrets
+      - ./../services/devops/logging/setup:/setup
+      - ./../services/devops/logging/setup/instances.yml:/setup/instances.yml
+    environment:
+      ELASTIC_USERNAME: ${ELASTIC_USERNAME:-elastic}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
+      ELASTIC_CLUSTER_NAME: ${ELASTIC_CLUSTER_NAME:-logging}
+      ELASTIC_NODE_NAME: ${ELASTIC_NODE_NAME:-logging-node-0}
+      ELASTIC_INIT_MASTER_NODE: ${ELASTIC_INIT_MASTER_NODE:-logging-node-0}
+      ELASTIC_DISCOVERY_SEEDS: ${ELASTIC_DISCOVERY_SEEDS:-logging-node-0}
+      ELASTICSEARCH_PORT: ${ELASTICSEARCH_PORT:-9200}
+      ES_JAVA_OPTS: "-Xmx${ELASTICSEARCH_HEAP:-512m} -Xms${ELASTICSEARCH_HEAP:-512m} -Des.enforce.bootstrap.checks=true -Dlog4j2.formatMsgNoLookups=true"
+      bootstrap.memory_lock: "true"

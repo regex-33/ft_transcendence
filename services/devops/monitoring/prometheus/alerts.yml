@@ -1,0 +1,243 @@
+groups:
+  - name: ft_transcendence.rules
+    rules:
+      # - alert: AlwaysFiring
+      #   expr: up == 1  # This fires for any running service
+      #   for: 0s
+      #   labels:
+      #     severity: warning
+      #   annotations:
+      #     summary: "Test alert - should always fire"
+      # Service availability alerts
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute."
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }} errors per second for {{ $labels.job }}"
+
+      # System resource alerts
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 80% for more than 5 minutes on {{ $labels.instance }}"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 85% for more than 5 minutes on {{ $labels.instance }}"
+
+      - alert: LowDiskSpace
+        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Disk usage is above 90% on {{ $labels.instance }} ({{ $labels.mountpoint }})"
+
+      # Docker Swarm alerts
+      - alert: SwarmNodeDown
+        expr: swarm_node_info{state!="ready"} == 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Swarm node {{ $labels.node_name }} is down"
+          description: "Docker Swarm node {{ $labels.node_name }} is not in ready state"
+
+      - alert: ServiceReplicasMismatch
+        expr: swarm_service_replicas != swarm_service_replicas_running
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Service {{ $labels.service_name }} has replica mismatch"
+          description: "Service {{ $labels.service_name }} desired: {{ $labels.replicas }}, running: {{ $labels.replicas_running }}"
+
+      # Application-specific alerts
+      - alert: FrontendDown
+        expr: up{job="ft-transcendence-frontend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Frontend service is down"
+          description: "The frontend service has been unreachable for more than 1 minute"
+
+      - alert: user-serviceDown
+        expr: up{job="ft-transcendence-user-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "User service is down"
+          description: "The user service has been unreachable for more than 1 minute"
+
+      - alert: chat-serviceDown
+        expr: up{job="ft-transcendence-chat-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Chat service is down"
+          description: "The chat service has been unreachable for more than 1 minute"
+
+      # Database alerts
+      - alert: PostgreSQLDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database has been unreachable for more than 1 minute"
+
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache has been unreachable for more than 1 minute"
+
+      - alert: HighDatabaseConnections
+        expr: pg_stat_database_numbackends > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of database connections"
+          description: "PostgreSQL has {{ $value }} active connections"
+
+      # Logging stack alerts
+      - alert: ElasticsearchDown
+        expr: up{job="elasticsearch"} == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Elasticsearch is down"
+          description: "Elasticsearch has been unreachable for more than 2 minutes"
+
+      - alert: KibanaDown
+        expr: up{job="kibana"} == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kibana is down"
+          description: "Kibana has been unreachable for more than 2 minutes"
+
+      - alert: ElasticsearchClusterRed
+        expr: elasticsearch_cluster_health_status{color="red"} == 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Elasticsearch cluster status is red"
+          description: "Elasticsearch cluster health is RED, immediate attention required"
+
+      - alert: ElasticsearchLowDiskSpace
+        expr: elasticsearch_filesystem_data_available_bytes / elasticsearch_filesystem_data_size_bytes * 100 < 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Elasticsearch low disk space"
+          description: "Elasticsearch node {{ $labels.instance }} has less than 10% disk space available"
+
+      # Container alerts
+      - alert: ContainerKilled
+        expr: time() - container_last_seen > 60
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container killed"
+          description: "Container {{ $labels.name }} has disappeared"
+
+      - alert: ContainerCPUUsage
+        expr: (sum(rate(container_cpu_usage_seconds_total{name!=""}[3m])) BY (instance, name) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container CPU usage is above 80%"
+          description: "Container {{ $labels.name }} CPU usage is {{ humanize $value }}%"
+
+      - alert: ContainerMemoryUsage
+        expr: (sum(container_memory_working_set_bytes{name!=""}) BY (instance, name) / sum(container_spec_memory_limit_bytes > 0) BY (instance, name) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container Memory usage is above 80%"
+          description: "Container {{ $labels.name }} Memory usage is {{ humanize $value }}%"
+
+      # Network alerts
+      - alert: HighNetworkReceive
+        expr: rate(node_network_receive_bytes_total[5m]) > 100000000  # 100MB/s
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High network receive on {{ $labels.instance }}"
+          description: "Network interface {{ $labels.device }} is receiving {{ humanize $value }} bytes/s"
+
+      - alert: HighNetworkTransmit
+        expr: rate(node_network_transmit_bytes_total[5m]) > 100000000  # 100MB/s
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High network transmit on {{ $labels.instance }}"
+          description: "Network interface {{ $labels.device }} is transmitting {{ humanize $value }} bytes/s"
+
+      # Exporter availability alerts
+      - alert: NginxExporterDown
+        expr: up{job="nginx-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Nginx Exporter is down"
+          description: "The Nginx Exporter has been unreachable for more than 1 minute"
+
+      - alert: RedisExporterDown
+        expr: up{job="redis-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis Exporter is down"
+          description: "The Redis Exporter has been unreachable for more than 1 minute"
+
+      - alert: PostgresExporterDown
+        expr: up{job="postgres-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL Exporter is down"
+          description: "The PostgreSQL Exporter has been unreachable for more than 1 minute"

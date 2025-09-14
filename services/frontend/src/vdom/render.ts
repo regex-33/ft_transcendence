@@ -134,6 +134,52 @@ export class Renderer {
     // console.log(` Applied all ${patches.length} patches`);
   }
 
+  // private setProps(element: HTMLElement, props: VNodeProps): void {
+  //   for (const key in props) {
+  //     if (key === 'key') continue;
+
+  //     const value = props[key];
+
+  //     if (key === 'ref' && typeof value === 'function') {
+  //       value(element);
+  //       continue;
+  //     }
+
+  //     if (key.startsWith('on') && typeof value === 'function') {
+  //       // CRITICAL FIX: Remove old event listeners before adding new ones
+  //       const eventType = key.slice(2).toLowerCase();
+        
+  //       // Remove existing listener if it exists
+  //       const existingListener = (element as any)[`__${key}`];
+  //       if (existingListener) {
+  //         element.removeEventListener(eventType, existingListener);
+  //       }
+        
+  //       // Add new listener and store reference
+  //       element.addEventListener(eventType, value);
+  //       (element as any)[`__${key}`] = value;
+  //       // console.log(`🎯 Added event listener: ${eventType} to`, element);
+  //       continue;
+  //     }
+
+  //     if (key === 'className') {
+  //       element.className = value || '';
+  //       continue;
+  //     }
+
+  //     if (key === 'style' && typeof value === 'object') {
+  //       Object.assign(element.style, value);
+  //       continue;
+  //     }
+
+  //     if (value === null || value === undefined) {
+  //       element.removeAttribute(key);
+  //     } else {
+  //       element.setAttribute(key, String(value));
+  //     }
+  //   }
+  // }
+
   private setProps(element: HTMLElement, props: VNodeProps): void {
     for (const key in props) {
       if (key === 'key') continue;
@@ -146,7 +192,6 @@ export class Renderer {
       }
 
       if (key.startsWith('on') && typeof value === 'function') {
-        // CRITICAL FIX: Remove old event listeners before adding new ones
         const eventType = key.slice(2).toLowerCase();
         
         // Remove existing listener if it exists
@@ -158,7 +203,6 @@ export class Renderer {
         // Add new listener and store reference
         element.addEventListener(eventType, value);
         (element as any)[`__${key}`] = value;
-        // console.log(`🎯 Added event listener: ${eventType} to`, element);
         continue;
       }
 
@@ -172,8 +216,23 @@ export class Renderer {
         continue;
       }
 
+      // CF: hhhh Handle form input values properly
+      if (key === 'value' && (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)) {
+        // For controlled components, always sync the DOM value with the prop value
+        if (element.value !== value) {
+          element.value = value || '';
+          console.log(` Updated input value from "${element.value}" to "${value}"`);
+        }
+        continue;
+      }
+
+      // Handle other attributes
       if (value === null || value === undefined) {
         element.removeAttribute(key);
+        // Also clear the property for form elements
+        if (key === 'value' && (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)) {
+          element.value = '';
+        }
       } else {
         element.setAttribute(key, String(value));
       }

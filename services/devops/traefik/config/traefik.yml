@@ -1,0 +1,58 @@
+# Static Configuration for Traefik
+api:
+  dashboard: true
+  debug: false
+  insecure: false
+
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    swarmMode: true
+    exposedByDefault: false
+    network: traefik-public
+    watch: true
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+
+
+tls:
+  options:
+    default:
+      minVersion: "VersionTLS12"
+      cipherSuites:
+        - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+        - "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"
+        - "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+        - "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA"
+        - "TLS_RSA_WITH_AES_256_GCM_SHA384"
+        - "TLS_RSA_WITH_AES_256_CBC_SHA"
+
+log:
+  level: INFO
+  format: json
+
+accessLog:
+  format: json
+  fields:
+    headers:
+      defaultMode: keep
+      names:
+        User-Agent: redact
+        Authorization: drop
+        Content-Type: keep
+
+# metrics:
+#   prometheus:
+#     addEntryPointsLabels: true
+#     addServicesLabels: true
+#     addRoutersLabels: true
+
+global:
+  sendAnonymousUsage: false

@@ -34,7 +34,7 @@ export const GetUser: ComponentFunction<GetUserProps> = ({ data_friend, name_fri
         >
           <img
             className="w-full h-full object-cover rounded-full"
-            src={user.image || '/images/chat/default-avatar.png'}
+            src={user.image || '/images/default-avatar.png'}
             alt={user.name}
           />
         </button>

@@ -4,7 +4,7 @@
 echo "🧹 Stopping all running containers..."
 docker stop $(docker ps -q)
 
-echo "🗑️ Removing all containers..."
+echo "Removing all containers..."
 docker rm $(docker ps -a -q)
 
 echo "🧯 Removing all volumes..."
@@ -17,5 +17,5 @@ docker builder prune --all -force
 echo "🖼️ Removing all images..."
 docker rmi $(docker images -q)
 
-echo "✅ Done. Docker is cleaned."
+echo " Done. Docker is cleaned."
 

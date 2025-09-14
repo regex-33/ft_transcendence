@@ -1,6 +1,5 @@
-Regex-Scripts
-services/chat-service/node_modules
+services/frontend/.vite
+services/frontend/node_modules
+debugging-scripts/nots.md
 node_modules
-package-lock.json
-.vscode.deb
-added.md
+secrets/vault-certs

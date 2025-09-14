@@ -1,0 +1,163 @@
+# Dynamic Configuration for Middlewares
+http:
+  middlewares:
+    # Security Headers Middleware
+    security-headers:
+      headers:
+        frameDeny: true
+        contentTypeNosniff: true
+        browserXssFilter: true
+        referrerPolicy: "strict-origin-when-cross-origin"
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+        customResponseHeaders:
+          X-Robots-Tag: "noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex"
+          server: ""
+
+    # Rate Limiting Middleware
+    rate-limit:
+      rateLimit:
+        average: 100
+        period: "1m"
+        burst: 50
+        sourceCriterion:
+          ipStrategy:
+            depth: 1
+
+    # Authentication Middleware (Basic Auth)
+    basic-auth:
+      basicAuth:
+        users:
+          - "admin:$apr1$N3PmTwe1$hAPdsIjfYRQsasKA6QtUx0" # admin:regex-33
+
+    # Alertmanager Authentication
+    alertmanager-auth:
+      basicAuth:
+        users:
+          - "admin:$apr1$N3PmTwe1$hAPdsIjfYRQsasKA6QtUx0" # admin:regex-33
+
+    # Prometheus Authentication  
+    prometheus-auth:
+      basicAuth:
+        users:
+          - "admin:$apr1$N3PmTwe1$hAPdsIjfYRQsasKA6QtUx0" # admin:regex-33
+
+    # Registry UI Authentication
+    registry-ui-auth:
+      basicAuth:
+        users:
+          - "admin:$apr1$N3PmTwe1$hAPdsIjfYRQsasKA6QtUx0" # admin:regex-33
+
+    vault-auth:
+      basicAuth:
+        users:
+          - "admin:$apr1$N3PmTwe1$hAPdsIjfYRQsasKA6QtUx0" # admin:regex-33
+
+    # Monitoring Rate Limiting (more lenient for monitoring tools)
+    monitoring-rate-limit:
+      rateLimit:
+        average: 50
+        period: "1m"
+        burst: 25
+        sourceCriterion:
+          ipStrategy:
+            depth: 1
+
+    # Compression Middleware
+    compression:
+      compress:
+        excludedContentTypes:
+          - "text/event-stream"
+
+    # CORS Middleware
+    cors:
+      headers:
+        accessControlAllowMethods:
+          - "GET"
+          - "POST"
+          - "PUT"
+          - "DELETE"
+          - "OPTIONS"
+        accessControlAllowHeaders:
+          - "Content-Type"
+          - "Authorization"
+          - "X-Requested-With"
+          - "Accept"
+          - "Origin"
+        accessControlAllowOriginList:
+          - "https://regex-33.com"
+          - "https://*.regex-33.com"
+        accessControlMaxAge: 86400
+        addVaryHeader: true
+
+    # Redirect Scheme Middleware
+    redirect-to-https:
+      redirectScheme:
+        scheme: "https"
+        permanent: true
+
+    # Strip Prefix Middleware
+    strip-api-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api"
+
+    # Add Prefix Middleware
+    add-api-prefix:
+      addPrefix:
+        prefix: "/api"
+
+    # Retry Middleware
+    retry:
+      retry:
+        attempts: 3
+        initialInterval: "100ms"
+
+    # Circuit Breaker Middleware
+    circuit-breaker:
+      circuitBreaker:
+        expression: "NetworkErrorRatio() > 0.30 || ResponseCodeRatio(500, 600, 0, 600) > 0.30"
+
+    # Request/Response Size Limits
+    buffering:
+      buffering:
+        maxRequestBodyBytes: 10485760  # 10MB
+        memRequestBodyBytes: 2097152   # 2MB
+        maxResponseBodyBytes: 10485760 # 10MB
+        memResponseBodyBytes: 2097152  # 2MB
+        retryExpression: "IsNetworkError() && Attempts() <= 2"
+
+  services: {}
+  routers: {}
+
+# TLS Configuration
+tls:
+  certificates:
+    - certFile: /etc/ssl/certs/regex-33.crt
+      keyFile: /etc/ssl/certs/regex-33.key
+      stores:
+        - default
+
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /etc/ssl/certs/regex-33.crt
+        keyFile: /etc/ssl/certs/regex-33.key
+
+  options:
+    default:
+      minVersion: "VersionTLS12"
+      maxVersion: "VersionTLS13"
+      cipherSuites:
+        - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+        - "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"
+        - "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+        - "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA"
+      curvePreferences:
+        - "CurveP521"
+        - "CurveP384"
+      sniStrict: true

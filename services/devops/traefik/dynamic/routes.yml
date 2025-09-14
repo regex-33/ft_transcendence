@@ -1,0 +1,22 @@
+# Dynamic Configuration for Routes and Services
+# This version relies on Docker service discovery instead of hardcoded IPs
+http:
+  routers:
+    # Traefik Dashboard Router
+    traefik-dashboard:
+      rule: "Host(`traefik.regex-33.com`)"
+      service: "api@internal"
+      middlewares:
+        - "basic-auth"
+        - "security-headers"
+        - "rate-limit"
+      tls:
+        options: "default"
+
+    # Remove these static routes and let Docker labels handle them
+    # The services defined in docker-compose.monitoring.yml already have
+    # proper Traefik labels that will create the routes automatically
+
+  # Remove hardcoded service definitions
+  # Let Docker service discovery handle this automatically
+  services: {}

@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # Traefik - Simple reverse proxy with self-signed SSL
+  traefik:
+    image: ft_transcendence/traefik  # Custom image name
+    ports:
+      - "80:80"     # HTTP (redirects to HTTPS)
+      - "443:443"   # HTTPS
+      - "8080:8080" # Dashboard (optional)
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 6s
+      labels:
+        # Traefik Dashboard (optional)
+        - "traefik.enable=true"
+        - "traefik.http.routers.dashboard.rule=Host(`traefik.regex-33.com`)"
+        - "traefik.http.routers.dashboard.tls=true"
+        - "traefik.http.routers.dashboard.service=api@internal"
+        - "traefik.http.routers.dashboard.middlewares=basic-auth,security-headers"
+        - "traefik.http.middlewares.basic-auth.basicauth.users=admin:$$apr1$$N3PmTwe1$$hAPdsIjfYRQsasKA6QtUx0"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Remove the certs volume mount since they're now in the image
+    networks:
+      - traefik-public
+      - app-network
+      - logging-network
+      - monitoring-network
+    environment:
+      - TRAEFIK_API_DASHBOARD=true
+
+
+# Networks
+networks:
+  traefik-public:
+    external: true
+  app-network:
+    external: true
+  logging-network:
+    external: true  
+  monitoring-network:
+    external: true

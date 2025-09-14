@@ -1,0 +1,405 @@
+version: '3.8'
+
+services:
+  # Vault Agent for Monitoring Services
+  vault-agent-monitoring:
+    image: ft_transcendence/vault
+    user: root
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.labels.type == monitoring
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault-monitoring-secrets:/vault/secrets
+      - vault-monitoring-agent-data:/vault/agent/data
+    configs:
+      - source: vault-agent-monitoring-config
+        target: /vault/config/vault-agent.hcl
+    networks:
+      - vault-network
+      - monitoring-network
+    secrets:
+      - source: monitoring-role-id
+        target: /tmp/monitoring-role-id
+        mode: 0644
+      - source: monitoring-secret-id
+        target: /tmp/monitoring-secret-id
+        mode: 0644
+    environment:
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_SKIP_VERIFY=true
+    command: ["vault", "agent", "-config=/vault/config/vault-agent.hcl"]
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /vault/secrets/grafana.env && test -f /vault/secrets/prometheus.env"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Prometheus - Metrics Collection and Storage
+  prometheus:
+    image: ft_transcendence/prometheus
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.labels.type == monitoring
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+      labels:
+        - "traefik.enable=true"
+        - "traefik.constraint-label=traefik-public"
+        - "traefik.http.routers.prometheus.rule=Host(`prometheus.regex-33.com`)"
+        - "traefik.http.routers.prometheus.entrypoints=web,websecure"
+        - "traefik.http.routers.prometheus.tls=true"
+        - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+        - "traefik.http.routers.prometheus.middlewares=prometheus-auth@file,security-headers@file"
+        - "traefik.docker.network=traefik-public"
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus-data:/prometheus
+      - prometheus-config:/etc/prometheus
+      - /var/run/docker.sock:/var/run/docker.sock
+      - vault-monitoring-secrets:/vault/secrets:ro
+    networks:
+      - traefik-public
+      - monitoring-network
+      - logging-network
+    depends_on:
+      - vault-agent-monitoring
+    entrypoint: |
+      bash -c "
+        echo 'Waiting for vault secrets...';
+        while [ ! -f /vault/secrets/prometheus.env ]; do 
+          echo 'Waiting for prometheus.env from vault...'; 
+          sleep 5; 
+        done;
+        echo 'Vault secrets found, sourcing environment variables...';
+        set -a && . /vault/secrets/prometheus.env && set +a;
+        echo 'Environment variables loaded, starting Prometheus...';
+        exec /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=30d --storage.tsdb.retention.size=10GB --web.console.libraries=/etc/prometheus/console_libraries --web.console.templates=/etc/prometheus/consoles --web.enable-lifecycle --web.enable-admin-api --log.level=info --web.external-url=https://prometheus.regex-33.com
+      "
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Grafana - Metrics Visualization with Vault integration
+  grafana:
+    image: ft_transcendence/grafana
+    ports:
+      - "3000:3000"
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.labels.type == monitoring
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+      labels:
+        - "traefik.enable=true"
+        - "traefik.constraint-label=traefik-public"
+        - "traefik.http.routers.grafana.rule=Host(`monitoring.regex-33.com`)"
+        - "traefik.http.routers.grafana.entrypoints=web,websecure"
+        - "traefik.http.routers.grafana.tls=true"
+        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+        - "traefik.http.routers.grafana.middlewares=security-headers@file"
+        - "traefik.docker.network=traefik-public"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - grafana-provisioning:/etc/grafana/provisioning
+      - grafana-dashboards:/var/lib/grafana/dashboards
+      - vault-monitoring-secrets:/vault/secrets:ro
+    networks:
+      - traefik-public
+      - monitoring-network
+    environment:
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_USERS_ALLOW_ORG_CREATE=false
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_PATHS_DATA=/var/lib/grafana
+      - GF_LOG_LEVEL=info
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+      - GF_SECURITY_DISABLE_GRAVATAR=true
+      - GF_SNAPSHOTS_EXTERNAL_ENABLED=false
+      - GF_SERVER_ROOT_URL=https://monitoring.regex-33.com
+      - GF_SERVER_SERVE_FROM_SUB_PATH=false
+      - GF_SERVER_DOMAIN=monitoring.regex-33.com
+      - GF_SERVER_ENABLE_GZIP=true
+      - GF_SECURITY_CONTENT_TYPE_PROTECTION=true
+      - GF_SECURITY_X_CONTENT_TYPE_OPTIONS=nosniff
+      - GF_SECURITY_X_XSS_PROTECTION=true
+    depends_on:
+      - vault-agent-monitoring
+      - prometheus
+    command: ["bash", "-c", "set -a && source /vault/secrets/grafana.env && set +a && /run.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Node Exporter - System Metrics (Global service on all nodes)
+  node-exporter-monitoring:
+    image: prom/node-exporter:v1.8.2
+    deploy:
+      mode: global
+      placement:
+        constraints: 
+          - node.labels.type == monitoring 
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - monitoring-network
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9100/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # cAdvisor - Container Metrics (Global service on all nodes)
+  cadvisor-monitoring:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    deploy:
+      mode: global
+      placement:
+        constraints: 
+          - node.labels.type == monitoring 
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - monitoring-network
+    command:
+      - '--housekeeping_interval=30s'
+      - '--docker_only=true'
+      - '--disable_metrics=cpu_topology,disk,memory_numa,tcp,udp,percpu,sched,process,hugetlb,referenced_memory,resctrl,cpuset,advtcp'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# Filebeat for Monitoring Node - Fixed to use vault-app secrets instead
+  filebeat-monitoring:
+    image: ft_transcendence/filebeat
+    user: root
+    deploy:
+      mode: global
+      placement:
+        constraints: 
+          - node.labels.type == monitoring
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log:/var/log/host:ro
+      - filebeat-monitoring-data:/usr/share/filebeat/data
+    configs:
+      - source: filebeat-worker-config
+        target: /usr/share/filebeat/filebeat.yml
+        mode: 0644
+    networks:
+      - logging-network
+      - vault-network  # Add this to access vault directly
+    environment:
+      - NODE_TYPE=monitoring
+      - ENVIRONMENT=development
+      - DATACENTER=local
+      - LOGSTASH_HOSTS=logstash:5044
+      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_SKIP_VERIFY=true
+    entrypoint: |
+      bash -c "
+        echo 'Waiting for vault secrets...';
+        while [ ! -f /vault/secrets/elasticsearch.env ]; do 
+          echo 'Waiting for elasticsearch.env from vault...'; 
+          sleep 5; 
+        done;
+        echo 'Vault secrets found, sourcing environment variables...';
+        set -a && . /vault/secrets/elasticsearch.env && set +a;
+        echo 'Environment variables loaded, starting filebeat...';
+        exec /usr/share/filebeat/filebeat -e -c /usr/share/filebeat/filebeat.yml
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "filebeat test config || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+
+  # Alertmanager - Alert Management
+  alertmanager:
+    image: prom/alertmanager:v0.23.0
+    ports:
+      - "9093:9093"
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.labels.type == monitoring
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+      labels:
+        - "traefik.enable=true"
+        - "traefik.constraint-label=traefik-public"
+        - "traefik.http.routers.alertmanager.rule=Host(`alertmanager.regex-33.com`)"
+        - "traefik.http.routers.alertmanager.entrypoints=web,websecure"
+        - "traefik.http.routers.alertmanager.tls=true"
+        - "traefik.http.services.alertmanager.loadbalancer.server.port=9093"
+        - "traefik.http.routers.alertmanager.middlewares=alertmanager-auth@file,security-headers@file"
+        - "traefik.docker.network=traefik-public"
+    volumes:
+      - ./services/devops/monitoring/prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager-config:/etc/alertmanager
+    networks:
+      - traefik-public
+      - monitoring-network
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--log.level=debug'
+      - '--cluster.advertise-address=0.0.0.0:9093'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  alertmanager-discord:
+    image: benjojo/alertmanager-discord:latest
+    ports:
+      - "9094:9094"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.type == monitoring
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    environment:
+      - DISCORD_WEBHOOK=https://discord.com/api/webhooks/1409239253258469386/lkc0VOIh7zlmRFdaenMARB3Ak1HUFhFMu4WRpsObCrTJAhSJwScS3Jt09mHkI86nyt8r
+    networks:
+      - monitoring-network
+
+# Network Definitions
+networks:
+  monitoring-network:
+    external: true
+  app-network:
+    external: true
+  logging-network:
+    external: true
+  traefik-public:
+    external: true
+  vault-network:
+    external: true
+
+# Volume Definitions
+volumes:
+  prometheus-data:
+    driver: local
+  prometheus-config:
+    driver: local
+  grafana-data:
+    driver: local
+  grafana-provisioning:
+    driver: local
+  grafana-dashboards:
+    driver: local
+  alertmanager-config:
+    driver: local
+  filebeat-monitoring-data:
+    driver: local
+  vault-monitoring-secrets:
+    driver: local
+  vault-monitoring-agent-data:
+    driver: local
+
+# Secret Definitions
+secrets:
+  monitoring-role-id:
+    external: true
+  monitoring-secret-id:
+    external: true
+
+# Config Definitions
+configs:
+  filebeat-worker-config:
+    external: true
+  vault-agent-monitoring-config:
+    external: true

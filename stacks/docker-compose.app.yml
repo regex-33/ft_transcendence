@@ -1,0 +1,544 @@
+version: '3.8'
+
+services:
+  # Vault Agent for Application Services
+  vault-agent-app:
+    image: ft_transcendence/vault
+    user: root
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    volumes:
+      - vault-app-secrets:/vault/secrets
+      - vault-app-agent-data:/vault/agent/data
+    cap_add:
+      - IPC_LOCK
+    configs:
+      - source: vault-agent-app-config
+        target: /vault/config/vault-agent.hcl
+    networks:
+      - vault-network
+      - app-network
+    secrets:
+      - source: app-role-id
+        target: /tmp/app-role-id
+        mode: 0644
+      - source: app-secret-id
+        target: /tmp/app-secret-id
+        mode: 0644
+    environment:
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_SKIP_VERIFY=true
+    command: ["vault", "agent", "-config=/vault/config/vault-agent.hcl"]
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /vault/secrets/app.env && test -f /vault/secrets/database.env"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Nginx - Load Balancer
+  nginx:
+    image: ft_transcendence/nginx
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.app.rule=Host(`regex-33.com`)"
+        - "traefik.http.routers.app.tls=true"
+        - "traefik.http.services.app.loadbalancer.server.port=80"
+        - "traefik.http.routers.app.middlewares=security-headers"
+        - "traefik.http.middlewares.security-headers.headers.frameDeny=true"
+        - "traefik.http.middlewares.security-headers.headers.contentTypeNosniff=true"
+        - "traefik.http.middlewares.security-headers.headers.browserXssFilter=true"
+        - "traefik.http.middlewares.security-headers.headers.referrerPolicy=strict-origin-when-cross-origin"
+        - "traefik.http.middlewares.security-headers.headers.customRequestHeaders.X-Forwarded-Proto=https"
+    depends_on:
+      - user-service
+      - chat-service
+      - frontend
+    networks:
+      - traefik-public
+      - app-network
+
+  # Frontend Application
+  frontend:
+    image: ft_transcendence/frontend
+    deploy:
+      replicas: 1  # Removed variable interpolation
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    networks:
+      - app-network
+    environment:
+      - NODE_ENV=development
+      - HOST=0.0.0.0
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - UV_THREADPOOL_SIZE=128
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # User Management Service - Updated with Vault
+  user-service:
+    image: ft_transcendence/user-service
+    deploy:
+      replicas: 1  # Removed variable interpolation
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    volumes:
+      - /app/node_modules
+      - vault-app-secrets:/vault/secrets:ro
+    networks:
+      - app-network
+    environment:
+      - NODE_ENV=development
+      - PORT=8001
+      - HOME_PAGE=/home
+      - USER_SERVICE_URL=http://user-service:8001
+    depends_on:
+      - vault-agent-app
+      - postgres
+      - redis
+    command: ["bash", "-c", "set -a && source /vault/secrets/app.env && source /vault/secrets/database.env && set +a && npm start"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Chat Service - Updated with Vault
+  chat-service:
+    image: ft_transcendence/chat-service
+    deploy:
+      replicas: 1  # Removed variable interpolation
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    volumes:
+      - ./services/chat-service:/usr/src/app
+      - /usr/src/app/node_modules
+      - vault-app-secrets:/vault/secrets:ro
+    networks:
+      - app-network
+    environment:
+      - NODE_ENV=development
+      - PORT=8002
+      - USER_SERVICE_URL=http://user-service:8001
+    depends_on:
+      - vault-agent-app
+      - postgres
+      - user-service
+    command: ["bash", "-c", "set -a && source /vault/secrets/app.env && source /vault/secrets/database.env && set +a && npm start"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # PostgreSQL Database - Updated with Vault
+  postgres:
+    image: ft_transcendence/postgres
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - vault-app-secrets:/vault/secrets:ro
+    networks:
+      - app-network
+    depends_on:
+      - vault-agent-app
+    command: ["bash", "-c", "set -a && source /vault/secrets/database.env && set +a && docker-entrypoint.sh postgres"]
+    healthcheck:
+      test: ["CMD-SHELL", "set -a && source /vault/secrets/database.env && set +a && pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 80s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis Cache - Updated with Vault
+  redis:
+    image: ft_transcendence/redis
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    volumes:
+      - redis-data:/data
+      - vault-app-secrets:/vault/secrets:ro
+    networks:
+      - app-network
+    depends_on:
+      - vault-agent-app
+    command: ["bash", "-c", "set -a && source /vault/secrets/app.env && set +a && redis-server --requirepass $$REDIS_PASSWORD"]
+    healthcheck:
+      test: ["CMD-SHELL", "set -a && source /vault/secrets/app.env && set +a && redis-cli --no-auth-warning -a $$REDIS_PASSWORD ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Monitoring services for manager node
+  cadvisor-manager:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    deploy:
+      mode: global
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - monitoring-network
+    command:
+      - '--housekeeping_interval=30s'
+      - '--docker_only=true'
+      - '--disable_metrics=cpu_topology,disk,memory_numa,tcp,udp,percpu,sched,process,hugetlb,referenced_memory,resctrl,cpuset,advtcp'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+
+
+  filebeat-manager:
+    image: ft_transcendence/filebeat
+    user: root
+    deploy:
+      mode: global
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    volumes:
+      - /var/log/ft-transcendence:/var/log/ft-transcendence:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log:/var/log/host:ro
+      - filebeat-data:/usr/share/filebeat/data
+      - vault-app-secrets:/vault/secrets:ro
+    configs:
+      - source: filebeat-manager-config
+        target: /usr/share/filebeat/filebeat.yml
+        mode: 0644
+    networks:
+      - logging-network
+      # - app-network  # Add this to access vault-agent-app
+    environment:
+      - ENVIRONMENT=development
+      - DATACENTER=local
+      - LOGSTASH_HOSTS=logstash:5044
+      - NODE_TYPE=manager
+      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+    depends_on:
+      - vault-agent-app
+    # Fixed command to properly source vault secrets
+    entrypoint: |
+      bash -c "
+        echo 'Waiting for vault secrets...';
+        while [ ! -f /vault/secrets/elasticsearch.env ]; do 
+          echo 'Waiting for elasticsearch.env from vault...'; 
+          sleep 5; 
+        done;
+        echo 'Vault secrets found, sourcing environment variables...';
+        set -a && . /vault/secrets/elasticsearch.env && set +a;
+        echo 'Environment variables loaded, starting filebeat...';
+        exec /usr/share/filebeat/filebeat -e -c /usr/share/filebeat/filebeat.yml
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5066/stats || filebeat test config"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  node-exporter-manager:
+    image: prom/node-exporter:v1.8.2 
+    deploy:
+      mode: global
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - monitoring-network
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9100/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Export services
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.4.2
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    networks:
+      - monitoring-network
+    environment:
+      - NGINX_STATUS=http://nginx:80/nginx_status
+    depends_on:
+      - nginx
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis Exporter - Updated with Vault
+  redis-exporter:
+    image: ft_transcendence/redis-exporter
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    volumes:
+      - vault-app-secrets:/vault/secrets:ro
+    networks:
+      - monitoring-network
+    environment:
+      - REDIS_ADDR=redis:6379
+    depends_on:
+      - vault-agent-app
+      - redis
+    command: ["bash", "-c", "set -a && source /vault/secrets/app.env && set +a && redis_exporter -redis.addr=redis:6379 -redis.password=$$REDIS_PASSWORD"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # PostgreSQL Exporter - Fixed interpolation error
+  postgres-exporter:
+    image: ft_transcendence/postgres-exporter
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 10s  # Increase delay
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    volumes:
+      - vault-app-secrets:/vault/secrets:ro
+    networks:
+      - monitoring-network
+      - app-network  # Add this to access vault
+    depends_on:
+      - vault-agent-app
+      - postgres
+    # Fix the command to ensure vault secrets are available
+    entrypoint: |
+      bash -c "
+        echo 'Waiting for vault secrets...';
+        while [ ! -f /vault/secrets/database.env ]; do 
+          echo 'Waiting for vault secrets to be available...'; 
+          sleep 5; 
+        done;
+        set -a && . /vault/secrets/database.env && set +a;
+        export DATA_SOURCE_NAME=\"postgresql://$${POSTGRES_USER}:$${POSTGRES_PASSWORD}@postgres:$${POSTGRES_PORT:-5432}/$${POSTGRES_DB}?sslmode=disable\";
+        echo 'Starting postgres_exporter with DATA_SOURCE_NAME set';
+        exec /bin/postgres_exporter
+      "
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Network Definitions
+networks:
+  app-network:
+    external: true
+  traefik-public:
+    external: true
+  logging-network:
+    external: true  
+  monitoring-network:
+    external: true
+  vault-network:
+    external: true
+
+# Volume Definitions
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  filebeat-data:
+    driver: local
+  vault-app-secrets:
+    driver: local
+  vault-app-agent-data:
+    driver: local
+
+# Secret Definitions
+secrets:
+  app-role-id:
+    external: true
+  app-secret-id:
+    external: true
+
+# Config Definitions
+configs:
+  filebeat-manager-config:
+    external: true
+  vault-agent-app-config:
+    external: true

@@ -1,0 +1,8 @@
+- module: redis
+  log:
+    enabled: true
+    var.paths: ["/var/log/redis/*.log"]
+  slowlog:
+    enabled: false  # Disable if causing auth issues
+    var.hosts: ["redis:6379"]
+    var.password: "regex"

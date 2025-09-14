@@ -1,0 +1,341 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "ft_transcendence Infrastructure Dashboard",
+    "tags": ["ft_transcendence", "infrastructure"],
+    "style": "dark",
+    "timezone": "browser",
+    "refresh": "30s",
+    "schemaVersion": 30,
+    "version": 1,
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Docker Swarm Node Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "swarm_node_info",
+            "legendFormat": "{{node_name}} - {{role}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {
+                "options": {
+                  "1": {
+                    "text": "READY",
+                    "color": "green"
+                  },
+                  "0": {
+                    "text": "DOWN",
+                    "color": "red"
+                  }
+                },
+                "type": "value"
+              }
+            ],
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 6, "w": 24, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "CPU Usage by Node",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "100 - (avg by(instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Percent",
+            "min": 0,
+            "max": 100
+          },
+          {
+            "show": false
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6}
+      },
+      {
+        "id": 3,
+        "title": "Memory Usage by Node",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Percent",
+            "min": 0,
+            "max": 100
+          },
+          {
+            "show": false
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6}
+      },
+      {
+        "id": 4,
+        "title": "Disk Usage by Node",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "(1 - (node_filesystem_avail_bytes{fstype!=\"tmpfs\"} / node_filesystem_size_bytes{fstype!=\"tmpfs\"})) * 100",
+            "legendFormat": "{{instance}} - {{mountpoint}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Percent",
+            "min": 0,
+            "max": 100
+          },
+          {
+            "show": false
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14}
+      },
+      {
+        "id": 5,
+        "title": "Network Traffic by Node",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(node_network_receive_bytes_total{device!=\"lo\"}[5m])",
+            "legendFormat": "{{instance}} - {{device}} RX"
+          },
+          {
+            "expr": "-rate(node_network_transmit_bytes_total{device!=\"lo\"}[5m])",
+            "legendFormat": "{{instance}} - {{device}} TX"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Bytes/sec"
+          },
+          {
+            "show": false
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14}
+      },
+      {
+        "id": 6,
+        "title": "Load Average",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "node_load1",
+            "legendFormat": "{{instance}} - 1m"
+          },
+          {
+            "expr": "node_load5",
+            "legendFormat": "{{instance}} - 5m"
+          },
+          {
+            "expr": "node_load15",
+            "legendFormat": "{{instance}} - 15m"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Load",
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 22}
+      },
+      {
+        "id": 7,
+        "title": "Docker Containers by Node",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "count by (instance) (container_last_seen)",
+            "legendFormat": "{{instance}} - Total"
+          },
+          {
+            "expr": "count by (instance) (container_last_seen{name=~\".*running.*\"})",
+            "legendFormat": "{{instance}} - Running"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Containers",
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 22}
+      },
+      {
+        "id": 8,
+        "title": "Docker Swarm Services Status",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "swarm_service_replicas",
+            "legendFormat": "",
+            "format": "table"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {},
+              "indexByName": {},
+              "renameByName": {
+                "service_name": "Service",
+                "Value": "Desired Replicas"
+              }
+            }
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 30}
+      },
+      {
+        "id": 9,
+        "title": "ELK Stack Health",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"elasticsearch\"}",
+            "legendFormat": "Elasticsearch"
+          },
+          {
+            "expr": "up{job=\"kibana\"}",
+            "legendFormat": "Kibana"
+          },
+          {
+            "expr": "up{job=\"logstash\"}",
+            "legendFormat": "Logstash"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "text": "DOWN",
+                    "color": "red"
+                  },
+                  "1": {
+                    "text": "UP",
+                    "color": "green"
+                  }
+                },
+                "type": "value"
+              }
+            ],
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 30}
+      },
+      {
+        "id": 10,
+        "title": "Elasticsearch Cluster Health",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "elasticsearch_cluster_health_number_of_nodes",
+            "legendFormat": "Total Nodes"
+          },
+          {
+            "expr": "elasticsearch_cluster_health_number_of_data_nodes",
+            "legendFormat": "Data Nodes"
+          },
+          {
+            "expr": "elasticsearch_cluster_health_active_primary_shards",
+            "legendFormat": "Primary Shards"
+          },
+          {
+            "expr": "elasticsearch_cluster_health_active_shards",
+            "legendFormat": "Active Shards"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Count",
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 38}
+      },
+      {
+        "id": 11,
+        "title": "Log Ingestion Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(filebeat_events_total[5m])",
+            "legendFormat": "{{instance}} - Events/sec"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Events/sec",
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 38}
+      },
+      {
+        "id": 12,
+        "title": "System Uptime",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "node_boot_time_seconds",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "dateTimeFromNow"
+          }
+        },
+        "gridPos": {"h": 6, "w": 24, "x": 0, "y": 46}
+      }
+    ]
+  }
+}

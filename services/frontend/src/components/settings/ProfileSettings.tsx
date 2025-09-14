@@ -35,7 +35,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
       const profileFromData = {
         id: profileData.id || 1,
         username: profileData.username || "",
-        email: profileData.email || "",
+        email:  "",
         birthday: profileData.birthday || "",
         location: profileData.location || "",
         bio: profileData.bio || "",

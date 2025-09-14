@@ -1,0 +1,159 @@
+version: '3.8'
+
+services:
+  # HashiCorp Vault - Secret Management
+  vault:
+    image: ft_transcendence/vault
+    ports:
+      - "8200:8200"
+      - "8201:8201"
+    user: root
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+      labels:
+        # Traefik configuration for Vault UI
+        - "traefik.enable=true"
+        - "traefik.constraint-label=traefik-public"
+        - "traefik.http.routers.vault.rule=Host(`vault.regex-33.com`)"
+        - "traefik.http.routers.vault.entrypoints=web,websecure"
+        - "traefik.http.routers.vault.tls=true"
+        - "traefik.http.services.vault.loadbalancer.server.port=8200"
+        - "traefik.http.routers.vault.middlewares=vault-auth@file,security-headers@file"
+        - "traefik.docker.network=traefik-public"
+    volumes:
+      - vault-data:/vault/data
+      - vault-logs:/vault/logs
+      - vault-config:/vault/config
+      - vault-init-data:/tmp/vault-init
+    networks:
+      - vault-network
+      - traefik-public
+    environment:
+      - VAULT_ADDR=http://0.0.0.0:8200
+      - VAULT_CLUSTER_ADDR=http://0.0.0.0:8201
+      - VAULT_API_ADDR=http://vault:8200
+      - VAULT_LOG_LEVEL=${VAULT_LOG_LEVEL:-INFO}
+      - VAULT_UI=${VAULT_UI:-true}
+      - VAULT_DISABLE_MLOCK=true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f 'http://localhost:8200/v1/sys/health?uninitcode=200&sealedcode=200&standbycode=200' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    cap_add:
+      - IPC_LOCK
+    command: ["vault", "server", "-config=/vault/config/vault.hcl"]
+
+  # Vault Initialization Service
+  vault-init:
+    image: ft_transcendence/vault
+    user: root
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: none
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    volumes:
+      - vault-data:/vault/data
+      - vault-init-data:/tmp/vault-init
+    networks:
+      - vault-network
+    environment:
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_SKIP_VERIFY=true
+    depends_on:
+      - vault
+    command: ["sh", "-c", "sleep 30 && /vault/scripts/init-vault.sh"]
+
+  # Vault Secret Populator
+  vault-populate:
+    user: root
+    image: ft_transcendence/vault
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: none
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    volumes:
+      - vault-data:/vault/data
+      - vault-init-data:/tmp/vault-init
+    networks:
+      - vault-network
+    env_file:
+      - ./../.env
+    environment:
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_SKIP_VERIFY=true
+    depends_on:
+      - vault-init
+    command: ["sh", "-c", "while [ ! -f /tmp/vault-init/init-complete ]; do echo 'Waiting for vault-init to complete...'; sleep 5; done && /vault/scripts/populate-secrets.sh"]
+
+  # Docker Secrets Creator
+  vault-secrets-creator:
+    image: ft_transcendence/vault
+    user: root
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: none
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    volumes:
+      - vault-init-data:/tmp/vault-init
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - vault-network
+    depends_on:
+      - vault-populate
+    command: ["sh", "-c", "while [ ! -f /tmp/vault-init/init-complete ]; do echo 'Waiting for vault initialization...'; sleep 5; done && /vault/scripts/create-docker-secrets.sh"]
+
+# Networks
+networks:
+  vault-network:
+    external: true
+  traefik-public:
+    external: true
+
+# Volumes
+volumes:
+  vault-data:
+    driver: local
+  vault-logs:
+    driver: local
+  vault-config:
+    driver: local
+  vault-init-data:
+    driver: local

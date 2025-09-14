@@ -166,11 +166,11 @@ services:
       context: ./services/xo-game
       dockerfile: Dockerfile
     container_name: transcendence-xo-game
+    restart: unless-stopped
     ports:
       - "${XO_GAME_PORT:-8083}:${XO_GAME_PORT:-8083}"
     networks:
       - transcendence-network
-    restart: unless-stopped
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - PORT=${USER_SERVICE_PORT:-8001}
