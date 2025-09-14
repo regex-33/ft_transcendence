@@ -1,6 +1,6 @@
 // services/user-service/Router/Auth/index.js
 const { getSessions, terminateSession, terminateAllOtherSessions } = require('./sessions');
-const { validatePassword, changePassword, generateResetToken, resetPassword } = require('./password');
+const { validatePassword, changePassword } = require('./password');
 
 async function AuthRoutes(fastify) {
   // Session management routes
@@ -11,8 +11,6 @@ async function AuthRoutes(fastify) {
   // Password management routes
   fastify.post("/validate-password", validatePassword);
   fastify.post("/change-password", changePassword);
-  fastify.post("/forgot-password", generateResetToken);
-  fastify.post("/reset-password", resetPassword);
 }
 
 module.exports = { AuthRoutes };

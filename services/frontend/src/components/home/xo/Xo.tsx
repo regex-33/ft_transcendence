@@ -99,11 +99,11 @@ const Xo: ComponentFunction = () => {
         table.children.push(tr);
     }
     return <div className={container_class}>
-        <div className="w-full relative flex justify-center ">
+        <div className="w-full relative">
             <button
 
                 type="button"
-                className={`bg-[url(/images/xo/ai.png)] w-[52px] h-[52px] absolute top-4 left-[-150px] bg-center bg-no-repeat ${ai_class}`}
+                className={`bg-[url(/images/xo/ai.png)] w-[42px] bg-center h-[52px] absolute top-3 left-0bg-center bg-no-repeat ${ai_class}`}
                 onclick={() => {
                     aimode = true;
                     reset(setMap);
@@ -111,7 +111,7 @@ const Xo: ComponentFunction = () => {
             </button>
             <button
                 type="button"
-                className={`bg-[url(/images/xo/title.png)] font-['Irish_Grover']   w-[200px] h-20 absolute top-[-20px]  bg-center bg-no-repeat  ${reset_class}`}
+                className={`bg-[url(/images/xo/title.png)] font-['Irish_Grover']   w-[200px] h-20 absolute left-[80px] top-[-20px]  bg-center bg-no-repeat  ${reset_class}`}
                 onclick={() => reset(setMap)}>
                 Tic tac Toe
             </button>
