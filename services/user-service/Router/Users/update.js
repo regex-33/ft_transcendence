@@ -3,7 +3,7 @@ const { User } = db;
 const checkAuthJWT = require("../../util/checkauthjwt");
 const multer = require("../../util/Multer");
 const bcrypt = require("bcrypt");
-const { fillObject } = require("../../util/logger");
+const { logger } = require("../../util/logger");
 
 const update = async (req, res) => {
   const { username, email, location, bio, birthday, avatar } = await multer(req);
@@ -78,9 +78,9 @@ const updateUser = async (req, res) => {
   if (check) return check;
   const { id } = payload;
   const { username } = req.body;
-  if (!username || !(/^[A-Za-z]+$/.test(username)) || username.length <= 2) {
+  if (!username || username.length <= 2) {
     return res.status(400).send({
-      error: "Username must contain only letters and be at least 3 characters long.",
+      error: "Username must be at least 3 characters long.",
     });
   }
 
@@ -96,6 +96,7 @@ const updateUser = async (req, res) => {
     user.username = username;
 
     await user.save();
+    logger(req, "INFO", "updateUserName", username, true, null, req.cookies?.token || null);
   } catch (err) {
     console.error("Error updating user:", err);
     res.status(500).send({ error: "Internal server error." });
@@ -124,6 +125,7 @@ const updateEmail = async (req, res) => {
     user.email = email;
 
     await user.save();
+    logger(req, "INFO", "updateEmail", payload.username, true, null, req.cookies?.token || null);
   } catch (err) {
     console.error("Error updating user:", err);
     res.status(500).send({ error: "Internal server error." });
@@ -149,6 +151,7 @@ const updatePassword = async (req, res) => {
     user.password = bcrypt.hashSync(password, 10);
 
     await user.save();
+    logger(req, "INFO", "updatePassword", payload.username, true, null, req.cookies?.token || null);
     res.send({ message: "User updated successfully." });
   } catch (err) {
     console.error("Error updating user:", err);
@@ -177,6 +180,7 @@ const updateAvatar = async (req, res) => {
     user.avatar = avatar.path;
 
     await user.save();
+    logger(req, "INFO", "updateAvatar", payload.username, true, null, req.cookies?.token || null);
   } catch (err) {
     console.error("Error updating user:", err);
     res.status(500).send({ error: "Internal server error." });
@@ -202,6 +206,7 @@ const updateBio = async (req, res) => {
     user.bio = bio;
 
     await user.save();
+    logger(req, "INFO", "updateBio", payload.username, true, null, req.cookies?.token || null);
   } catch (err) {
     console.error("Error updating user:", err);
     res.status(500).send({ error: "Internal server error." });

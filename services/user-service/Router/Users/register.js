@@ -2,12 +2,12 @@ const db = require("../../models");
 const jsonwebtoken = require("../../util/jwt");
 const bcrypt = require("bcrypt");
 const Cookies = require("../../util/cookie");
-const { fillObject } = require("../../util/logger");
+const { logger  } = require("../../util/logger");
 
 const jwt_secret = process.env.JWT_SECRET || "your_jwt_secret";
 const time_token_expiration = process.env.TIME_TOKEN_EXPIRATION || "10h";
 
-const validation = (request, body, reply) => {
+const validation = (body, reply) => {
   if (!body) {
     return reply.status(400).send({ error: "Request body is required" });
   }
@@ -25,7 +25,6 @@ const validation = (request, body, reply) => {
     typeof password !== "string" ||
     typeof email !== "string"
   ) {
-    fillObject(request, "WARNING", "register", "unknown", false, "Invalid data types for username, password, or email", request.cookies?.token || null);
     return reply
       .status(400)
       .send({ error: "Username, password, email,   must be strings" });
@@ -36,7 +35,6 @@ const validation = (request, body, reply) => {
     password.length < 6 ||
     !email.includes("@")
   ) {
-    fillObject(request, "WARNING", "register", "unknown", false, "Invalid format for username, password, or email", request.cookies?.token || null);
     return reply
       .status(400)
       .send({ error: "Invalid username, password, email format" });
@@ -47,19 +45,7 @@ const validation = (request, body, reply) => {
 
 const register = async (request, reply) => {
   try {
-    try {
-      if (!request.body) {
-        return reply.status(400).send({ error: "No data received" });
-      }
-    } catch (error) {
-      fillObject(request, "ERROR", "register", "unknown", false, error.message, request.cookies?.token || null);
-      console.error("Error processing multipart request:", error.message);
-      return reply
-        .status(500)
-        .send({ message: "Failed to process multipart request" });
-    }
-
-    const validationError = validation(request, request.body, reply);
+    const validationError = validation(request.body, reply);
     if (validationError) {
       return validationError;
     }
@@ -77,7 +63,6 @@ const register = async (request, reply) => {
     });
 
   } catch (error) {
-    fillObject(request, "ERROR", "register", "unknown", false, error.message, request.cookies?.token || null);
     console.error("Error in register handler:", error.message);
     return reply.status(500).send({ message: "Internal server error" });
   }
@@ -92,21 +77,14 @@ async function createUser(request, reply, userInfo) {
       { expiresIn: time_token_expiration }
     );
     if (!token) {
-      fillObject(request, "ERROR", "register", "unknown", false, "Error generating token", request.cookies?.token || null);
+      logger(request, "ERROR", "register", userInfo.username, false, "TokenGenerationFailed", reply.cookies?.token || null);
       return reply.status(500).send({ error: "Error generating token" });
     }
-    fillObject(request, "INFO", "register", user.id, true, "", request.cookies?.token || null);
 
-    // Set the cookie but return JSON instead of redirecting
-    reply = Cookies(reply, token, user.id);
-    return reply.status(200).send({ 
-      success: true, 
-      message: "User registered successfully",
-      redirectUrl: process.env.HOME_PAGE || "/home"
-    });
+    logger(request, "INFO", "register", userInfo.username, true, null, reply.cookies?.token || null);
+    return Cookies(reply, token, user.id).redirect(process.env.HOME_PAGE);
   } catch (error) {
-    fillObject(request, "ERROR", "register", "unknown", false, error.message, request.cookies?.token || null);
-    console.log("Error creating user:", error.message);
+    logger(request, "ERROR", "register", userInfo.username, false, "UserCreationFailed", reply.cookies?.token || null);
     return reply.status(500).send({ message: "Internal server error" });
   }
 }
@@ -120,7 +98,6 @@ async function checkUserExisting(reply, username, email, request) {
     });
 
     if (user) {
-      fillObject(request, "WARNING", "register", "unknown", false, `${user.username === username ? "Username" : "Email"} already exists`, request.cookies?.token || null);
       reply.status(400).send({
         error: `${user.username === username ? "Username" : "Email"} already exists`,
       });
@@ -128,8 +105,6 @@ async function checkUserExisting(reply, username, email, request) {
     }
     return;
   } catch (error) {
-    fillObject(request, "ERROR", "register", "unknown", false, error.message, request.cookies?.token || null);
-    console.log("Error checking user existence:", error.message);
     return reply.status(500).send({ message: "Internal server error" });
   }
 }

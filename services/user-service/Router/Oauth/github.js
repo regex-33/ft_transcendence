@@ -5,7 +5,7 @@ const jwt = require("../../util/jwt");
 const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } = process.env;
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
 const Cookies = require("../../util/cookie");
-const { fillObject } = require("../../util/logger");
+const { logger } = require("../../util/logger");
 
 const redirect = async (req, reply) => {
   const redirectURL = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}`;
@@ -17,7 +17,6 @@ const handleAuthCallback = async (req, reply) => {
   const { code } = req.query;
 
   if (!code) {
-    fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "no code provided", req.cookies?.token || null);
     return reply.status(400).send({ error: "Missing code" });
   }
 
@@ -40,7 +39,6 @@ const handleAuthCallback = async (req, reply) => {
   const tokenData = await tokenRes.body.json();
 
   if (!tokenData.access_token) {
-    fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "invalid GitHub code", req.cookies?.token || null);
     return reply.status(401).send({ error: "Invalid GitHub code" });
   }
 
@@ -60,18 +58,18 @@ const handleAuthCallback = async (req, reply) => {
   } = userData;
 
   try {
-    const user = await db.User.findOne({ where: { 
-      [db.Sequelize.Op.or]: [{ username }, { email }]
-     } });
+    const user = await db.User.findOne({
+      where: {
+        [db.Sequelize.Op.or]: [{ username }, { email }]
+      }
+    });
     if (user && user.identifier !== `github-${id}`) {
-      fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "username or email already exists", req.cookies?.token || null);
       return reply
         .status(400)
         .send({ error: "Username or email already exists" });
     }
   } catch (err) {
     console.error("Error checking user:", err);
-    fillObject(req, "ERROR", "handleAuthCallback", "unknown", false, err.message, req.cookies?.token || null);
     return reply.status(500).send({ error: "Internal server error" });
   }
   try {
@@ -95,14 +93,17 @@ const handleAuthCallback = async (req, reply) => {
       { expiresIn: TIME_TOKEN_EXPIRATION }
     );
     if (!token) {
-      fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "Failed to generate token", req.cookies?.token || null);
+      logger(req, "ERROR", "githubOauth", login, true, "tokenGenerationFailed", req.cookies?.token || null);
       return reply.status(500).send({ error: "Failed to generate token" });
     }
-    fillObject(req, "INFO", created ? "createUser" : "loginUser", user.username, true, "", req.cookies?.token || null);
+    if (created) {
+      logger(req, "INFO", "register", login, true, "GithubOAuth", req.cookies?.token || null);
+    } else {
+      logger(req, "INFO", "login", login, true, "GithubOAuth", req.cookies?.token || null);
+    }
     return Cookies(reply, token, user.id).redirect(process.env.HOME_PAGE);
 
   } catch (err) {
-    fillObject(req, "ERROR", "handleAuthCallback", "unknown", false, err.message, req.cookies?.token || null);
     console.error("Error creating or finding user:", err);
     return reply.status(500).send({ error: "Internal server error" });
   }

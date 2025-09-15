@@ -1,6 +1,6 @@
 const db = require("../../models");
 const checkAuthJWT = require("../../util/checkauthjwt");
-const { fillObject } = require("../../util/logger");
+const { logger } = require("../../util/logger");
 const { User } = db;
 
 const addFriend = async (request, reply) => {
@@ -10,15 +10,6 @@ const addFriend = async (request, reply) => {
   const { username } = request.body;
 
   if (!username || typeof username !== "string") {
-    fillObject(
-      request,
-      "WARNING",
-      "addFriend",
-      id,
-      false,
-      "Username is required.",
-      request.cookies?.token || null
-    );
     return reply.status(400).send({});
   }
   let friend, user;
@@ -30,7 +21,6 @@ const addFriend = async (request, reply) => {
 
     if (friend && user) {
       if (friend.id === user.id) {
-        fillObject(request, "WARNING", "addFriend", id, false, "can't add yourself as a friend", request.cookies?.token || null);
         return reply.status(400).send({ error: "You can't add yourself as a friend." });
       }
       if (
@@ -40,18 +30,10 @@ const addFriend = async (request, reply) => {
         return reply.status(400).send({ error: "friend can't be added" });
       }
     } else {
-      fillObject(
-        request,
-        "WARNING",
-        "addFriend",
-        payload.username,
-        false,
-        "User not found.",
-        request.cookies?.token || null
-      );
       return reply.status(404).send({ error: "User not found." });
     }
     await user.addOther(friend);
+    logger(request, "INFO", "addFriend", user.id, true, null, request.cookies?.token || null);
     await db.Notification.create({
       userId: friend.id,
       type: 'FRIEND_REQUEST',
@@ -61,15 +43,6 @@ const addFriend = async (request, reply) => {
       message: "Friend added successfully",
     });
   } catch (error) {
-    fillObject(
-      request,
-      "ERROR",
-      "addFriend",
-      payload.username,
-      false,
-      error.message,
-      request.cookies?.token || null
-    );
     console.log("Error fetching user or friend:", error);
     return reply.status(500).send({ error: "Internal server error." });
   }

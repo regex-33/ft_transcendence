@@ -55,10 +55,10 @@ async function checkCodeRoutes(fastify) {
 }
 
 async function _2faRoutes(fastify) {
-  fastify.get("/disable", _2fa.disable2fa);
-  fastify.get("/generate", _2fa.create2fa);
-  fastify.post("/verify", _2fa.verify2fa);
-  fastify.get("/status", _2fa.check2faStatus);
+  fastify.post("/disable", _2fa.disable2fa); // /api/2fa/disable
+  fastify.get("/generate", _2fa.create2fa); // /api/2fa/generate
+  fastify.post("/active2fa", _2fa.active2fa); // /api/2fa/active2fa
+  // fastify.get("/status", _2fa.check2faStatus);
 }
 
 async function checksRoutes(fastify) {

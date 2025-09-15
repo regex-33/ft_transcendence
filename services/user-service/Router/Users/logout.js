@@ -1,6 +1,6 @@
 const checkAuthJWT = require("../../util/checkauthjwt");
 const db = require("../../models");
-const { fillObject } = require("../../util/logger");
+const { logger } = require("../../util/logger");
 const jwt = require("../../util/jwt");
 module.exports = async (req, res) => {
     const { token, session_id } = req.cookies;
@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
         const session = await db.Session.findOne({ where: { SessionId: session_id } });
         if (payload && session && session.userId === payload.id) {
             await db.Session.destroy({ where: { SessionId: session_id, userId: payload.id } });
-            fillObject(req, "INFO", "logout", payload.id, true, "", req.cookies?.token || null);
+            logger(req, "INFO", "logout", payload.username, true, null, req.cookies?.token || null);
         }
     }
     res.clearCookie('token');

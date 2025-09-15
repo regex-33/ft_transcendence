@@ -4,18 +4,19 @@ const log = (jsonMessage) => {
     if (!fs.existsSync(logDir))
         fs.mkdirSync(logDir, { recursive: true });
     fs.appendFileSync(`${logDir}/${jsonMessage.service}.log`, JSON.stringify(jsonMessage) + '\n');
-    // fs.appendFileSync(`${logDir}/file.log`, "hello world");
 };
 
 const fillObject = (req, ...obj) => {
-    req.object = {
-        ...req.object,
-        ...obj
-    };
+    if (req)
+        req.object = {
+            ...req?.object,
+            ...obj
+        };
     return req;
 };
 
 module.exports = {
     log,
-    fillObject
+    logger: fillObject,
+    fillObject: () => { }
 };

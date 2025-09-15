@@ -3,7 +3,6 @@ const { ifWin, solve } = require('./ai');
 const jwt = require('./jwt');
 
 const validateMap = (oldmap, cell) => {
-    console.log(oldmap, cell);
     if (!(cell && typeof cell.x == "number" &&
         typeof cell.y == "number" &&
         cell.x >= 0 &&
@@ -11,7 +10,6 @@ const validateMap = (oldmap, cell) => {
         cell.y <= 2 &&
         cell.y >= 0))
         return false;
-    console.log("here");
     if (oldmap[cell.y][cell.x] == '-')
         return true;
     return false;

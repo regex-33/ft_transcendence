@@ -7,7 +7,7 @@ const { fillObject } = require("../../util/logger");
    * get user by username
    */
 const getbyusername = async (request, reply) => {
-  const { check } = await checkAuthJWT(request, reply);
+  const { check ,payload} = await checkAuthJWT(request, reply);
   if (check) return check;
 
   if (!request.params || !request.params.username) {
@@ -32,8 +32,8 @@ const getbyusername = async (request, reply) => {
       fillObject(request, "WARNING", "getbyusername", "unknown", false, "User not found.", request.cookies?.token || null);
       return reply.status(404).send({ error: "User not found." });
     }
-    fillObject(request, "INFO", "getbyusername", user.id, true, "", request.cookies?.token || null);
-    reply.send({
+    fillObject(request, "INFO", "getbyusername", user.id, true, null, request.cookies?.token || null);
+    let n = {
       id: user.id,
       username: user.username,
       email: user.email,
@@ -42,7 +42,25 @@ const getbyusername = async (request, reply) => {
       online: user.sessions.filter(session => session.counter > 0).length > 0,
       location: user.location,
       birthday: user.birthday
+    }
+    const relationship = await db.Relationship.findOne({
+      where: {
+        [db.Sequelize.Op.or]: [
+          { userId: payload.id, otherId: user.id },
+          { userId: user.id, otherId: payload.id }
+        ]
+      }
     });
+    if (relationship) {
+      n.status = relationship.status;
+      if (relationship.status === 'blocked' && relationship.otherId === payload.id) {
+        return reply.status(404).send({ error: "User not found." });
+      }
+      if (relationship.status === 'pending' && relationship.userId === payload.id) {
+        n.status = 'request';
+      }
+    }
+    return reply.send(n);
   }
   catch (err) {
     fillObject(request, "ERROR", "getbyusername", "unknown", false, err.message, request.cookies?.token || null);
@@ -75,7 +93,7 @@ const getbyId = async (request, reply) => {
       fillObject(request, "WARNING", "getbyId", id, false, "User not found.", request.cookies?.token || null);
       return reply.status(404).send({ error: "User not found." });
     }
-    fillObject(request, "INFO", "getbyId", user.id, true, "", request.cookies?.token || null);
+    fillObject(request, "INFO", "getbyId", user.id, true, null, request.cookies?.token || null);
     return reply.send({
       id: user.id,
       username: user.username,
@@ -107,7 +125,7 @@ const getme = async (request, reply) => {
       fillObject(request, "WARNING", "getbyId", id, false, "User not found.", request.cookies?.token || null);
       return reply.status(404).send({ error: "User not found." });
     }
-    fillObject(request, "INFO", "getbyId", user.id, true, "", request.cookies?.token || null);
+    fillObject(request, "INFO", "getbyId", user.id, true, null, request.cookies?.token || null);
     return reply.send({
       id: user.id,
       username: user.username,
@@ -144,7 +162,7 @@ const getUsers = async (request, reply) => {
       return reply.status(404).send({ error: "No users found." });
     }
 
-    fillObject(request, "INFO", "getUsers", "unknown", true, "", request.cookies?.token || null);
+    fillObject(request, "INFO", "getUsers", "unknown", true, null, request.cookies?.token || null);
     const userList = await Promise.all(
       users.filter(user => user.valid).map(async (user) => {
         const rel = await db.Relationship.findOne({

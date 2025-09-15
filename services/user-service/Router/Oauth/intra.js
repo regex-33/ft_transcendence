@@ -2,7 +2,7 @@ const request = require("undici").request;
 const db = require("../../models");
 const bcrypt = require("bcrypt");
 const jwt = require("../../util/jwt");
-const { fillObject } = require("../../util/logger");
+const { logger } = require("../../util/logger");
 const Cookies = require("../../util/cookie");
 const {
     JWT_SECRET,
@@ -12,7 +12,6 @@ const {
     INTRA_CALLBACK_URL
 } = process.env;
 const redirect = (req, reply) => {
-    console.log(process.env);
     const redirectURL = `https://api.intra.42.fr/oauth/authorize?client_id=${INTRA_CLIENT_ID}&redirect_uri=${INTRA_CALLBACK_URL}&response_type=code`;
     reply.redirect(redirectURL);
 };
@@ -20,7 +19,6 @@ const redirect = (req, reply) => {
 const handleAuthCallback = async (req, reply) => {
     const { code } = req.query;
     if (!code) {
-        fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "no code provided", req.cookies?.token || null);
         return reply.status(400).send({ error: "Missing code" });
     }
 
@@ -37,7 +35,7 @@ const handleAuthCallback = async (req, reply) => {
                 client_id: INTRA_CLIENT_ID,
                 client_secret: INTRA_CLIENT_SECRET,
                 code,
-                redirect_uri:   INTRA_CALLBACK_URL,
+                redirect_uri: INTRA_CALLBACK_URL,
             }),
         }
     );
@@ -45,7 +43,6 @@ const handleAuthCallback = async (req, reply) => {
 
     const token = tokenData?.access_token;
     if (!token) {
-        fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "invalid Intra code", req.cookies?.token || null);
         return reply.status(401).send({ error: "Invalid token" });
     }
 
@@ -61,7 +58,6 @@ const handleAuthCallback = async (req, reply) => {
     } = userData;
     const user = await db.User.findOne({ where: { [db.Sequelize.Op.or]: [{ username: login }, { email: email }] } });
     if (user && user.identifier !== `intra-${id}`) {
-        fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "Username or email already exists", req.cookies?.token || null);
         return reply
             .status(400)
             .send({ error: "Username or email already exists" });
@@ -81,21 +77,23 @@ const handleAuthCallback = async (req, reply) => {
                 ),
             },
         });
-
         const token = jwt.sign(
             { id: user.id, username: user.username, email: user.email },
             JWT_SECRET,
             { expiresIn: TIME_TOKEN_EXPIRATION }
         );
         if (!token) {
-            fillObject(req, "WARNING", "handleAuthCallback", "unknown", false, "Failed to generate token", req.cookies?.token || null);
+            logger(req, "ERROR", "IntraOAuth", login, true, "tokenGenerationFailed", req.cookies?.token || null);
             return reply.status(500).send({ error: "Failed to generate token" });
         }
-        fillObject(req, "INFO", created ? "createUser" : "loginUser", user.username, true, "", req.cookies?.token || null);
+        if (created) {
+            logger(req, "INFO", "register", login, true, "IntraOAuth", req.cookies?.token || null);
+        } else {
+            logger(req, "INFO", "login", login, true, "IntraOAuth", req.cookies?.token || null);
+        }
         return Cookies(reply, token, user.id).redirect(process.env.HOME_PAGE);
 
     } catch (err) {
-        fillObject(req, "ERROR", "handleAuthCallback", "unknown", false, "Error creating or finding user", req.cookies?.token || null);
         console.error("Error creating or finding user:", err);
         return reply.status(500).send({ error: "Internal Server Error" });
     }

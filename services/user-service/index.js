@@ -36,7 +36,7 @@ fastify.get('/api/friends/rel/:id', async (request, reply) => {
 });
 
 fastify.addHook("onResponse", (req, res, done) => {
-  logger(req, res);
+  req = logger(req, res);
   log({
     ...req.object,
     request_id: `${req.object.service}-${req.object.username}-${uuidv4()}`,

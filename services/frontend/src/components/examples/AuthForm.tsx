@@ -10,142 +10,15 @@ export const AuthForm: ComponentFunction = () => {
     username: '',
     email: '',
     password: '',
+    twoFA: '',
     confirmPassword: ''
   });
-
-  const [show2FA, setShow2FA] = useState(false);
-  const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
-  const [twoFALoading, setTwoFALoading] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handle2FAInputChange = useCallback((index: number, value: string) => {
-    if (value.length > 1) return;
 
-    const newCode = [...verificationCode];
-    newCode[index] = value;
-    setVerificationCode(newCode);
 
-    // Auto-focus next input
-    if (value && index < 5) {
-      const nextInput = document.getElementById(`auth-code-${index + 1}`) as HTMLInputElement | null;
-      if (nextInput) nextInput.focus();
-    }
-  }, [verificationCode]);
 
-  const handle2FAKeyDown = useCallback((index: number, e: KeyboardEvent) => {
-    if (e.key === 'Backspace' && !verificationCode[index] && index > 0) {
-      const prevInput = document.getElementById(`auth-code-${index - 1}`) as HTMLInputElement | null;
-      if (prevInput) prevInput.focus();
-    }
-  }, [verificationCode]);
-
-  const handle2FAVerify = useCallback(async () => {
-    const code = verificationCode.join('');
-    if (code.length !== 6) {
-      setError('Please enter a complete 6-digit code');
-      return;
-    }
-
-    setTwoFALoading(true);
-    setError('');
-
-    try {
-      const response = await fetch(
-        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/2fa/verify`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ 
-            username: formData.username,
-            token: code
-          })
-        }
-      );
-
-      if (!response.ok) {
-        setError('Invalid verification code. Please try again.');
-      } else {
-        // 2FA verification successful - redirect to home
-        window.location.href = '/home';
-      }
-    } catch (err) {
-      console.error('2FA verification error:', err);
-      setError('An error occurred during verification');
-    } finally {
-      setTwoFALoading(false);
-    }
-  }, [verificationCode, formData.username]);
-
-  const backToLogin = useCallback(() => {
-    setShow2FA(false);
-    setVerificationCode(['', '', '', '', '', '']);
-    setError('');
-    setTwoFALoading(false);
-  }, []);
-
-  // Render 2FA verification form add by rrregex
-  if (show2FA) {
-    return (
-      <div 
-        className='relative min-h-screen bg-cover bg-center'
-        style={{ backgroundImage: 'url(/images/bg-login.png)' }}
-      >
-        <div className='absolute left-6 flex md:top-6 items-center text-white gap-0'>
-          <img src='/images/logo.png' alt='logo' className='w-10 h-10' />
-          <h2 className='text-xl italic font-semibold'>The Game</h2>
-        </div>
-
-        <div className='flex justify-center items-center min-h-screen'>
-          <div className='bg-white rounded-2xl shadow-lg p-8 w-full max-w-md'>
-            <div className='text-center mb-8'>
-              <h2 className='text-2xl font-semibold text-gray-800 mb-2'>Two-Factor Authentication</h2>
-              <p className='text-gray-600'>Enter the 6-digit code from your authenticator app</p>
-            </div>
-
-            {error && (
-              <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>
-                {error}
-              </div>
-            )}
-
-            <div className='flex justify-center gap-2 mb-6'>
-              {verificationCode.map((digit, index) => (
-                <input
-                  key={index}
-                  id={`auth-code-${index}`}
-                  type='text'
-                  inputMode='numeric'
-                  value={digit}
-                  onInput={(e: Event) => handle2FAInputChange(index, (e.target as HTMLInputElement).value)}
-                  onKeyDown={(e: KeyboardEvent) => handle2FAKeyDown(index, e)}
-                  className='w-12 h-12 border-2 border-gray-300 rounded-lg text-center text-lg font-medium focus:border-[#3F99B4] focus:outline-none transition-colors '
-                  maxLength={1}
-                />
-              ))}
-            </div>
-
-            <div className='space-y-3'>
-              <button
-                onClick={handle2FAVerify}
-                className='w-full bg-[#67A7B9] hover:bg-[#044850] text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed'
-              >
-                {twoFALoading ? 'Verifying...' : 'Verify'}
-              </button>
-
-              <button
-                onClick={backToLogin}
-                className='w-full bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed'
-              >
-                Back to Login
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const showLogin = useCallback(() => setIsLoginMode(true), []);
   const showRegister = useCallback(() => setIsLoginMode(false), []);
@@ -196,7 +69,7 @@ export const AuthForm: ComponentFunction = () => {
         : 'api/users/register';
 
       const requestBody = isLoginMode
-        ? { username: formData.username, password: formData.password }
+        ? { username: formData.username, password: formData.password, twoFA: formData.twoFA }
         : { username: formData.username, password: formData.password, email: formData.email };
           
       const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/${apiUrl}`, {
@@ -211,18 +84,14 @@ export const AuthForm: ComponentFunction = () => {
       const data = await response.json();
 
       if (response.ok) {
-        if (!isLoginMode) {
+        if (!isLoginMode) 
+        {
           window.location.href = data.redirectUrl || '/home';
         } 
-        else if (data.require2FA === true) {
-          setShow2FA(true);
-          setError('');
-        } else {
+       else {
           window.location.href = '/home';
         }
-      } else {
-        setError(data.error || 'Authentication failed');
-      }
+      } 
     } catch (error: any) {
       console.error('Authentication error:', error);
       setError('An error occurred during authentication');
@@ -289,6 +158,13 @@ export const AuthForm: ComponentFunction = () => {
                 value={formData.username}
                 onInput={(e: Event) => handleInputChange('username', (e.target as HTMLInputElement).value)}
                 required
+              />
+              <input
+                type='text'
+                placeholder='2FA'
+                className='w-full mb-3 px-4 bg-[#F2F0F0] py-3 rounded-3xl border outline-none focus:border-[#3F99B4]'
+                value={formData.twoFA}
+                onInput={(e: Event) => handleInputChange('twoFA', (e.target as HTMLInputElement).value)}
               />
 
               <input

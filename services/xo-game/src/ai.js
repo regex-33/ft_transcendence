@@ -55,7 +55,6 @@ const getBestMove = (map) => {
 }
 
 const solve = (map) => {
-    console.log(map);
     const cell = getBestMove(map);
     if (cell) {
         map[cell[0]][cell[1]] = MY;
@@ -70,7 +69,6 @@ const solve = (map) => {
             }
         }
     }
-    console.log(map);
     return map;
 }
 
