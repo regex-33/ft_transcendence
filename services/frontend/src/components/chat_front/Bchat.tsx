@@ -29,7 +29,7 @@ export const Bchat: ComponentFunction = () => {
   const [active, setActive] = useState<boolean>(false);
   const [nameFriend, setNameFriend] = useState<Friend | null>(null);
   const [isBlocked, setIsBlocked] = useState<boolean>(false);
-
+  const [allfriend, setallfriend] = useState<Friend[]>([]);
   useEffect(() => {
     socket.current = new WebSocket('ws://localhost/ws/chat');
     
@@ -54,6 +54,7 @@ export const Bchat: ComponentFunction = () => {
         const friendsList = await resFriends.json();
         console.log("friend is : ", friendsList);
         setFriends(friendsList);
+        setallfriend(friendsList)
         socket.current?.send(JSON.stringify({ type: 'user-info', ...user, friends: friendsList }));
 
         const resHistory = await fetch(`http://localhost/api/chat/messages/${user.id}`);
@@ -139,7 +140,6 @@ export const Bchat: ComponentFunction = () => {
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter' && nameFriend && id !== null) {
       sendMessage({ from: id, to: nameFriend.id }, message);
-      // e.preventDefault(); // Prevent form submission if inside a form
     }
   };
 
@@ -159,7 +159,7 @@ export const Bchat: ComponentFunction = () => {
           </button>
         )}
         {active && <Online data_friend={friends} name_friend={setNameFriend} />}
-        <Barre friend={friends} onSelectFriend={setNameFriend} />
+        <Barre friend={allfriend} onSelectFriend={setNameFriend} />
       </div>
 
       <div className="absolute w-[65%] h-[82%] top-[14%] left-[28%] m-[0.1%]">
