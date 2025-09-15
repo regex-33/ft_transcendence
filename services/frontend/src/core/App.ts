@@ -1,7 +1,3 @@
-import { CounterExample } from "../components/examples/Counter"; 
-import { PongLoginPage } from "../components/Auth/LoginForm";
-import { CounterClassComponent } from "../components/examples/ClassComp";
-
 import { Router } from "../utils/router";
 import { Component } from "./Component";
 import { ComponentFunction, ComponentProps, VNode } from "../types/global";
@@ -27,6 +23,7 @@ import  { SecuritySettings } from '../components/settings/SecuritySettings';
 import { Background } from "../components/chat_front/background";
 import { ChatService } from "../components/chat_front/ChatLayouts";
 import { OverviewSettings } from "../components/settings/OverviewSettings";
+import { ProfilePage } from "../components/settings/ProfilePage";
 
 
 
@@ -264,19 +261,13 @@ private cleanupActiveComponents(): void {
 private setupRoutes(): void {
   console.log("Setting up routes...");
   
-  this.router.addRoute("/counter", () =>
-    this.createFunctionalComponent(CounterExample, { initialCount: 1 })
-  );
 
 
-// this.router.addRoute("/home", () =>
-//   this.createClassComponent(CounterClassComponent, { initialCount: 1 })
-// );
+this.router.addRoute('/profile/:username', (params) => {
+  console.log("Routing to profile of:", params?.username);
+  return this.createFunctionalComponent(ProfilePage, { username: params?.username });
+});
 
-// Router configuration
-this.router.addRoute('/Profile', () => 
-  this.createFunctionalComponent(SettingsPage, { defaultTab: 'overview' })
-); 
 this.router.addRoute("/Chat-Friend", () => 
   this.createFunctionalComponent(ChatService)
 );
@@ -323,10 +314,6 @@ this.router.addRoute('/settings/achievements', () =>
   this.createFunctionalComponent(Home)
 );
   
-  this.router.addRoute("/pinlog", () =>
-    this.createFunctionalComponent(PongLoginPage)
-  );
-
   console.log("Routes configured");
 }
 

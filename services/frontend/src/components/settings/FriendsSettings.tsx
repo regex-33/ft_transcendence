@@ -2,6 +2,7 @@ import { h } from '../../vdom/createElement';
 import { useState } from '../../hooks/useState';
 import { ComponentFunction } from "../../types/global";
 import { useEffect } from '../../hooks/useEffect';
+import { ProfilePage } from './ProfilePage';
 
 type Friend = {
   id: number;
@@ -204,7 +205,13 @@ export const FriendsSettings: ComponentFunction = () => {
       </div>
     );
   }
-
+  const handleProfileClick = (username: string, e: Event) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.history.pushState({}, "", `/profile/${username}`);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  };
+  // if(viewProfile) return <ProfilePage username = {viewProfile}/>
   return (
     <div
       className="h-[700px] max-w-[1400px] bg-[#91BFBF] bg-opacity-85 mr-auto mt-12 rounded-xl p-6 pt-12 overflow-x-auto"
@@ -251,7 +258,9 @@ export const FriendsSettings: ComponentFunction = () => {
                 >
                   <div className="flex flex-col items-center justify-center h-full">
                     
-                    <div className="relative w-[100px] h-[100px] flex-shrink-0 mt-10">
+                    <div className="relative w-[100px] h-[100px] flex-shrink-0 mt-10"
+                   onClick={(e: Event) => handleProfileClick(friend.username, e)}
+                    >
                       {friend.status === 'friend' ? (
                         <div
                           className="relative w-24 h-24 flex items-center justify-center bg-no-repeat bg-contain"

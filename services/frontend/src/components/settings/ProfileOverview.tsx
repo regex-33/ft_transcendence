@@ -9,10 +9,11 @@ import { Gold } from "./gameMode/Gold";
 import { Vanish } from "./gameMode/Vanish";
 
 interface OverviewSettingsProps {
-  username?: string; // If provided, fetch data for this user, otherwise use current user
+  username?: string;
 }
 
-export const OverviewSettings: ComponentFunction<OverviewSettingsProps> = (props) => {
+export const ProfileOverview: ComponentFunction<OverviewSettingsProps> = (props) => {
+    console.log("ProfileOverview propsssssssssssssssssssssssss:", props);
   const { username } = props || {};
   const [statsData, setStatsData] = useState({
     matchesWon: 0,
@@ -79,14 +80,8 @@ export const OverviewSettings: ComponentFunction<OverviewSettingsProps> = (props
       
       try {
         let endpoint;
-        if (username) {
-          // Viewing another user's profile
-          endpoint = `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/${username}`;
-        } else {
-          // Viewing own profile
-          endpoint = `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`;
-        }
-
+        endpoint = `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/${username}`;
+       
         const response = await fetch(endpoint, {
           method: 'GET',
           headers: {
@@ -105,16 +100,20 @@ export const OverviewSettings: ComponentFunction<OverviewSettingsProps> = (props
             totalPoints: data.totalPoints || 450
           });
         } else {
-          // Use default values if API fails
+            setStatsData({
+                matchesWon: 320,
+                leaderboardPosition: 200,
+                matchesLost: 12,
+                achievements: 9,
+                totalPoints:  450
+              });
           console.warn('Stats API failed, using default values');
         }
+      setLoading(false);
       } catch (error) {
         console.error('Error fetching stats:', error);
         setError('Failed to load statistics');
-        // Keep default values from useState
-      } finally {
-        setLoading(false);
-      }
+      } 
     };
 
     fetchStatsData();

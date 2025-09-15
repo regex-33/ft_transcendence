@@ -14,8 +14,13 @@ import { Component } from '../main';
  * ```
  */
 export class Router {
-  /** Map storing route paths and their corresponding component factory functions */
-  private routes: Map<string, () => Component> = new Map();
+  /** Array storing route patterns, regex, param names, and their corresponding component factory functions */
+  private routes: Array<{
+    pattern: string;
+    regex: RegExp;
+    paramNames: string[];
+    componentFactory: (params?: Record<string, string>) => Component;
+  }> = [];
   
   /** Current active route path */
   private currentRoute: string = '';
@@ -38,6 +43,7 @@ export class Router {
    */
   private handlePopState(): void {
     this.currentRoute = window.location.pathname;
+    console.log('Router: Handling popstate, new route:', this.currentRoute);
     this.renderCurrentRoute();
   }
 
@@ -111,13 +117,23 @@ export class Router {
    * @returns {void}
    */
   private renderCurrentRoute(): void {
-    const componentFactory = this.routes.get(this.currentRoute);
-    if (componentFactory) {
-      const component = componentFactory();
-      this.render(component);
-    } else {
+    let matched = false;
+    for (const route of this.routes) {
+      const match = route.regex.exec(this.currentRoute);
+      if (match) {
+        matched = true;
+        // Extract params
+        const params: Record<string, string> = {};
+        route.paramNames.forEach((name, idx) => {
+          params[name] = match[idx + 1];
+        });
+        const component = route.componentFactory(params);
+        this.render(component);
+        break;
+      }
+    }
+    if (!matched) {
       console.warn(`No route found for path: ${this.currentRoute}`);
-      // Clean up current component even if no new route is found
       if (this.currentComponent && this.currentComponent.isMountedComponent()) {
         this.currentComponent.unmount();
         this.currentComponent = null;
@@ -148,8 +164,26 @@ export class Router {
   /**
    * Registers a route with its corresponding component factory function.
    */
-  addRoute(path: string, componentFactory: () => Component): void {
-    this.routes.set(path, componentFactory);
+  /**
+   * Registers a route with its corresponding component factory function.
+   * Supports dynamic params: /profile/:username
+   */
+  addRoute(pattern: string, componentFactory: (params?: Record<string, string>) => Component): void {
+    const paramNames: string[] = [];
+    // Escape special regex chars except /
+    let regexStr = pattern.replace(/([.*+?^${}()|\[\]\\])/g, '\\$1');
+    regexStr = regexStr.replace(/:(\w+)/g, function (_: string, name: string) {
+      paramNames.push(name);
+      return '([^/]+)';
+    });
+    regexStr = `^${regexStr}/?$`;
+    const regex = new RegExp(regexStr);
+    this.routes.push({
+      pattern,
+      regex,
+      paramNames,
+      componentFactory
+    });
   }
 
 
@@ -211,3 +245,4 @@ export class Router {
     window.removeEventListener('popstate', this.handlePopState.bind(this));
   }
 }
+
