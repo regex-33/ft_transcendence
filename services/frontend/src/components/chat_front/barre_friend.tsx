@@ -16,7 +16,7 @@ interface BarreProps {
 export const Barre: ComponentFunction<BarreProps> = ({ friend, onSelectFriend }) => {
   const [inputV, setInput] = useState<string>("");
   const [friendl, setFriendl] = useState<boolean>(false);
-
+  console.log("avant : ", friend)
   function getInput(event: Event) {
     const target = event.target as HTMLInputElement;
     setInput(target.value);
@@ -77,10 +77,11 @@ interface GetListFriendProps {
 }
 
 export const GetListFriend: ComponentFunction<GetListFriendProps> = ({ friends, onSelectFriend }) => {
+  console.log("friends prop:", friends)
   return (
     <div>
       {friends.map((user, index) => (
-        <button 
+        <button
           key={index}
           onClick={() => onSelectFriend(user)}
           className="w-full flex items-center gap-3 p-3 rounded-xl transition-all 
