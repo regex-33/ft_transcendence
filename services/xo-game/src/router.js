@@ -150,7 +150,7 @@ const GameRouter = (fastify) => {
             return res.send(edited);
         } catch (error) {
             console.log("geting history error ", error.message)
-            return res.status(500).send("internal server error.");
+            return res.status(500).send({ "msg": "internal server error" });
         }
     })
 }

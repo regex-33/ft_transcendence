@@ -1,21 +1,21 @@
 
 const nodemailer = require('nodemailer');
 const db = require("../../models");
-const { User , ResetCode } = db;
+const { User, ResetCode } = db;
 const jwt = require("../../util/jwt");
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
 const Cookie = require("../../util/cookie");
 const transporter = nodemailer.createTransport({
-  service: 'Gmail',
-  auth: {
-    user: process.env.GMAIL_APP_EMAIL,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
+    service: 'Gmail',
+    auth: {
+        user: process.env.GMAIL_APP_EMAIL,
+        pass: process.env.GMAIL_APP_PASSWORD,
+    },
 });
 
 
 const randomCGCode = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+    return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
 const send_code = async (req, reply) => {
@@ -48,7 +48,7 @@ const send_code = async (req, reply) => {
         return Cookie(reply, token, user.id).status(200).send({});
     } catch (err) {
         console.error("Mail Error:", err);
-        return reply.code(500).send("Email sending failed");
+        return reply.code(500).send({ msg: "Email sending failed" });
     }
 };
 

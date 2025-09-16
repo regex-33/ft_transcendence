@@ -1,10 +1,10 @@
-const fastify = require("fastify")();
 const db = require("../../models");
 const jwt = require("../../util/jwt");
 const bcrypt = require("bcrypt");
 const Cookies = require("../../util/cookie");
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
 const { logger } = require("../../util/logger");
+const speakeasy = require("speakeasy");
 
 const validateInputs = (req, username, password) => {
   if (!username || !password) {
@@ -28,7 +28,7 @@ const login = async (request, reply) => {
         .send({ error: "Username and password are required." });
     }
 
-    const { username, password, code } = request.body;
+    const { username, password, twoFA: code } = request.body;
     const validation = validateInputs(request, username, password);
 
     if (!validation.valid) {
