@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { createGameSchema } from "../schemas";
-import { createGame } from "../controllers/gameController";
+import { createGameSchema, getGameSchema } from "../schemas";
+import { createGame, getGame } from "../controllers/gameController";
 import { createPlayer } from "../controllers/playerController";
 
 async function gameRoutes(fastify: FastifyInstance, opts: FastifyPluginOptions) {
@@ -18,25 +18,13 @@ async function gameRoutes(fastify: FastifyInstance, opts: FastifyPluginOptions) 
 	});
 
 	fastify.get('/:id', {
-		schema: {
-
-			params: {
-				type: 'object',
-				required: ['id'],
-				properties: {
-					id: { type: 'number' }
-				}
-			},
-		}
+		schema: getGameSchema
 	}, async (request, reply) => {
-		const { id } = request.params as { id: Number };
-		try {
-			const gameId = Number(id);
-		}
-		catch (err) {
-			return { "error": "bad request" }
-		}
-		return { "hello": "world new" };
+		const { id } = request.params;
+		const game = getGame(fastify.prisma, id);
+		if (!game)
+			return reply.code(404).send({"error": "game not found"});
+		reply.code(200).send(game);
 	});
 }
 

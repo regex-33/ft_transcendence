@@ -23,4 +23,11 @@ const createGame = async (db: PrismaClient, data: GameData) => {
 	return game;
 }
 
-export { createGame }
+const getGame = async (db: PrismaClient, id: number) => {
+	const game = await db.game.findUnique({
+		where: {id: id}
+	});
+	return game;
+}
+
+export { createGame, getGame }
