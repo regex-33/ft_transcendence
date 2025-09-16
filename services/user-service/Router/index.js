@@ -2,7 +2,7 @@ const {
   login, getbyusername, getbyId, getUsers, register, updatePassword, update, logout, online, getme
 } = require("./Users");
 const {
-  addFriend, getFriends, actionsHandler, getPendingFriends, getRequestedFriends, getBlockedUsers
+  addFriend, getFriends, actionsHandler, getPendingFriends, getRequestedFriends, getBlockedUsers,rel
 } = require("./Friends");
 const {
   github, intra, google
@@ -28,7 +28,7 @@ async function UserRoutes(fastify) {
   fastify.get("/get/me", getme); // /api/users/get/me => my info
   fastify.get("/online/:username", online.isOnline);
   fastify.put("/online", online.setOnline);
-  fastify.get('/online-tracker',{websocket:true},online.onlineTracker)
+  fastify.get('/online-tracker', { websocket: true }, online.onlineTracker)
 }
 
 async function FriendRoutes(fastify) {
@@ -38,6 +38,7 @@ async function FriendRoutes(fastify) {
   fastify.get("/pending-friends", getPendingFriends);// /api/friends/pending-friends =>who request me
   fastify.get("/requested-friends", getRequestedFriends);// /api/friends/requested-friends => who i request  
   fastify.get("/blocked-users", getBlockedUsers);// /api/friends/blocked-users => who i block
+  fastify.get('/rel/:id', rel); // /api/friends/rel/2  get relation between me and user id=2
 }
 
 async function OauthRoutes(fastify) {
@@ -70,13 +71,13 @@ async function NotificationRoutes(fastify) {
   fastify.get("/", getNotifications);
 }
 
-module.exports = { 
-  UserRoutes, 
-  FriendRoutes, 
-  OauthRoutes, 
-  checkCodeRoutes, 
-  _2faRoutes, 
-  checksRoutes, 
+module.exports = {
+  UserRoutes,
+  FriendRoutes,
+  OauthRoutes,
+  checkCodeRoutes,
+  _2faRoutes,
+  checksRoutes,
   NotificationRoutes,
   AuthRoutes
 };
