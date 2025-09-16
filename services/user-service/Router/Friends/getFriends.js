@@ -1,6 +1,5 @@
 const db = require("../../models");
 const checkAuthJWT = require("../../util/checkauthjwt");
-const { fillObject } = require("../../util/logger");
 const { Op } = require("sequelize");
 
 const getFriends = async (request, reply) => {
@@ -39,16 +38,6 @@ const getFriends = async (request, reply) => {
       ],
       attributes: ["id", "username", "avatar", "online"]
     });
-
-    fillObject(
-      request,
-      "INFO",
-      "getFriends",
-      userId,
-      true,
-      "",
-      request.cookies?.token || null
-    );
     const new_friends = users.map(friend => {
       return ({
         id: friend.id,
@@ -59,15 +48,6 @@ const getFriends = async (request, reply) => {
     });
     reply.send(new_friends || { new_friends: [] });
   } catch (error) {
-    fillObject(
-      request,
-      "ERROR",
-      "getFriends",
-      userId,
-      false,
-      error.message,
-      request.cookies?.token || null
-    );
     console.error("Error fetching friends:", error);
     reply.status(500).send({ error: "Internal Server Error" });
   }
@@ -112,26 +92,8 @@ const getPendingFriends = async (request, reply) => {
         online: new_user.sessions?.filter(session => session.counter > 0).length > 0
       };
     }));
-    fillObject(
-      request,
-      "INFO",
-      "getFriends",
-      userId,
-      true,
-      "",
-      request.cookies?.token || null
-    );
     reply.send(friends || { friends: [] });
   } catch (error) {
-    fillObject(
-      request,
-      "ERROR",
-      "getFriends",
-      userId,
-      false,
-      error.message,
-      request.cookies?.token || null
-    );
     console.error("Error fetching friends:", error);
     reply.status(500).send({ error: "Internal Server Error" });
   }
@@ -167,15 +129,6 @@ const getRequestedFriends = async (request, reply) => {
 
       ],
     });
-    fillObject(
-      request,
-      "INFO",
-      "getFriends",
-      userId,
-      true,
-      "",
-      request.cookies?.token || null
-    );
     const new_friends = friends.other.map(friend => {
       return ({
         id: friend.id,
@@ -186,15 +139,6 @@ const getRequestedFriends = async (request, reply) => {
     });
     reply.send(new_friends || { new_friends: [] });
   } catch (error) {
-    fillObject(
-      request,
-      "ERROR",
-      "getFriends",
-      userId,
-      false,
-      error.message,
-      request.cookies?.token || null
-    );
     console.error("Error fetching friends:", error);
     reply.status(500).send({ error: "Internal Server Error" });
   }
@@ -228,15 +172,6 @@ const getBlockedUsers = async (request, reply) => {
         },
       ],
     });
-    fillObject(
-      request,
-      "INFO",
-      "getFriends",
-      userId,
-      true,
-      "",
-      request.cookies?.token || null
-    );
     const new_friends = friends.other.map(friend => {
       return ({
         id: friend.id,
@@ -247,15 +182,6 @@ const getBlockedUsers = async (request, reply) => {
     });
     reply.send(new_friends || { new_friends: [] });
   } catch (error) {
-    fillObject(
-      request,
-      "ERROR",
-      "getFriends",
-      userId,
-      false,
-      error.message,
-      request.cookies?.token || null
-    );
     console.error("Error fetching friends:", error);
     reply.status(500).send({ error: "Internal Server Error" });
   }

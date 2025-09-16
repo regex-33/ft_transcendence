@@ -6,7 +6,7 @@ const log = (jsonMessage) => {
     fs.appendFileSync(`${logDir}/${jsonMessage.service}.log`, JSON.stringify(jsonMessage) + '\n');
 };
 
-const fillObject = (req, ...obj) => {
+const logger = (req, ...obj) => {
     if (req)
         req.object = {
             ...req?.object,
@@ -17,6 +17,5 @@ const fillObject = (req, ...obj) => {
 
 module.exports = {
     log,
-    logger: fillObject,
-    fillObject: () => { }
+    logger
 };

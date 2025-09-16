@@ -3,7 +3,6 @@ const acceptFriendRequest = require("./accept");
 const cancelFriendRequest = require("./cancel");
 const unblockAction = require("./unblock");
 const blockUser = require("./block");
-const { fillObject } = require('../../util/logger');
 const actionsHandler = async (req, reply) => {
   try {
     const { check, payload } = await checkAuthJWT(req, reply);
@@ -12,12 +11,10 @@ const actionsHandler = async (req, reply) => {
     const userId = payload.id;
 
     if (!action || (!username)) {
-      fillObject(req, "WARNING", "actionsHandler", userId, false, "action or username not provided", req.cookies?.token || null);
       return reply.status(400).send({ error: "Action and username are required." });
     }
 
     if (typeof username !== "string") {
-      fillObject(req, "WARNING", "actionsHandler", userId, false, "Invalid username format.", req.cookies?.token || null);
       return reply.status(400).send({ error: "Invalid username format." });
     }
     switch (action) {
@@ -25,7 +22,6 @@ const actionsHandler = async (req, reply) => {
         try {
           if (await acceptFriendRequest(req, reply, payload, userId, username)) return;
         } catch (error) {
-          fillObject(req, "ERROR", "acceptFriendRequest", userId, false, error.message, req.cookies?.token || null);
           console.log("Error accepting friend request:", error);
           return reply
             .status(500)
@@ -37,7 +33,6 @@ const actionsHandler = async (req, reply) => {
           const result = await cancelFriendRequest(req, reply, payload, username);
           if (result) return result;
         } catch (error) {
-          fillObject(req, "ERROR", "cancelFriendRequest", userId, false, error.message, req.cookies?.token || null);
           console.log("Error canceling friend request:", error);
           return reply
             .status(500)
@@ -49,7 +44,6 @@ const actionsHandler = async (req, reply) => {
           const result = await blockUser(req, reply, payload, userId, username);
           if (result) return result;
         } catch (error) {
-          fillObject(req, "ERROR", "blockUser", userId, false, error.message, req.cookies?.token || null);
           console.log("Error blocking user:", error);
           return reply
             .status(500)
@@ -61,7 +55,6 @@ const actionsHandler = async (req, reply) => {
           const result = await unblockAction(req, reply, payload, userId, username);
           if (result) return result;
         } catch (error) {
-          fillObject(req, "ERROR", "unblockAction", userId, false, error.message, req.cookies?.token || null);
           console.log("Error unblocking user:", error);
           return reply
             .status(500)
@@ -72,7 +65,6 @@ const actionsHandler = async (req, reply) => {
         return reply.status(400).send({ error: "Invalid action." });
     }
   } catch (error) {
-    fillObject(req, "ERROR", "actionsHandler", 'unknow', false, error.message, req.cookies?.token || null);
     console.log("Error processing friend action:", error);
     return reply
       .status(500)

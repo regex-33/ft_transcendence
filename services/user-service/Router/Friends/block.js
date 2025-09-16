@@ -1,6 +1,5 @@
 const db = require("../../models");
-const checkAuthJWT = require("../../util/checkauthjwt");
-const { fillObject } = require("../../util/logger");
+const { logger } = require("../../util/logger");
 
 const blockUser = async (req, reply, payload, userId, username) => {
   try {
@@ -31,7 +30,7 @@ const blockUser = async (req, reply, payload, userId, username) => {
       console.log('block create error:', error.message);
       return reply.status(500).send({ error: 'internal server error' });
     }
-      fillObject(req, "INFO", "blockUser", payload.username, true, `${username}_blocked`, req.cookies?.token || null);
+      logger(req, "INFO", "blockUser", payload.username, true, `${username}_blocked`, req.cookies?.token || null);
     return reply.send({ 'message': 'success' });
 
   } catch (error) {

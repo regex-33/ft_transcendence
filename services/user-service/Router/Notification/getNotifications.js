@@ -1,6 +1,5 @@
 const db = require('../../models');
 const checkAuthJWT = require('../../util/checkauthjwt');
-const { fillObject } = require('../../util/logger');
 const getNotifications = async (req, reply) => {
     const { check, payload } = await checkAuthJWT(req);
     if (check) return;
@@ -11,7 +10,6 @@ const getNotifications = async (req, reply) => {
             where: { username }
         })
         if (!user) {
-            fillObject(req, 'WARNING', 'getNotifications', payload.username, false, 'user not found', req.cookies?.token || null);
             return reply.status(404).send({ error: 'User not found' });
         }
         const notifications = await db.Notification.findAll({
@@ -38,7 +36,6 @@ const getNotifications = async (req, reply) => {
         );
         return reply.status(200).send(notifications);
     } catch (error) {
-        fillObject(req, 'ERROR', 'getNotifications', payload.username, false, error.message, req.cookies?.token || null);
         console.log("Error fetching notifications:", error);
         return reply.status(500).send({ error: 'Internal server error' });
     }

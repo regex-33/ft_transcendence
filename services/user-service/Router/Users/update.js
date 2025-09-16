@@ -164,7 +164,6 @@ const updateAvatar = async (req, res) => {
   if (check) return check;
   const { id } = payload;
   try {
-    // const body = await multer(req)
     const { avatar } = req.body;
     console.log(avatar);
     if (!avatar || !avatar.path) {

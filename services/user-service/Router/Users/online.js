@@ -1,6 +1,5 @@
 const db = require("../../models");
 const checkAuthJWT = require("../../util/checkauthjwt");
-const { fillObject } = require("../../util/logger");
 const { Op } = require('sequelize');
 const jwt = require('../../util/jwt');
 const isOnline = async (req, res) => {
@@ -28,23 +27,19 @@ const setOnline = async (req, res) => {
         const { isOnline } = req.body;
 
         if (isOnline === undefined) {
-            fillObject(req, "WARNING", "setOnline", "unknown", false, "isOnline is required", req.cookies?.token || null);
             return res.status(400).send({ "message": "isOnline is required" });
         }
 
         const { username } = req.user;
         if (isOnline !== false && isOnline !== true) {
-            fillObject(req, "WARNING", "setOnline", username, false, "isOnline must be 0 or 1", req.cookies?.token || null);
             return res.status(400).send({ "message": "isOnline must be boolean" });
         }
 
         session.counter += isOnline ? 1 : -1;
         await session.save();
 
-        fillObject(req, "WARNING", "setOnline", username, false, "User not found", req.cookies?.token || null);
         return res.status(201).send();
     } catch (error) {
-        fillObject(req, "ERROR", "setOnline", "unknown", false, error.message, req.cookies?.token || null);
         return res.status(500).send({ "message": "Internal server error" });
     }
 };
@@ -53,9 +48,8 @@ async function onlineTracker(ws, req) {
     const { session_id, token } = req.cookies;
 
     try {
-        const { payload } = await jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => { return decoded });
-        if(!payload)
-        {
+        const { payload } = await jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => { return decoded || {} });
+        if (!payload) {
             ws.close();
             return;
         }

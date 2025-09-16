@@ -1,7 +1,6 @@
 const db = require("../../models");
 const checkAuthJWT = require("../../util/checkauthjwt");
-const logger = require("../../util/logger");
-const { fillObject } = require("../../util/logger");
+const { logger } = require("../../util/logger");
 
 const getSessions = async (req, res) => {
   try {

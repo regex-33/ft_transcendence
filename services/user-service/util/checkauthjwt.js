@@ -1,19 +1,14 @@
 const jwt = require("./jwt");
 const Cookie = require("./cookie");
-const { fillObject } = require("./logger");
 const db = require('../models');
 const checkAuthJWT = async (req, reply) => {
   const { token, session_id } = req.cookies;
 
   if (!token || !session_id) {
-    fillObject(req, "WARNING", "checkjwt", "unknown", false, "no token", req.Cookies?.token || null);
     return { check: reply.status(401).send({ error: "No token provided" }) };
   }
-
   return await jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
     if (err) {
-      fillObject(req, "WARNING", "checkjwt", "unknown", false, err, req.Cookies?.token || null);
-
       return {
         check: reply.status(401).send(
           { error: "Invalid token" }
@@ -28,8 +23,6 @@ const checkAuthJWT = async (req, reply) => {
       }
     });
     if (!session) {
-      fillObject(req, "WARNING", "checkjwt", "unknown", false, err, req.Cookies?.token || null);
-
       return {
         check: reply.status(401).send(
           { error: "Invalid session id" }
@@ -40,7 +33,7 @@ const checkAuthJWT = async (req, reply) => {
       return { check: Cookie(reply, decoded.token, decoded.payload.id) };
     }
 
-    return { payload: decoded.payload ,session};
+    return { payload: decoded.payload, session };
   });
 }
 
