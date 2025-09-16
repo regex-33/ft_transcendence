@@ -1,180 +1,152 @@
 
+disable 2fa
+## User Service README (Updated)
+
+This document reflects the CURRENT implemented routes in `services/user-service` (generated from the actual router files). Removed endpoints that were previously documented but not implemented in code.
+
 ## Run
 
 ```sh
 sudo make
 ```
 
-# Endpoints
+The service listens (by default) on: `PORT=8001` `HOST=0.0.0.0`.
 
-## Users
-
-These routes manage user accounts and all begin with `/api/users/...`
-
-| Method                 | Endpoint                    | Content-Type        | Body Fields or Params                  | Need Token |
-| ---------------------- | --------------------------- | ------------------- | -------------------------------------- | :--------: |
-| [POST](#post-register) | [/register](#post-register) | application/json    | username, password, email              |     No     |
-| [POST](#post-login)    | [/login](#post-login)       | application/json    | username, password                     |     No     |
-| [PUT](#put-update)     | [/update](#put-update)      | form-data/multipart | Any fields you want to update          |    Yes     |
-| [GET](#get-username)   | [/:username](#get-username) | -                   | username param                         |    Yes     |
-| [GET](#get-id-id)      | [/id/:id](#get-id-id)       | -                   | id param                               |    Yes     |
-| [GET](#get-users)      | [/](#get-users)             | -                   | -                                      |    Yes     |
-| [GET](#me)      | [/me](#me)             | -                   | -                                      |    Yes     |
-| [POST](#post-logout)   | [/logout](#post-logout)     | -                   | -                                      |    Yes     |
-| [GET](#get-online)     | [/online](#get-online)      | -                   | username as param if not the same user |    Yes     |
-| [PUT](#put-online)     | [/online](#put-online)      | application/json    | isOnline (bool: is online or is not)     |    Yes     |
+Authentication uses JWT stored in cookies: `token` (JWT) and `session_id` (session identifier). Most protected routes require these cookies to be present and valid.
 
 ---
+## Users (`/api/users`)
 
-## Friends
+| Method | Endpoint | Auth | Body / Params | Description |
+| ------ | -------- | :--: | ------------- | ----------- |
+| POST | /register | No | { username, password, email, avatar? } | Register user, sets auth cookies & redirects `HOME_PAGE`. |
+| POST | /login | No | { username, password, code? } | Login (if 2FA active, `code` required). Sets cookies & redirects. |
+| GET  | /logout | Yes | - | Destroys session & clears cookies. |
+| PUT  | /update | Yes | multipart/form-data (any of username,email,location,bio,birthday,avatar) | Bulk update; individual field handlers invoked. |
+| PUT  | /update/password | Yes | { password } | Direct password replacement (legacy path). |
+| GET  | /:username | Yes | username param | Get public profile + relationship status. |
+| GET  | /id/:id | Yes | id param | Get user by id. |
+| GET  | / | Yes | - | List other users (filters blocked / self). |
+| GET  | /get/me | Yes | - | Get authenticated user profile. |
+| GET  | /online/:username | Yes | username param | Check if user currently online. |
+| PUT  | /online | Yes | { isOnline:boolean } | Set current user's presence. |
+| GET  | /online-tracker (websocket) | Yes | WS upgrade | Realtime online tracking stream. |
 
-All routes require a token. These routes manage friends and begin with `/api/friends/...`
-
-| Method                       | Endpoint                         | Content-Type     | Body Fields or Params | Need Token |
-| ---------------------------- | -------------------------------- | ---------------- | --------------------- | :--------: |
-| [POST](#post-add-friend)     | [/add](#post-add-friend)         | application/json | username              |    Yes     |
-| [POST](#post-actions-friend) | [/actions](#post-actions-friend) | application/json | username              |    Yes     |
-| [GET](#get-friends)          | [/](#get-friends)                | -                | -                     |    Yes     |
-
----
-
-## OAuth
-
-No routes require a token. These routes provide OAuth registration via other applications (Google, Intra, GitHub) and begin with `/api/Oauth/...`
-
-| Method                   | Endpoint                     | Content-Type | Body Fields or Params |
-| ------------------------ | ---------------------------- | ------------ | --------------------- |
-| [GET](#get-oauth-github) | [/github](#get-oauth-github) | -            | -                     |
-| [GET](#get-oauth-intra)  | [/intra](#get-oauth-intra)   | -            | -                     |
-| [GET](#get-oauth-google) | [/google](#get-oauth-google) | -            | -                     |
+Returned user objects include: `{ id, username, email, avatar, bio, online, location, birthday, status? }` (status present when relationship exists).
 
 ---
+## Friends (`/api/friends`)
 
-## Check Code
+All require auth.
 
-These routes handle sending and verifying codes, and begin with `/api/...`
+| Method | Endpoint | Body | Description |
+| ------ | -------- | ---- | ----------- |
+| POST | /add | { username } | Send friend request. |
+| POST | /actions | { username, action } | Perform action: accept / cancel / block / unblock. |
+| GET  | /friends | - | List accepted friends. |
+| GET  | /pending-friends | - | Requests received (waiting your decision). |
+| GET  | /requested-friends | - | Requests you sent. |
+| GET  | /blocked-users | - | Users you blocked. |
+| GET  | /rel/:id | id param | Relationship (friend / blocked / pending / request / null). |
 
-| Method                  | Endpoint                      | Content-Type     | Body Fields or Params | Need Token |
-| ----------------------- | ----------------------------- | ---------------- | --------------------- | :--------: |
-| [POST](#post-sendcode)  | [/sendcode](#post-sendcode)   | application/json | email                 |     No     |
-| [POST](#post-checkcode) | [/checkcode](#post-checkcode) | application/json | email, code           |     No     |
-
----
-
-## 2FA
-
-These routes provide 2FA and begin with `/api/2fa/...`
-
-| Method                   | Endpoint                       | Content-Type     | Body Fields or Params        | Need Token |
-| ------------------------ | ------------------------------ | ---------------- | ---------------------------- | :--------: |
-| [GET](#get-2fa-generate) | [/generate](#get-2fa-generate) | -                | -                            |     No     |
-| [POST](#post-2fa-verify) | [/verify](#post-2fa-verify)    | application/json | username, code (named token) |     No     |
-| [POST](#post-2fa-disable)| [/disable](#post-2fa-disable)  | -                | -                            |    Yes     |
+`action` values: `accept | cancel | block | unblock`.
 
 ---
+## OAuth (`/api/oauth`)
 
-## Checks
-`/api/check/...`
-| Method | Endpoint                        | Content-Type | Body Fields or Params | Need Token |
-| ------ | ------------------------------- | ------------ | --------------------- | :--------: |
-| [GET](#get-check-token)    | [/token](#get-check-token)      | -            | -                     |    Yes     |
+Currently only starts third‑party flows (no immediate token return until frontend completes flow handling).
 
-# Route Explanations
+| Method | Endpoint | Description |
+| ------ | -------- | ----------- |
+| GET | /github | Redirect to GitHub OAuth. |
+| GET | /github/callback | GitHub callback handler. |
+| GET | /intra | Redirect to Intra OAuth. |
+| GET | /intra/callback | Intra callback handler. |
+| GET | /google | Redirect to Google OAuth. |
+| GET | /google/callback | Google callback handler. |
 
-
-
-
-### Users
-
-#### <a name="post-register"></a>POST /register
-Registers a new user with username, password, email, image, and name.
-and return token jwt
-
-#### <a name="post-login"></a>POST /login
-Authenticates a user with username and password.
-and return token jwt
-
-#### <a name="put-update"></a>PUT /update
-Updates user fields; requires authentication.
-
-#### <a name="get-username"></a>GET /:username
-Fetches user info by username; requires authentication.
-return { id ,username,email,image,name,bio}
-
-#### <a name="get-id-id"></a>GET /id/:id
-Fetches user info by user ID; requires authentication.
-return { id ,username,email,image,name,bio}
-
-#### <a name="get-users"></a>GET /
-Lists all users; requires authentication.
-return like array of getById
-
-#### <a name="me"></a>GET /me
-get by info base on token in cookies
-
-### <a name="post-logout"></a> POST /logout
-Logout by deleting cookies
-
-
-#### <a name="get-online"></a>GET /online
-Checks if a user is online by username; requires authentication.
-Returns online status as a boolean.
-
-#### <a name="put-online"></a>PUT /online
-Sets the online status for the authenticated user; requires authentication.
-Accepts `online` (boolean) in the request body.
----
-
-### Friends
-
-#### <a name="post-add-friend"></a>POST /add
-Adds a friend by username; requires authentication.
-
-
-#### <a name="post-actions-friend"></a>POST /actions
-Performs friend-related actions by username; requires authentication.
-
-#### <a name="get-friends"></a>GET /
-Lists all friends; requires authentication.
+All are public (no prior auth needed).
 
 ---
+## Email Code / Password Reset (`/api`)
 
-### OAuth you can't get the token yet , i need frontend routing be ready first
- 
-#### <a name="get-oauth-github"></a>GET /github
-Initiates OAuth registration via GitHub.
+| Method | Endpoint | Auth | Body | Description |
+| ------ | -------- | :--: | ---- | ----------- |
+| POST | /sendcode | No | { email } | Send 6‑digit reset code to email. |
+| POST | /checkcode | No | { email, code } | Verify code, sets auth cookies, redirects `HOME_PAGE`. |
 
-#### <a name="get-oauth-intra"></a>GET /intra
-Initiates OAuth registration via Intra.
-
-#### <a name="get-oauth-google"></a>GET /google
-Initiates OAuth registration via Google.
+Notes: After successful `/checkcode`, the reset code record is destroyed.
 
 ---
+## Two-Factor Authentication (`/api/2fa`)
 
-### Check Code
+All endpoints REQUIRE auth (JWT cookie). (Previous README incorrectly stated some were public or used `/verify`).
 
-#### <a name="post-sendcode"></a>POST /sendcode
-Sends a verification code to the provided email.
+| Method | Endpoint | Body | Description |
+| ------ | -------- | ---- | ----------- |
+| GET | /generate | - | Create (or refresh inactive) secret & return `{ qrCodeUrl, secret }`. Fails if already active. |
+| POST | /active2fa | { code } | Verify TOTP `code` and mark 2FA active. |
+| POST | /disable | - | Remove 2FA (record deleted). |
 
-#### <a name="post-checkcode"></a>POST /checkcode
-Verifies the code sent to the provided email.
-return token
+Client must submit TOTP code from authenticator after scanning QR to activate.
 
 ---
+## Notifications (`/api/notifications`)
 
-### 2FA
+Auth required.
 
-#### <a name="get-2fa-generate"></a>GET /generate
-Generates a 2FA qrcode.
+| Method | Endpoint | Body | Description |
+| ------ | -------- | ---- | ----------- |
+| POST | /create | { userId:number, type:string, id:number } | Create notification (types: MATCH_NOTIFICATION, MESSAGE, FRIEND_REQUEST). |
+| GET  | / | (query: readed?) | Fetch notifications, auto-marks unread as read. Includes notifier `user` object. |
 
-#### <a name="post-2fa-verify"></a>POST /verify
-Verifies a 2FA code for the user.
-return token
+Returned fields: `userId, type, notifierId, readed, createdAt, user { id, username, avatar }`.
 
-#### <a name="post-2fa-disable"></a>POST /disable
-disable 2fa
+---
+## Auth (Sessions & Password) (`/api/auth`)
 
-### Checks
-#### <a name="get-check-token"></a>GET /token
-Checks if the token exists and is valid.
+| Method | Endpoint | Body | Description |
+| ------ | -------- | ---- | ----------- |
+| GET | /sessions | - | List active sessions ordered by last activity. |
+| DELETE | /sessions/:sessionId | - | Terminate a specific session (cannot terminate current). |
+| DELETE | /sessions | - | Terminate all OTHER sessions (keeps current). |
+| POST | /change-password | { currentPassword, newPassword } | Change password after verifying current password. |
+
+NOT IMPLEMENTED (but were previously mentioned in comments): `validate-password`, `forgot-password`, `reset-password` — therefore NOT documented here.
+
+Session objects returned: `{ sessionId, lastActive, isActive }`.
+
+---
+## Token / Auth Check (`/api/check`)
+
+| Method | Endpoint | Auth | Description |
+| ------ | -------- | :--: | ----------- |
+| GET | /token | Yes | Returns 200 if token valid (no body). |
+
+---
+## Data Models (Highlights)
+
+Relevant Sequelize models used by these routes (not exhaustive): `User`, `Session`, `Relationship`, `TwoFA`, `Notification`, `ResetCode`.
+
+TwoFA model fields: `{ userId:int, secret:string, isActive:boolean }`.
+
+---
+## 2FA Flow Summary
+1. User logged in without active 2FA.
+2. Client calls `GET /api/2fa/generate` → receives QR + secret.
+3. User scans in authenticator app, generates code.
+4. Client calls `POST /api/2fa/active2fa { code }`.
+5. On future logins, backend expects `code` alongside username/password.
+6. To disable: `POST /api/2fa/disable`.
+
+---
+## Environment Variables (Used in Code)
+| Variable | Purpose |
+| -------- | ------- |
+| JWT_SECRET | JWT signing secret. |
+| TIME_TOKEN_EXPIRATION | Expiration (e.g. 10h). |
+| HOME_PAGE | Redirect target after auth success. |
+| GMAIL_APP_EMAIL / GMAIL_APP_PASSWORD | Nodemailer credentials for email codes. |
+
+Others may exist in broader project context (e.g. DB config). Ensure they are set before running.
+
