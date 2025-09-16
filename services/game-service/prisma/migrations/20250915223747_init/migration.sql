@@ -1,0 +1,19 @@
+-- CreateTable
+CREATE TABLE "Game" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'LIVE',
+    "type" TEXT NOT NULL DEFAULT 'CLASSIC'
+);
+
+-- CreateTable
+CREATE TABLE "Player" (
+    "userId" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "gameId" INTEGER,
+    "score" INTEGER NOT NULL DEFAULT 0,
+    CONSTRAINT "Player_gameId_fkey" FOREIGN KEY ("gameId") REFERENCES "Game" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- CreateIndex
+CREATE INDEX "Player_gameId_idx" ON "Player"("gameId");

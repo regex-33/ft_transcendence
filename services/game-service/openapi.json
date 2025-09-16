@@ -1,0 +1,163 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Pong Game API",
+    "description": "Pong Game API",
+    "version": "0.1.0"
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKey": {
+        "type": "apiKey",
+        "name": "apiKey",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "def-0": {
+        "type": "string",
+        "enum": [
+          "LIVE",
+          "ENDED"
+        ],
+        "title": "GameStatus"
+      },
+      "def-1": {
+        "type": "string",
+        "enum": [
+          "CLASSIC",
+          "SPEED"
+        ],
+        "title": "GameType"
+      }
+    }
+  },
+  "paths": {
+    "/game/create": {
+      "post": {
+        "tags": [
+          "Game"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "gameStatus": {
+                    "$ref": "#/components/schemas/def-0"
+                  },
+                  "gameType": {
+                    "$ref": "#/components/schemas/def-1"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "$ref": "#/components/schemas/def-0"
+                    },
+                    "type": {
+                      "$ref": "#/components/schemas/def-1"
+                    },
+                    "players": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "userId": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "status",
+                    "type",
+                    "players"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/delete": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/game/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      },
+      "head": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Game",
+      "description": "Game related end-points"
+    }
+  ]
+}

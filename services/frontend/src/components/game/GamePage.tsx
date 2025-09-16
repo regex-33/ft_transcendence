@@ -7,10 +7,9 @@ import Avatar1 from '../../../images/home-assests/avatar1.svg';
 import bgTeam from '../../../images/game-assets/bg-team.png';
 import { GameCanvas } from './GameCanvas';
 
-
 const AvatarCircle = ({ avatarImage, key }: { avatarImage: string, key: string }) => (
-	<div className="relative w-11 h-11" key={key}>
-		<img src="/images/home-assests/cir-offline.svg" className="absolute rounded-full shadow-[inset_0_0_10px_5px_#434146] inset-0 w-full h-full z-0" />
+	<div className="relative w-6 h-6 md:w-11 md:h-11" key={key}>
+		<img src="/images/home-assests/cir-offline.svg" className="absolute rounded-full shadow-[inset_0_0_0.4em_0.1em_#434146] inset-0 w-full h-full z-0" />
 		<img
 			src={avatarImage}
 			className="w-[90%] mx-auto rounded-full object-cover z-10"
@@ -21,11 +20,10 @@ const AvatarCircle = ({ avatarImage, key }: { avatarImage: string, key: string }
 
 const TeamBadge = ({ player, reverse = false }: { player: Player, reverse: boolean }) => {
 	let nameBadge =
-		<div className="uppercase font-inria text-xs text-nowrap py-6 px-10 text-[#166181]" style={{
+		<div className="uppercase flex items-center font-inria text-[0.5em] md:text-[1em] text-nowrap py-1 px-5 md:px-10 text-[#166181]" style={{
 			borderImageSource: `url(${bgTeam})`,
 			borderImageSlice: 60,
 			borderImageWidth: "auto",
-			lineHeight: 0
 		}}>{player.name}</div>;
 
 	return (<div className={reverse ? "flex gap-1 flex-row-reverse" : "flex gap-1"}>
@@ -41,7 +39,7 @@ type Player = {
 
 const TeamCard = ({ players }: { players: Player[] }) => {
 	return (
-		<div className="inline-flex flex-col h-full gap-y-3 px-2 py-4 bg-blue-200 bg-opacity-20 rounded-lg">
+		<div className="landscape:hidden md:landscape:inline-flex flex-row gap-x-2 md:flex-col h-full md:gap-y-3 px-2 py-2 md:py-4 bg-blue-200 bg-opacity-20 rounded-lg">
 			{players.map(player => (
 				<AvatarCircle avatarImage={player.avatarImage} key={player.id} />
 			))}
@@ -79,12 +77,12 @@ export const GamePage: ComponentFunction = () => {
 			<div className="relative z-10">
 				<Header />
 			</div>
-			<div className="z-10 flex items-center h-[100%] gap-10 my-10 flex-row justify-between mx-5">
+			<div className="z-10 flex items-center gap-10 my-10 flex-col md:flex-row md:justify-between mx-5">
 				<TeamCard players={players} />
-				<div className="w-[800px]">
+				<div className="w-[70%]">
 					<div className="flex justify-between"><TeamBadge reverse={false} player={players[0]} />
 						<TeamBadge reverse={true} player={players[0]} /></div>
-					<div className="p-[0.6em] my-2 bg-[#91BFBF] shadow-xs shadow-gray-400 rounded-xl">
+					<div className="p-1 md:p-3 my-2 bg-[#91BFBF] shadow-xs shadow-gray-400 rounded-xl">
 						<GameCanvas />
 					</div>
 				</div>
