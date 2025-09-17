@@ -14,6 +14,7 @@ enum GameType {
 }
 
 enum GameStatus {
+  WAITING
   LIVE
   ENDED
 }
