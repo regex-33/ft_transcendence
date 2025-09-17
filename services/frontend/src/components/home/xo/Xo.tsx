@@ -4,7 +4,7 @@ import { ComponentFunction, VNode } from "../../../types/global";
 import { h } from "../../../vdom/createElement";
 import { Background } from "../../chat_front/background";
 let turn = 'X';
-let aimode = false;
+let aimode = true;
 let reset_class = "";
 let table_class = " bg-[url(/images/xo/xo.png)] bg-no-repeat bg-[length:100%_100%] ";
 table_class += " w-full h-[70%] ";
@@ -36,7 +36,7 @@ const click = (x: number, y: number, setMap: any, map: any) => {
             if (data?.map)
                 setMap(data.map)
 
-        }).catch(error => console.log("error"))
+        }).catch()
     }
     else if (map[x][y] === '-') {
         let new_map = [[...map[0]], [...map[1]], [...map[2]]]
@@ -59,14 +59,14 @@ const reset = (setMap: any) => {
             if (data && data.map) {
                 setMap(data.map);
             }
-        }).catch(error => console.log("error"))
+        }).catch()
 }
 
 const Xo: ComponentFunction = () => {
     const table = <table
         className={table_class}
     ></table>;
-    const [map, setMap] = useState([['-', 'O', 'X'], ['-', 'X', 'O'], ['-', 'O', '-']]);
+    const [map, setMap] = useState([['-', '-', '-'], ['-', '-', '-'], ['-', '-', '-']]);
     useEffect(() => {
         const datafetching = async () => {
             try {

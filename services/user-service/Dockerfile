@@ -1,11 +1,10 @@
 FROM node:18-alpine
 
-RUN apk add --no-cache bash
 WORKDIR /app
 
 COPY package*.json ./
 
-
+RUN apk add --no-cache make g++ python3
 COPY . .
 
 RUN npm i nodemon -g
