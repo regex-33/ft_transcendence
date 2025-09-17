@@ -82,7 +82,7 @@ const active2fa = async (req, res) => {
         }
 
         await db.TwoFA.update({ isActive: true }, { where: { userId: payload.id } });
-        logger(req, "INFO", "create2fa", username, true, null, req.cookies?.token || null);
+        logger(req, "INFO", "create2fa", payload.username, true, null, req.cookies?.token || null);
         return res.status(200).send({ msg: "2FA activated successfully" });
     } catch (error) {
         console.error("Error in active2fa:", error);

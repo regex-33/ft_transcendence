@@ -213,14 +213,14 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
       console.log('Verifying 2FA with username:', profileData.username);
 
       const response = await fetch(
-        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/2fa/verify`,
+        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/2fa/active2fa`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
             username: profileData.username,
-            token: code,
+            code,
           }),
         }
       );
