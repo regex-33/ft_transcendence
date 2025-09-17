@@ -1,0 +1,24 @@
+
+# @name createGame
+POST http://localhost:9000/game/create
+content-type: application/json
+
+{
+    "gameMode": "CLASSIC",
+    "gameType": "TEAM"
+}
+
+### 
+
+# @name joinGame
+@gameId = {{createGame.response.body.id}}
+POST http://localhost:9000/game/join
+content-type: application/json
+
+{
+    "gameId": "{{gameId}}",
+    "userId": {{$randomInt 0 10000}} 
+}
+
+###
+GET http://localhost:9000/game/{{createGame.response.body.id}}

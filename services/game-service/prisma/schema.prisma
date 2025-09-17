@@ -9,6 +9,11 @@ datasource db {
 }
 
 enum GameType {
+  SOLO
+  TEAM
+}
+
+enum GameMode {
   CLASSIC
   SPEED
 }
@@ -20,12 +25,13 @@ enum GameStatus {
 }
 
 model Game {
-  id        Int      @id @default(autoincrement())
+  id        String      @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   status GameStatus @default(LIVE)
-  type   GameType   @default(CLASSIC)
+  mode GameMode   @default(CLASSIC)
+  type   GameType   @default(SOLO)
 
   players Player[]
 }
@@ -33,7 +39,8 @@ model Game {
 model Player {
   userId Int @id
 
-  gameId Int?
+  gameId String?
+  points  Int   @default(150)
   score  Int   @default(0)
   game   Game? @relation(fields: [gameId], references: [id])
 

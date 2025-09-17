@@ -3,20 +3,22 @@ const createGameSchema = {
 	body: {
 		type: 'object',
 		properties: {
-			gameStatus: { $ref: 'GameStatus#' },
-			gameType: { $ref: 'GameType#' }
+			gameType: { $ref: 'GameType#' },
+			gameMode: { $ref: 'GameMode#' },
 		},
-		additionalProperties: false
+		required: ['gameType', 'gameMode'],
+		additionalProperties: false,
 	},
 	response: {
 		201: {
 			type: 'object',
 			properties: {
-				id: { type: 'integer' },
+				id: { type: 'string' },
 				createdAt: { type: 'string', format: 'date-time' },
 				updatedAt: { type: 'string', format: 'date-time' },
 				status: { $ref: 'GameStatus#' },
 				type: { $ref: 'GameType#' },
+				mode: { $ref: 'GameMode#' },
 				players: {
 					type: 'array',
 					items: {
@@ -28,6 +30,34 @@ const createGameSchema = {
 				}
 			},
 			required: ['id', 'createdAt', 'updatedAt', 'status', 'type', 'players']
+		}
+	}
+}
+
+const joinGameSchema = {
+	tags: ['Game'],
+	body: {
+		type: 'object',
+		properties: {
+			gameId: { type: 'string' },
+			userId: { type: 'integer' },
+		},
+		required: ['gameId'],
+		additionalProperties: false,
+	},
+	response: {
+		200: {
+			type: 'object',
+			properties: {
+				id: { type: 'integer' },
+			},
+			required: ['id']
+		},
+		404: {
+			$ref: 'Error#'
+		},
+		400: {
+			$ref: 'Error#'
 		}
 	}
 }
@@ -38,18 +68,19 @@ const getGameSchema = {
 		type: 'object',
 		required: ['id'],
 		properties: {
-			id: { type: 'number' }
+			id: { type: 'string' }
 		}
 	},
 	response: {
 		200: {
 			type: 'object',
 			properties: {
-				id: { type: 'integer' },
+				id: { type: 'string' },
 				createdAt: { type: 'string', format: 'date-time' },
 				updatedAt: { type: 'string', format: 'date-time' },
 				status: { $ref: 'GameStatus#' },
 				type: { $ref: 'GameType#' },
+				mode: { $ref: 'GameMode#' },
 				players: {
 					type: 'array',
 					items: {
@@ -60,7 +91,7 @@ const getGameSchema = {
 					}
 				}
 			},
-			required: ['id', 'createdAt', 'updatedAt', 'status', 'type', 'players']
+			required: ['createdAt', 'updatedAt', 'status', 'type', 'players']
 		},
 		404: {
 			$ref: 'Error#'
@@ -68,4 +99,4 @@ const getGameSchema = {
 	}
 }
 
-export { createGameSchema, getGameSchema }
+export { joinGameSchema, createGameSchema, getGameSchema }

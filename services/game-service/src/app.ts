@@ -1,7 +1,8 @@
 import Fastify, { type FastifyInstance } from 'fastify';
-import { GameStatus, GameType, PrismaClient } from '../generated/prisma';
+import { GameStatus, GameType, GameMode, PrismaClient } from '../generated/prisma';
 import clientPlugin from './client-plugin';
 import gameRoutes from './routes/game';
+import playRoutes from './routes/play';
 //import fastifySwagger from '@fastify/swagger';
 
 const fastify = Fastify({ logger: true });
@@ -36,6 +37,18 @@ fastify.addSchema({
 })
 
 fastify.addSchema({
+	$id: 'GameType',
+	type: 'string',
+	enum: Object.values(GameType)
+})
+
+fastify.addSchema({
+	$id: 'GameMode',
+	type: 'string',
+	enum: Object.values(GameMode)
+})
+
+fastify.addSchema({
 	$id: "Error",
 	type: 'object',
 	properties:
@@ -44,15 +57,11 @@ fastify.addSchema({
 	}
 })
 
-fastify.addSchema({
-	$id: 'GameType',
-	type: 'string',
-	enum: Object.values(GameType)
-})
-
 fastify.register(clientPlugin);
 
 fastify.register(gameRoutes, { prefix: '/game' });
+
+fastify.register(playRoutes, { prefix: '/play'});
 
 fastify.listen({
 	port: 3000,
