@@ -6,6 +6,7 @@ import { h } from "../../vdom/createElement";
 
 export const AuthForm: ComponentFunction = () => {
   const [isLoginMode, setIsLoginMode] = useState(true);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -17,7 +18,24 @@ export const AuthForm: ComponentFunction = () => {
   const [loading, setLoading] = useState(false);
 
 
-
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const meUrl = `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`;
+        const resp = await fetch(meUrl, { method: 'GET', credentials: 'include' });
+        if (!cancelled && resp.ok) {
+          window.location.href = '/home';
+          return;
+        }
+      } catch (e) {
+      } finally {
+        if (!cancelled) 
+          setCheckingSession(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
 
   const showLogin = useCallback(() => setIsLoginMode(true), []);
@@ -32,7 +50,7 @@ export const AuthForm: ComponentFunction = () => {
     setError('');
     setLoading(true);
 
-    // Username validation: 3-20 chars, alphanumeric/underscore
+
     const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
     if (!usernameRegex.test(formData.username)) {
       setError('Username must be 3-20 characters and contain only letters, numbers, or underscores.');
@@ -40,7 +58,7 @@ export const AuthForm: ComponentFunction = () => {
       return;
     }
 
-    // Password validation: min 8 chars, at least one letter and one number
+
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+\-=]{8,}$/;
     if (!passwordRegex.test(formData.password)) {
       setError('Password must be at least 8 characters and contain at least one letter and one number.');
@@ -48,7 +66,7 @@ export const AuthForm: ComponentFunction = () => {
       return;
     }
 
-    // Email validation (only for register)
+
     if (!isLoginMode) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
@@ -80,18 +98,10 @@ export const AuthForm: ComponentFunction = () => {
         credentials: 'include',
         body: JSON.stringify(requestBody)
       });
-
-      const data = await response.json();
-
+      await response.json().catch(() => null);
       if (response.ok) {
-        if (!isLoginMode) 
-        {
-          window.location.href = data.redirectUrl || '/home';
-        } 
-       else {
-          window.location.href = '/home';
-        }
-      } 
+        window.location.href = '/home';
+      }
     } catch (error: any) {
       console.error('Authentication error:', error);
       setError('An error occurred during authentication');
@@ -100,7 +110,24 @@ export const AuthForm: ComponentFunction = () => {
     }
   }, [formData, isLoginMode]);
 
-  // namoussa login/register form
+  
+  if (checkingSession) {
+    return (
+      <div 
+        className='relative min-h-screen bg-cover bg-center'
+        style={{ backgroundImage: 'url(/images/bg-login.png)' }}
+      >
+        <div className='absolute left-6 flex md:top-6 items-center text-white gap-0'>
+          <img src='/images/logo.png' alt='logo' className='w-10 h-10' />
+          <h2 className='text-xl italic font-semibold'>The Game</h2>
+        </div>
+        <div className='flex w-full h-[calc(100vh-5rem)] items-center justify-center text-white'>
+          Checking session...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
       className='relative min-h-screen bg-cover bg-center'
@@ -159,13 +186,15 @@ export const AuthForm: ComponentFunction = () => {
                 onInput={(e: Event) => handleInputChange('username', (e.target as HTMLInputElement).value)}
                 required
               />
-              <input
-                type='text'
-                placeholder='2FA'
-                className='w-full mb-3 px-4 bg-[#F2F0F0] py-3 rounded-3xl border outline-none focus:border-[#3F99B4]'
-                value={formData.twoFA}
-                onInput={(e: Event) => handleInputChange('twoFA', (e.target as HTMLInputElement).value)}
-              />
+              {isLoginMode && (
+                <input
+                  type='text'
+                  placeholder='2FA (if enabled)'
+                  className='w-full mb-3 px-4 bg-[#F2F0F0] py-3 rounded-3xl border outline-none focus:border-[#3F99B4]'
+                  value={formData.twoFA}
+                  onInput={(e: Event) => handleInputChange('twoFA', (e.target as HTMLInputElement).value)}
+                />
+              )}
 
               <input
                 type='password'
