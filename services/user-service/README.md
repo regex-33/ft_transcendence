@@ -97,7 +97,7 @@ Auth required.
 
 | Method | Endpoint | Body | Description |
 | ------ | -------- | ---- | ----------- |
-| POST | /create | { userId:number, type:string, id:number } | Create notification (types: MATCH_NOTIFICATION, MESSAGE, FRIEND_REQUEST). |
+| POST | /create | { userId:number, type:string, gameId:string } | Create notification (types: MATCH_NOTIFICATION, MESSAGE, FRIEND_REQUEST). |
 | GET  | / | (query: readed?) | Fetch notifications, auto-marks unread as read. Includes notifier `user` object. |
 | DELETE | /:gameId | gameId as a params | Delete a notification by gameId (only if user is involved). |
 
