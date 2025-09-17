@@ -3,6 +3,7 @@ const acceptFriendRequest = require("./accept");
 const cancelFriendRequest = require("./cancel");
 const unblockAction = require("./unblock");
 const blockUser = require("./block");
+const db = require("../../models");
 const actionsHandler = async (req, reply) => {
   try {
     const { check, payload } = await checkAuthJWT(req, reply);
@@ -17,6 +18,25 @@ const actionsHandler = async (req, reply) => {
     if (typeof username !== "string") {
       return reply.status(400).send({ error: "Invalid username format." });
     }
+    const friend = await db.User.findOne({ where: { username } });
+    if (!friend) {
+      return reply.status(404).send({ error: "User not found." });
+    }
+    if (friend.id === userId) {
+      return reply
+        .status(400)
+        .send({ error: "You cannot perform this action on yourself." });
+    }
+
+    // Remove any existing friend request notifications between the two users
+    await db.Notification.destroy({
+      where: {
+        userId: payload.id,
+        notifierId: friend.id,
+        type: 'FRIEND_REQUEST'
+      }
+    });
+
     switch (action) {
       case "accept":
         try {

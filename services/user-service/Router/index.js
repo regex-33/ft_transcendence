@@ -11,7 +11,7 @@ const check = require("./check");
 const checkcode = require("./emailconfirm");
 const _2fa = require("./2fa");
 const {
-  create: createNotification, getNotifications
+  create: createNotification, getNotifications, delete: deleteNotification
 } = require("./Notification");
 
 const { AuthRoutes } = require("./Auth");
@@ -21,6 +21,7 @@ function safeHandler(handler) {
     try {
       return await handler(req, reply);
     } catch (err) {
+      console.log(err)
       return reply.status(500).send({ error: 'Internal Server Error' });
     }
   };
@@ -87,6 +88,7 @@ async function checksRoutes(fastify) {
 async function NotificationRoutes(fastify) {
   fastify.post("/create", safeHandler(createNotification));
   fastify.get("/", safeHandler(getNotifications));
+  fastify.delete("/:gameId", safeHandler(deleteNotification));
 }
 
 module.exports = {

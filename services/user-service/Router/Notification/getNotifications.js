@@ -14,9 +14,10 @@ const getNotifications = async (req, reply) => {
         }
         const notifications = await db.Notification.findAll({
             where: readed ? { userId: user.id, readed } : { userId: user.id },
-            attributes: ['userId', 'type', 'notifierId', 'readed', 'createdAt'],
+            attributes: ['userId', 'type', 'notifierId', 'readed', 'createdAt', 'gameId'],
         });
         await Promise.all(notifications.map(async notification => {
+            notification.dataValues.gameId = notification.dataValues.gameId ? notification.dataValues.gameId : undefined;
             notification.dataValues.user = await db.User.findOne({
                 where: { id: notification.notifierId },
                 attributes: ['id', 'username', 'avatar']

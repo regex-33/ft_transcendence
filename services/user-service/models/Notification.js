@@ -13,13 +13,17 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    gameId: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     readed: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
   });
   Notification.associate = (models) => {
-    Notification.belongsTo(models.User, { foreignKey: 'notid', onDelete: 'CASCADE' });
+    Notification.belongsTo(models.User, { foreignKey: 'notifierId', onDelete: 'CASCADE' });
   }
   return Notification;
 };

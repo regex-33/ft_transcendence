@@ -2,8 +2,6 @@ const { User, Relationship } = require("../../models");
 const { logger } = require("../../util/logger");
 const acceptFriendRequest = async (req, reply,payload, ...inputs) => {
   const [userId, username] = inputs;
-
-
   try {
     const friend = await User.findOne({ where: { username } });
     if (!friend) {

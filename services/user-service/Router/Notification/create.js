@@ -2,26 +2,31 @@ const db = require('../../models');
 const checkAuthJWT = require('../../util/checkauthjwt');
 
 const createNotification = async (req, reply) => {
-    const { check, payload } = await checkAuthJWT(req);
+    const { check, payload } = await checkAuthJWT(req, reply);
     if (check || !payload) return;
-    const { userId, type, id } = req.body;
-    if (!userId || !type || !id) {
+    const { userId, type, gameId } = req.body;
+
+    if (!userId || !type)
         return reply.status(400).send({ error: 'Missing userId, type or id' });
-    }
-    if (typeof userId !== 'number' || typeof type !== 'string' || typeof id !== 'number') {
-        return reply.status(400).send({ error: 'Invalid userId, type or id' });
-    }
-    if (['MATCH_NOTIFICATION', 'MESSAGE', 'FRIEND_REQUEST'].includes(type)) {
+    if (typeof userId !== 'number' || typeof type !== 'string' || (gameId && typeof gameId !== "string"))
+        return reply.status(400).send({ error: 'bad request' });
+
+    if (['MATCH_NOTIFICATION', 'FRIEND_REQUEST'].includes(type)) {
         try {
-            const notification = await db.Notification.create({
+            await db.Notification.create({
                 userId,
                 type,
-                notifierId: id
+                gameId,
+                notifierId: payload.id,
             });
-            return reply.status(201).send(notification);
+            return reply.status(201).send({
+                userId,
+                notifierId: payload.id,
+                type
+            });
         } catch (error) {
-            console.log("Error creating notification:", error);
-            return reply.status(500).send({ error: 'Internal server error' });
+            console.log("Error creating notification:", error.message);
+            return reply.status(500).send({ error: 'Internal server error.' });
         }
     }
     else {
@@ -31,4 +36,5 @@ const createNotification = async (req, reply) => {
 }
 
 module.exports = createNotification;
+
 
