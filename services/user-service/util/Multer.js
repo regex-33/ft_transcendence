@@ -2,6 +2,8 @@ const path = require("path");
 const fs = require("fs");
 const util = require("util");
 const stream = util.promisify(require("stream").pipeline);
+const { logger } = require("./logger");
+
 
 const multer = async (request) => {
   try {
@@ -25,9 +27,9 @@ const multer = async (request) => {
               name: safeFilename,
               path: `${request.protocol}://${request.headers.host}/uploads/${safeFilename}`,
             };
-            console.log("File saved:", filePath);
+            logger(request, "INFO", "FileSaving", request.user.username || "guest", true, null, request.cookies?.token || null);
           } catch (err) {
-            console.error("File save error:", err);
+            logger(request, "ERROR", "FileSaving", request.user.username || "guest", false, "FAILTOSAVE", request.cookies?.token || null);
           }
         } else {
           body[part.fieldname] = part.value;
@@ -37,7 +39,8 @@ const multer = async (request) => {
       return body;
     }
   } catch (error) {
-    throw new Error(`Failed to process multipart request: ${error.message}`);
+    logger(request, "ERROR", "FileSaving", request.user.username || "guest", false, "FAILTOPROCESS", request.cookies?.token || null);
+    throw error;
   }
   return request.body;
 };

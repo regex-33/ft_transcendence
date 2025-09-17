@@ -4,6 +4,7 @@ const log = (jsonMessage) => {
     if (!fs.existsSync(logDir))
         fs.mkdirSync(logDir, { recursive: true });
     fs.appendFileSync(`${logDir}/${jsonMessage.service}.log`, JSON.stringify(jsonMessage) + '\n');
+    // console.log("hello ", JSON.stringify(jsonMessage) + '\n');
 };
 
 const logger = (req, ...obj) => {

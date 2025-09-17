@@ -6,33 +6,30 @@ const bcrypt = require("bcrypt");
 const { logger } = require("../../util/logger");
 
 const update = async (req, res) => {
-  const { username, email, location, bio, birthday, avatar } = await multer(req);
-  req.body = {
-    username,
-    email,
-    location,
-    bio,
-    birthday,
-    avatar
-  };
-  if (username)
-    await updateUser(req, res);
-  if (email)
-    await updateEmail(req, res);
-  if (location)
-    await updateLocation(req, res);
-  if (bio)
-    await updateBio(req, res);
-  if (birthday)
-    await updateBirthday(req, res);
-  if (avatar)
-    await updateAvatar(req, res);
+  const { check, payload } = await checkAuthJWT(req, res);
+  if (check) return check;
+  req.user = payload;
+  try {
+    req.body = await multer(req);
+  } catch (error) {
+  }
+  if (req.body.username)
+    await updateUser(req, res, payload);
+  if (req.body.email)
+    await updateEmail(req, res, payload);
+  if (req.body.location)
+    await updateLocation(req, res, payload);
+  if (req.body.bio)
+    await updateBio(req, res, payload);
+  if (req.body.birthday)
+    await updateBirthday(req, res, payload);
+  if (req.body.avatar)
+    await updateAvatar(req, res, payload);
   res.send({ message: "User updated successfully." });
 }
 
-const updateLocation = async (req, res) => {
-  const { check, payload } = await checkAuthJWT(req, res);
-  if (check) return check;
+const updateLocation = async (req, res, payload) => {
+
   const { id } = payload;
   const { location } = req.body;
 
@@ -49,16 +46,14 @@ const updateLocation = async (req, res) => {
   }
 };
 
-const updateBirthday = async (req, res) => {
-  const { check, payload } = await checkAuthJWT(req, res);
-  if (check) return check;
+const updateBirthday = async (req, res, payload) => {
   const { id } = payload;
   const { birthday } = req.body;
 
   try {
     if (/^\d+\/\d+\/\d+$/.test(birthday)) {
     } else {
-      return res.status(400).send({"error":"bad date format."})
+      return res.status(400).send({ "error": "bad date format." })
     }
     const user = await User.findByPk(id);
     if (!user) {
@@ -73,9 +68,7 @@ const updateBirthday = async (req, res) => {
   }
 }
 
-const updateUser = async (req, res) => {
-  const { check, payload } = await checkAuthJWT(req, res);
-  if (check) return check;
+const updateUser = async (req, res, payload) => {
   const { id } = payload;
   const { username } = req.body;
   if (!username || username.length <= 2) {
@@ -102,9 +95,7 @@ const updateUser = async (req, res) => {
     res.status(500).send({ error: "Internal server error." });
   }
 };
-const updateEmail = async (req, res) => {
-  const { check, payload } = await checkAuthJWT(req, res);
-  if (check) return check;
+const updateEmail = async (req, res, payload) => {
   const { id } = payload;
   const { email } = req.body;
   if (!email || !(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) || email.length <= 2) {
@@ -159,9 +150,7 @@ const updatePassword = async (req, res) => {
   }
 };
 
-const updateAvatar = async (req, res) => {
-  const { check, payload } = await checkAuthJWT(req, res);
-  if (check) return check;
+const updateAvatar = async (req, res, payload) => {
   const { id } = payload;
   try {
     const { avatar } = req.body;
@@ -186,9 +175,7 @@ const updateAvatar = async (req, res) => {
   }
 };
 
-const updateBio = async (req, res) => {
-  const { check, payload } = await checkAuthJWT(req, res);
-  if (check) return check;
+const updateBio = async (req, res, payload) => {
   const { id } = payload;
   const { bio } = req.body;
   if (bio && bio.length > 500) {

@@ -8,7 +8,7 @@ const {
   github, intra, google
 } = require("./Oauth");
 const check = require("./check");
-const checkcode = require("./emailconfirm");
+// const checkcode = require("./emailconfirm");
 const _2fa = require("./2fa");
 const {
   create: createNotification, getNotifications, delete: deleteNotification
@@ -21,7 +21,7 @@ function safeHandler(handler) {
     try {
       return await handler(req, reply);
     } catch (err) {
-      console.log(err)
+      console.log(err);
       return reply.status(500).send({ error: 'Internal Server Error' });
     }
   };
@@ -65,12 +65,12 @@ async function OauthRoutes(fastify) {
   fastify.get("/google/callback", safeHandler(googleHandleAuthCallback));
 }
 
-const { send_code, check_code } = checkcode;
+// const { send_code, check_code } = checkcode;
 
-async function checkCodeRoutes(fastify) {
-  fastify.post("/sendcode", safeHandler(send_code));
-  fastify.post("/checkcode", safeHandler(check_code));
-}
+// async function checkCodeRoutes(fastify) {
+//   fastify.post("/sendcode", safeHandler(send_code));
+//   fastify.post("/checkcode", safeHandler(check_code));
+// }
 
 const { disable2fa, create2fa, active2fa, check2faStatus } = _2fa;
 
@@ -95,7 +95,7 @@ module.exports = {
   UserRoutes,
   FriendRoutes,
   OauthRoutes,
-  checkCodeRoutes,
+  // checkCodeRoutes,
   _2faRoutes,
   checksRoutes,
   NotificationRoutes,
