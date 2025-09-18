@@ -8,7 +8,7 @@ const Cookies = require("../../util/cookie");
 const { logger } = require("../../util/logger");
 
 const redirect = async (req, reply) => {
-  const redirectURL = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}`;
+  const redirectURL = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&scope=user:email`;
   reply.redirect(redirectURL);
 };
 
@@ -42,21 +42,27 @@ const handleAuthCallback = async (req, reply) => {
     return reply.status(401).send({ error: "Invalid GitHub code" });
   }
 
-  const userRes = await request("https://api.github.com/user", {
+  const emails = await request("https://api.github.com/user/emails", {
     headers: {
       Authorization: `Bearer ${tokenData.access_token}`,
       "User-Agent": "ft_transcendence",
     },
   });
+  const userRes = await request("https://api.github.com/user", {
+    headers: {
+      Authorization: `Bearer ${tokenData.access_token}`,
+      "User-Agent": "ft_transcendence",
+    }
+  });
 
   const userData = await userRes.body.json();
+  const parsedemails = await emails.body.json();
   const {
     login: username,
     avatar_url: avatarUrl,
-    email,
     id,
   } = userData;
-
+  const email = parsedemails.length > 0 && parsedemails[0].email;
   try {
     const user = await db.User.findOne({
       where: {
@@ -93,13 +99,13 @@ const handleAuthCallback = async (req, reply) => {
       { expiresIn: TIME_TOKEN_EXPIRATION }
     );
     if (!token) {
-      logger(req, "ERROR", "githubOauth", login, true, "tokenGenerationFailed", req.cookies?.token || null);
+      logger(req, "ERROR", "githubOauth", user.username, true, "tokenGenerationFailed", req.cookies?.token || null);
       return reply.status(500).send({ error: "Failed to generate token" });
     }
     if (created) {
-      logger(req, "INFO", "register", login, true, "GithubOAuth", req.cookies?.token || null);
+      logger(req, "INFO", "register", user.username, true, "GithubOAuth", req.cookies?.token || null);
     } else {
-      logger(req, "INFO", "login", login, true, "GithubOAuth", req.cookies?.token || null);
+      logger(req, "INFO", "login", user.username, true, "GithubOAuth", req.cookies?.token || null);
     }
     return Cookies(reply, token, user.id).redirect(process.env.HOME_PAGE);
 

@@ -5,11 +5,10 @@ const path = require('path');
 const Sequelize = require('sequelize');
 const basename = path.basename(__filename);
 const db = {};
-// const BetterSQLite3 = require("better-sqlite3");
 const sequelize = new Sequelize({
   dialect: 'sqlite',
   storage: path.join(__dirname, '../database.sqlite'),
-  logging: true,
+  logging: false,
 });
 
 fs
