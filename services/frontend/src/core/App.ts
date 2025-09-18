@@ -24,6 +24,7 @@ import { Background } from "../components/chat_front/background";
 import { ChatService } from "../components/chat_front/ChatLayouts";
 import { OverviewSettings } from "../components/settings/OverviewSettings";
 import { ProfilePage } from "../components/settings/ProfilePage";
+import { Leaderboard } from "../components/home/LeaderboardPage";
 
 
 
@@ -267,7 +268,9 @@ this.router.addRoute('/profile/:username', (params) => {
   console.log("Routing to profile of:", params?.username);
   return this.createFunctionalComponent(ProfilePage, { username: params?.username });
 });
-
+this.router.addRoute("/Leaderboard", () => 
+  this.createFunctionalComponent(Leaderboard)
+);
 this.router.addRoute("/Chat-Friend", () => 
   this.createFunctionalComponent(ChatService)
 );

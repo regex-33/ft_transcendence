@@ -84,6 +84,11 @@ export const Header: ComponentFunction = () => {
     window.history.pushState({}, '', '/Chat-Friend');
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
+   const handleLeaderboardClick = (e: Event) => {
+    e.preventDefault();
+    window.history.pushState({}, '', '/Leaderboard');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
   
   return (
     <header
@@ -105,8 +110,8 @@ export const Header: ComponentFunction = () => {
                   <h2 className="text-xl font-semibold">The Game</h2>
                 </a>
 
-     
-      <div className="hidden sm:flex items-center justify-around w-1/2  md:px-2 h-[64px] relative left-12 top-1">
+
+      <div className="hidden sm:flex items-center justify-around w-1/2  md:px-2 h-[64px]  relative left-12 top-1">
         <nav className="flex gap-3 md:gap-3 flex-none justify-center mr-[180px] min-w-0">
 
         
@@ -139,12 +144,18 @@ export const Header: ComponentFunction = () => {
             <img src="/images/home-assests/game-icon.svg" alt="game" className="w-6 h-6 md:w-10 md:h-10" />
           </button>
         </div>
+        <div className="min-w-0">
+           <a  onClick={handleLeaderboardClick}>
+          <button className="flex items-center gap-2   md:px-3 py-0  -mt-[2px]  overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95">
+            <img src="/images/home-assests/leaderboard-icon.svg" alt="leaderboard" className="w-10 h-10 md:w-[55px] md:h-[55px]" />
+          </button>
+          </a>
+        </div>
         </nav>
-
         <div className="min-w-0">
           <button
             onClick={handleLogout}
-           className="flex items-center gap-2    py-1   ml-28 overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95">
+           className="flex items-center gap-2    py-1   ml-25 overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95">
             <img src="/images/home-assests/logout-icon.svg" alt="logout" className="w-6 h-6 md:w-10 md:h-10" />
           </button>
         </div>

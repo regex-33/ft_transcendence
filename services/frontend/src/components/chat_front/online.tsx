@@ -5,6 +5,7 @@ interface Friend {
   id: number;
   name: string;
   image: string;
+  online?: boolean;
 }
 
 interface GetUserProps {
@@ -17,10 +18,12 @@ export const GetUser: ComponentFunction<GetUserProps> = ({ data_friend, name_fri
     console.log("map khawian");
     return <div></div>;
   } 
-  
+  // Show only online friends when the flag exists; otherwise show all
+  const onlineOnly = data_friend.filter((u) => (typeof u.online === 'boolean' ? u.online : true));
+
   return (
     <div className="flex flex-col items-center gap-4">
-      {data_friend.map((user) => (
+      {onlineOnly.map((user) => (
         <button
           key={user.id}
           onClick={() =>
@@ -30,10 +33,16 @@ export const GetUser: ComponentFunction<GetUserProps> = ({ data_friend, name_fri
               image: user.image
             })
           }
-          className="w-[60%] h-[60%] rounded-full flex items-center justify-center overflow-hidden hover:drop-shadow-[0_0_10px_white]"
+          className="relative w-[60%] aspect-square flex items-center justify-center hover:drop-shadow-[0_0_10px_white]"
+          style={{
+            backgroundImage: 'url("/images/home-assests/cir-online.svg")',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            backgroundSize: 'contain',
+          }}
         >
           <img
-            className="w-full h-full object-cover rounded-full"
+            className="w-[70%] h-[70%] object-cover rounded-full"
             src={user.image || '/images/default-avatar.png'}
             alt={user.name}
           />
@@ -52,11 +61,13 @@ export const Online: ComponentFunction<OnlineProps> = ({ data_friend, name_frien
     return (
       <div>
           <div
-              className="absolute top-14% inset-0 bg-sky-custom/35 w-5% h-82%  rounded-lg object-cover  mx-1% overflow-y-auto"  style={{
-                  scrollbarWidth: 'thin',
-                  scrollbarColor: '#659EAC transparent',
-                  msOverflowStyle: 'auto',
-                }}>
+              className="absolute top-14% inset-0 bg-sky-custom/35 w-5% h-82%  rounded-lg object-cover  mx-1% overflow-y-auto"
+              style={{
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#659EAC transparent',
+                msOverflowStyle: 'auto',
+              }}
+            >
              <GetUser data_friend = {data_friend} name_friend = {name_friend}/>
           </div>
           <img src='images/chat/icon_online.png' alt="icon online" className=" absolute top-12% mx-4% h-2.5% w-1.5% "></img>
