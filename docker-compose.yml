@@ -1,20 +1,5 @@
 version: '3.8'
 services:
-  game-service:
-    build:
-      context: ./services/game-service
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    image: game-service
-    pull_policy: build
-    ports:
-      - "9000:3000"
-    volumes:
-        - ./services/game-service/src:/game-service/src
-    networks:
-      - transcendence-network
-    container_name: game-service
-
   frontend:
     build:
       context: ./services/frontend
@@ -39,6 +24,8 @@ services:
 
       # - REACT_APP_API_URL=http://localhost:${NGINX_PORT:-8080}/api
     command: sh -c "npm install && npm run dev"
+    depends_on:
+      - nginx
     networks:
       - transcendence-network
     profiles: ["frontend", "dev"]

@@ -41,7 +41,9 @@ all: test-up
 .PHONY: test-up
 test-up:
 	@echo "Starting test environment..."
-	docker compose -f docker-compose.yml --profile dev up -d
+	docker-compose -f docker-compose.yml --profile dev up 
+	@echo "Waiting for services to start..."
+	sleep 10
 	@echo "Services should be running on:"
 	@echo "  - Frontend: http://localhost:${FRONTEND_PORT}"
 	@echo "  - Nginx Proxy: http://localhost:${NGINX_PORT}"
@@ -52,32 +54,22 @@ test-up:
 .PHONY: test-down
 test-down:
 	@echo "Stopping test environment..."
-	docker compose -f docker-compose.yml --profile dev down
+	docker-compose -f docker-compose.yml --profile dev down
 
 .PHONY: test-logs
 test-logs:
-	docker compose -f docker-compose.yml --profile dev logs -f
+	docker-compose -f docker-compose.yml --profile dev logs -f
 
 .PHONY: test-status
 test-status:
 	@echo "Checking service status..."
-	docker compose -f docker-compose.yml --profile dev ps
+	docker-compose -f docker-compose.yml --profile dev ps
 
-test-api:
-	@echo "Testing API endpoints..."
-	@chmod +x ./Regex-Scripts/test-connection.sh
-	@./Regex-Scripts/test-connection.sh
-
-clean-test:
-	@echo "Cleaning up test environment..."
-	@docker compose -f docker-compose.yml --profile dev down -v
-	@chmod +x ./Regex-Scripts/remove.sh
-	@./Regex-Scripts/remove.sh
-
+.PHONY: rebuild-test
 rebuild-test:
 	@echo "Rebuilding test services..."
-	docker compose -f docker-compose.yml --profile dev build --no-cache
-	docker compose -f docker-compose.yml --profile dev up -d
+	docker-compose -f docker-compose.yml --profile dev build --no-cache
+	docker-compose -f docker-compose.yml --profile dev up
 
 rebuild-service:
 	@echo "Rebuilding specific service..."
