@@ -5,21 +5,7 @@ const Cookies = require("../../util/cookie");
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
 const { logger } = require("../../util/logger");
 const speakeasy = require("speakeasy");
-
-const validateInputs = (req, username, password) => {
-  if (!username || !password) {
-    return { valid: false, message: "Username and password are required." };
-  }
-  if (username.length < 3 || password.length < 6) {
-    return {
-      valid: false,
-      message:
-        "Username must be at least 3 characters and password at least 6 characters long.",
-    };
-  }
-  return { valid: true };
-};
-
+const { usernamevalid, passwordvalid } = require("../../util/validaters");
 const login = async (request, reply) => {
   try {
     if (!request.body) {
@@ -29,11 +15,9 @@ const login = async (request, reply) => {
     }
 
     const { username, password, twoFA: code } = request.body;
-    const validation = validateInputs(request, username, password);
 
-    if (!validation.valid) {
-
-      return reply.status(400).send({ error: validation.message });
+    if (!usernamevalid(username) || !passwordvalid(password)) {
+      return reply.status(400).send({ error: "Invalid username or password format." });
     }
     try {
       const user = await db.User.findOne({ where: { username } });

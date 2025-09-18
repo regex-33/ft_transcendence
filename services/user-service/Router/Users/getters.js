@@ -1,6 +1,6 @@
 const db = require("../../models");
 const checkAuthJWT = require("../../util/checkauthjwt");
-
+const { usernamevalid} = require("../../util/validaters");
 /**
    * return user obj,
    * get user by username
@@ -9,13 +9,13 @@ const getbyusername = async (request, reply) => {
   const { check ,payload} = await checkAuthJWT(request, reply);
   if (check) return check;
 
-  if (!request.params || !request.params.username) {
+  if (!request.params ) {
     return reply.status(400).send({ error: "Username is required." });
   }
 
   const { username } = request.params;
 
-  if (!username || typeof username !== "string" || username.length < 3) {
+  if (!usernamevalid(username)) {
     return reply.status(400).send({ error: "Invalid username format." });
   }
 

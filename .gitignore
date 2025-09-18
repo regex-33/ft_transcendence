@@ -4,3 +4,4 @@ debugging-scripts/nots.md
 node_modules
 secrets/vault-certs
 uploads
+*.sqlite

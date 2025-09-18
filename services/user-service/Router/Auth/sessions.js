@@ -17,7 +17,7 @@ const getSessions = async (req, res) => {
     });
 
     const sessionData = sessions.map(session => ({
-      sessionId: session.SessionId,
+      id: session.SessionId,
       lastActive: session.updatedAt,
       isActive: session.counter > 0
     }));
@@ -43,7 +43,7 @@ const terminateSession = async (req, res) => {
       return res.status(400).send({ error: "Session ID is required" });
     }
 
-    
+
     const session_ = await db.Session.findOne({
       where: {
         SessionId: sessionId,
@@ -55,18 +55,12 @@ const terminateSession = async (req, res) => {
       return res.status(404).send({ error: "Session not found" });
     }
 
-    
+
     if (session && session.id === parseInt(sessionId)) {
       return res.status(400).send({ error: "Cannot terminate your current session" });
     }
 
-    
-    await db.Session.destroy({
-      where: {
-        id: sessionId,
-        userId: id
-      }
-    });
+    await session_.destroy();
     logger(req, "INFO", "terminateSession", username, true, null, req.cookies?.token || null);
     res.status(200).send({ message: "Session terminated successfully" });
   } catch (err) {
@@ -82,12 +76,12 @@ const terminateAllOtherSessions = async (req, res) => {
     if (check) return check;
     req.user = payload;
     const { id, username } = req.user;
-    
-    
+
+
     await db.Session.destroy({
       where: {
         userId: id,
-        id: { [db.Sequelize.Op.ne]: session.sessionId } 
+        id: { [db.Sequelize.Op.ne]: session.sessionId }
       }
     });
 

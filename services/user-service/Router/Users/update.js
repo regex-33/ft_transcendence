@@ -4,7 +4,7 @@ const checkAuthJWT = require("../../util/checkauthjwt");
 const multer = require("../../util/Multer");
 const bcrypt = require("bcrypt");
 const { logger } = require("../../util/logger");
-
+const valid = require("../../util/validaters");
 const update = async (req, res) => {
   const { check, payload } = await checkAuthJWT(req, res);
   if (check) return check;
@@ -71,9 +71,9 @@ const updateBirthday = async (req, res, payload) => {
 const updateUser = async (req, res, payload) => {
   const { id } = payload;
   const { username } = req.body;
-  if (!username || username.length <= 2) {
+  if (!valid.usernamevalid(username)) {
     return res.status(400).send({
-      error: "Username must be at least 3 characters long.",
+      error: "Invalid username format.",
     });
   }
 
@@ -98,9 +98,9 @@ const updateUser = async (req, res, payload) => {
 const updateEmail = async (req, res, payload) => {
   const { id } = payload;
   const { email } = req.body;
-  if (!email || !(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) || email.length <= 2) {
+  if (!valid.emailvalid(email)) {
     return res.status(400).send({
-      error: "Invalid email format or too short.",
+      error: "Invalid email format.",
     });
   }
 
@@ -128,9 +128,9 @@ const updatePassword = async (req, res) => {
   if (check) return check;
   const { id } = payload;
   const { password } = req.body;
-  if (!password || password.length < 6) {
+  if (!valid.passwordvalid(password)) {
     return res.status(400).send({
-      error: "Password must be at least 6 characters long.",
+      error: "Invalid password format.",
     });
   }
 

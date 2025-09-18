@@ -3,56 +3,18 @@ const jsonwebtoken = require("../../util/jwt");
 const bcrypt = require("bcrypt");
 const Cookies = require("../../util/cookie");
 const { logger  } = require("../../util/logger");
-
+const valid = require("../../util/validaters");
 const jwt_secret = process.env.JWT_SECRET || "your_jwt_secret";
 const time_token_expiration = process.env.TIME_TOKEN_EXPIRATION || "10h";
 
-const validation = (body, reply) => {
-  if (!body) {
-    return reply.status(400).send({ error: "Request body is required" });
-  }
-
-  const { username, password, email } = body;
-
-  if (!username || !password || !email) {
-    return reply
-      .status(400)
-      .send({ error: "Username, password, and email are required" });
-  }
-
-  if (
-    typeof username !== "string" ||
-    typeof password !== "string" ||
-    typeof email !== "string"
-  ) {
-    return reply
-      .status(400)
-      .send({ error: "Username, password, email,   must be strings" });
-  }
-
-  if (
-    username.length < 3 ||
-    password.length < 6 ||
-    !email.includes("@")
-  ) {
-    return reply
-      .status(400)
-      .send({ error: "Invalid username, password, email format" });
-  }
-
-  return null;
-};
-
 const register = async (request, reply) => {
   try {
-    const validationError = validation(request.body, reply);
-    if (validationError) {
-      return validationError;
-    }
 
     const { username, password, email, avatar } = request.body;
     let path = avatar ? avatar.path : `${request.protocol}://${request.headers.host}/uploads/default.jpg`;
-
+    if (!valid.usernamevalid(username) || !valid.passwordvalid(password) || !valid.emailvalid(email)) {
+      return reply.status(400).send({ error: "Invalid username, password, email format" });
+    }
     if (await checkUserExisting(reply, username, email, request)) return;
 
     return await createUser(request, reply, {
