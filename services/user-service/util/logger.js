@@ -1,22 +1,36 @@
-const fs = require('fs')
-const log = (jsonMessage) => {
+const fs = require('fs');
+const log_infile = (jsonMessage) => {
     const logDir = `/var/log/${jsonMessage.service}`;
     if (!fs.existsSync(logDir))
         fs.mkdirSync(logDir, { recursive: true });
     fs.appendFileSync(`${logDir}/${jsonMessage.service}.log`, JSON.stringify(jsonMessage) + '\n');
-    // console.log("hello ", JSON.stringify(jsonMessage) + '\n');
 };
 
 const logger = (req, ...obj) => {
-    if (req)
-        req.object = {
-            ...req?.object,
-            ...obj
-        };
+    try {
+        if (req)
+            log_infile({
+                ...req?.object,
+                ... {
+                    type: obj[0] || 'INFO',
+                    action: obj[1] || 'unknown',
+                    username: obj[2] || 'unknown',
+                    success: obj[3] || false,
+                    error: obj[4] || undefined,
+                    token: obj[5] || undefined,
+                },
+                service: (obj[1] == 'FileSaving') ? 'file-service' : "user-service",
+                response: {
+                    statusCode: obj[6] || 200,
+                    duration: Date.now() - req.object.startTime,
+                }
+            });
+    } catch (err) {
+    }
     return req;
 };
 
 module.exports = {
-    log,
+    log_infile,
     logger
 };

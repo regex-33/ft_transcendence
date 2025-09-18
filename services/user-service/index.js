@@ -1,3 +1,5 @@
+const { type } = require("os");
+
 try {
 
 
@@ -9,24 +11,38 @@ try {
   const { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes, NotificationRoutes, AuthRoutes } = require("./Router");
   const logger = require("./util/logger_request");
   const websocket = require('@fastify/websocket')
-  const { log } = require("./util/logger");
+  const { log_infile } = require("./util/logger");
 
   fastify.addHook("onResponse", (req, res, done) => {
+    // console.log(req.object);
     req = logger(req, res);
-    log({
-      ...req.object,
-      request_id: `${req.object.service}-${req.object.username}-${uuidv4()}`,
-      service: "user-service",
-      response: {
-        statusCode: res.statusCode,
-        duration: Date.now() - req.object.startTime,
-      }
-    });
+    // console.log(req.object);
+    // try {
+    //   const newLog = {
+    //     ...req.object,
+    //     request_id: `user-service-${uuidv4()}`,
+    //     service: "user-service",
+    //     response: {
+    //       statusCode: res.statusCode,
+    //       duration: Date.now() - req.object.startTime,
+    //     }
+    //   }
+    // } catch (err) {
+    //   console.log("Error in logging: ", err);
+    // }
+    // console.log("Logging to file: ");
+    // log_infile(newLog);
     done();
   });
   fastify.addHook("onRequest", (req, res, done) => {
     req.object = {
       startTime: Date.now(),
+      username: null,
+      type: null,
+      action: null,
+      success: false,
+      error: null,
+      token: null,
       request: {
         method: req.method,
         url: req.url,
@@ -87,7 +103,7 @@ try {
       });
   }
   connect();
-  
+
 }
 catch (err) {
   console.log(err)

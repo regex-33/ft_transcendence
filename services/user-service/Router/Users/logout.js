@@ -14,5 +14,5 @@ module.exports = async (req, res) => {
     }
     res.clearCookie('token');
     res.clearCookie('session_id');
-    return res.redirect('/login');
+    return res.redirect('/');
 };

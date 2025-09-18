@@ -4,6 +4,7 @@ const logger = async (request, reply) => {
       reply.statusCode
     }`
   );
+  return request;
 };
 
 
