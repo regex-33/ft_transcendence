@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum GameType {
+  SOLO
+  TEAM
+}
+
+enum GameMode {
+  CLASSIC
+  SPEED
+}
+
+enum GameStatus {
+  WAITING
+  LIVE
+  ENDED
+}
+
+model Game {
+  id        String      @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  status GameStatus @default(LIVE)
+  mode GameMode   @default(CLASSIC)
+  type   GameType   @default(SOLO)
+
+  players Player[]
+}
+
+model Player {
+  userId Int @id
+
+  gameId String?
+  points  Int   @default(150)
+  score  Int   @default(0)
+  game   Game? @relation(fields: [gameId], references: [id])
+
+  @@index([gameId])
+}
