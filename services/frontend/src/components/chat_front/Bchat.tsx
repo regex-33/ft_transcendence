@@ -5,12 +5,12 @@ import { useState } from '../../hooks/useState';
 import { useRef } from '../../hooks/useRef';
 import { Online } from './online';
 import { Barre } from './barre_friend';
-
 interface Friend {
   id: number;
   name: string;
   image: string;
 }
+
 
 interface Message {
   text: string;
@@ -30,6 +30,7 @@ export const Bchat: ComponentFunction = () => {
   const [nameFriend, setNameFriend] = useState<Friend | null>(null);
   const [isBlocked, setIsBlocked] = useState<boolean>(false);
   const [allfriend, setallfriend] = useState<Friend[]>([]);
+  const [showinfo, setbareinfo] = useState<boolean>(false)
   useEffect(() => {
     socket.current = new WebSocket('ws://localhost/ws/chat');
     
@@ -92,7 +93,8 @@ export const Bchat: ComponentFunction = () => {
         }]);
       }
 
-      if (data.type === 'pong') return;
+      if (data.type === 'pong') 
+        return;
 
       if (data.type === 'status') {
         if (data.online) setFriends(data.online);
@@ -149,7 +151,7 @@ export const Bchat: ComponentFunction = () => {
       sendMessage({ from: id, to: nameFriend.id }, message);
     }
   };
-
+  
   return (
     <div>
       <div>
@@ -159,8 +161,46 @@ export const Bchat: ComponentFunction = () => {
           </button>
         )}
         {active && <Online data_friend={friends} name_friend={setNameFriend} />}
-        <Barre friend={allfriend} onSelectFriend={setNameFriend} />
+        <Barre 
+            friend={allfriend} 
+            onSelectFriend={setNameFriend} 
+            messages={messages}
+            currentUserId={id}
+          />
       </div>
+      {showinfo && nameFriend && (
+            <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2
+                            w-[300px] bg-chat-send/20
+                            rounded-3xl p-6 shadow-2xl
+                            flex flex-col items-center gap-4 z-50">
+
+              <p className="text-white text-lg font-semibold">
+                Status: 
+                <span className={`ml-2 ${friends.some(f => f.id === nameFriend.id) ? 'text-green-400' : 'text-red-500'}`}>
+                  {friends.some(f => f.id === nameFriend.id) ? 'Online' : 'Offline'}
+                </span>
+              </p>
+
+              <div className="flex flex-row items-center justify-center gap-3 w-full">
+                
+                {[
+                  { src: "/images/chat/close.png", alt: "close", onClick: () => setbareinfo(false) },
+                  { src: "/images/chat/profilchat.png", alt: "profilchat", onClick: () => {/* open profile */} },
+                  { src: "/images/chat/gamechat.png", alt: "chatgame", onClick: () => {/* invite game */} },
+                ].map((btn, i) => (
+                  <button 
+                    key={i}
+                    className="flex-1 flex items-center justify-center rounded-xl shadow hover:bg-white/90 transition p-2"
+                    onClick={btn.onClick}
+                  >
+                    <img className="h-8 w-8 object-contain" src={btn.src} alt={btn.alt} />
+                  </button>
+                ))}
+
+              </div>
+            </div>
+      )}
+
 
       <div className="absolute w-[65%] h-[82%] top-[14%] left-[28%] m-[0.1%]">
         <img className='w-full h-full object-cover rounded-2xl' src="/images/src-image/backg_chat.png" alt='background chat' />
@@ -169,16 +209,13 @@ export const Bchat: ComponentFunction = () => {
           <h2 className='ml-[5%] top-[15%] absolute font-poppins font-semibold w-full h-full text-white'>
             {nameFriend ? nameFriend.name : ""}
           </h2>
-          <img 
-            className='absolute top-[3%] rounded-3xl h-full' 
-            src={nameFriend ? nameFriend.image : "/images/chat/lock.png"} 
-            alt='avatar' 
-          />
-          <img 
-            src='/images/chat/icon_friend.png' 
-            alt='icon friend' 
-            className='relative top-[6%] w-[2.5%] h-[80%] ml-[96.5%]' 
-          />
+          <button onClick={()=>nameFriend ? setbareinfo(!showinfo) : setbareinfo(showinfo)}>
+            <img 
+              className='absolute top-[3%] rounded-3xl h-full' 
+              src={nameFriend ? nameFriend.image : "/images/chat/lock.png"} 
+              alt='avatar' 
+            />
+          </button>
         </div>
 
         <div 

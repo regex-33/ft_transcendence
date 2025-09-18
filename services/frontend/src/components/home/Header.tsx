@@ -5,10 +5,55 @@ import { h } from '../../vdom/createElement';
 import { ComponentFunction } from "../../types/global";
 import { useEffect } from "../../hooks/useEffect";
 import { Bchat } from "../chat_front/Bchat";
+import { useState } from '../../hooks/useState';
+
 
 export const Header: ComponentFunction = () => {
   const modalManager = useModalManager();
-  
+  const [hasNotif, setHasNotif] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const resUser = await fetch('http://localhost/api/chat/me', {
+          credentials: 'include',
+          method: "GET",
+        });
+        if (!resUser.ok) 
+          throw new Error('Cannot fetch user');
+        const user = await resUser.json();
+        setUserId(user.id);
+        localStorage.setItem('userId', user.id);
+        console.log("data user for notif is : ", user);
+      } catch (error) {
+        console.log("error is : ", error);
+      }
+    };
+    fetchUserId();
+  }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const notificationSocket = new WebSocket('ws://localhost:8002/ws/chat');
+
+    notificationSocket.onopen = () => {
+      console.log("Notification WebSocket connected");
+      notificationSocket.send(JSON.stringify({ type: 'notification', id: userId }));
+    };
+
+    notificationSocket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.notif === true) {
+        console.log("ja message jdid");
+        setHasNotif(true);
+      }
+    };
+
+    return () => {
+      notificationSocket.close();
+    };
+  }, [userId]);
   const handleLogout = async () => {
     try {
       await fetch(
@@ -81,8 +126,10 @@ export const Header: ComponentFunction = () => {
           <a  onClick={handleChatClick}>
             <img src="/images/home-assests/chat-icon.svg" alt="chat" className="w-6 h-6 md:w-10 md:h-10" />
           </a>
+          {hasNotif && (
+                <span className="absolute top-3 right-5 block h-2 w-2 rounded-full bg-red-600 animate-ping"></span>
+            )}
           </button>
-          <span className="absolute top-3 right-5 block h-[6px] w-[6px] rounded-full bg-red-500 transition-transform duration-200 hover:scale-95 "></span>
         </div>
 
         <Search modalManager={modalManager} />
