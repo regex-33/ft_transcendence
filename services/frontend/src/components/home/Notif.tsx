@@ -3,7 +3,7 @@ import { ComponentFunction } from "../../types/global";
 import { useEffect } from '../../hooks/useEffect';
 import { useState } from '../../hooks/useState';
 import { useRef } from '../../hooks/useRef';
-
+import { ws } from '../../main';
 type Friend = {
   id: number;
   username: string;
@@ -18,27 +18,29 @@ interface NotificationPanelProps {
     closeModal: () => void;
     isModalOpen: (modal: 'search' | 'notification') => boolean;
   };
-  open: boolean;
 }
 
-export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ modalManager, open }) => {
+export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ modalManager }) => {
   const [pendingFriends, setPendingFriends] = useState<Friend[]>([]);
   const [showAll, setShowAll] = useState(false);
 
   const fetchPendingFriends = async () => {
     try {
-      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/pending-friends`, { credentials: 'include' });
-  
+      const response = await fetch(
+        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/pending-friends`,
+        { credentials: 'include' }
+      );
+
       if (!response.ok) {
         throw new Error('Failed to fetch pending friends');
       }
-  
+
       const data = await response.json();
-  
+
       const friendsArray: Friend[] = Array.isArray(data)
         ? data.map((f: any) => ({ ...f, status: 'pending' }))
         : [];
-  
+
       setPendingFriends(friendsArray);
     } catch (err) {
       console.error('Error fetching pending friends:', err);
@@ -47,14 +49,14 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
   };
 
   useEffect(() => {
-    if (open) {
+    if (modalManager.isModalOpen('notification')) {
       fetchPendingFriends();
     }
-  }, [open]);
+  }, [modalManager.isModalOpen('notification')]);
 
   const handleFriendAction = async (username: string, action: 'accept' | 'decline') => {
     try {
-      const response = await fetch('/api/friends/actions', {
+      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -72,7 +74,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
   const renderActionButton = (friend: Friend) => {
     return (
       <div className="flex gap-2">
-        <button 
+        <button
           onClick={(e: MouseEvent) => {
             e.preventDefault();
             e.stopPropagation();
@@ -83,7 +85,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
           <i className="fa-solid fa-check text-sm"></i>
           <span>Accept</span>
         </button>
-        <button 
+        <button
           onClick={(e: MouseEvent) => {
             e.preventDefault();
             e.stopPropagation();
@@ -98,13 +100,13 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
     );
   };
 
-  const displayUsers = showAll 
-    ? (Array.isArray(pendingFriends) ? pendingFriends : []) 
-    : (Array.isArray(pendingFriends) ? pendingFriends.slice(0,4) : []);
+  const displayUsers = showAll
+    ? (Array.isArray(pendingFriends) ? pendingFriends : [])
+    : (Array.isArray(pendingFriends) ? pendingFriends.slice(0, 4) : []);
 
   return (
-    <div 
-      className={`absolute top-[58px] -right-40 mt-2 w-96 h-96 bg-[#5D9FA9] opacity-95 rounded-lg shadow-xl flex flex-col z-[9999] ${open ? '' : 'hidden'}`}
+    <div
+      className="absolute top-[58px] -right-40 mt-2 w-96 h-96 bg-[#5D9FA9] opacity-95 rounded-lg shadow-xl flex flex-col z-[9999]"
       onClick={(e: MouseEvent) => e.stopPropagation()}
     >
       <div className="p-4 border-b border-[#4E92A2] bg-[#5D9FA9] text-white rounded-t-lg">
@@ -137,7 +139,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 
       {pendingFriends.length > 4 && (
         <div className="p-3 border-t border-[#4E92A2] text-center">
-          <button 
+          <button
             onClick={(e: MouseEvent) => {
               e.preventDefault();
               e.stopPropagation();
@@ -164,13 +166,18 @@ interface NotificationButtonProps {
 
 export const NotificationButton: ComponentFunction<NotificationButtonProps> = ({ modalManager }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [redpoint, setRedpoint] = useState(false);
+  ws.onmessage = (event: MessageEvent) => {
+    console.log(event.data);
+    setRedpoint(event.data == 'start');
+  }
 
   const showNotif = modalManager.isModalOpen('notification');
 
   const handleButtonClick = (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (showNotif) {
       modalManager.closeModal();
     } else {
@@ -184,13 +191,13 @@ export const NotificationButton: ComponentFunction<NotificationButtonProps> = ({
 
     const handleClickOutside = (e: Event) => {
       const target = e.target as Element;
-      
+
       if (containerRef.current && !containerRef.current.contains(target)) {
         modalManager.closeModal();
       }
     };
 
-
+    // Add a small delay to prevent immediate closing
     const timeoutId = setTimeout(() => {
       document.addEventListener('click', handleClickOutside, true);
     }, 50);
@@ -203,14 +210,20 @@ export const NotificationButton: ComponentFunction<NotificationButtonProps> = ({
 
   return (
     <div className="relative" ref={containerRef}>
-      <button 
-        type="button"
-        onClick={handleButtonClick}
+      <button
+        onClick={(e: MouseEvent) => { handleButtonClick(e); setRedpoint(false); }}
         className="flex items-center gap-2 md:px-3 py-1 overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95"
       >
         <img src="/images/home-assests/notif-icon.svg" alt="notif" className="w-6 h-6 md:w-10 md:h-10" />
+        {
+          redpoint && (
+            <span className="absolute top-0 right-0 block w-3 h-3 bg-red-600 border-2 border-white rounded-full animate-ping"></span>
+          )
+        }
       </button>
-      <NotificationPanel modalManager={modalManager} open={showNotif} />
+      {showNotif && (
+        <NotificationPanel modalManager={modalManager} />
+      )}
     </div>
   );
 };

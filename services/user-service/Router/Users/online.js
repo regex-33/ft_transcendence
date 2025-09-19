@@ -68,6 +68,12 @@ async function onlineTracker(ws, req) {
             return;
         };
         const internalPing = setInterval(async () => {
+            {
+                const not = await db.Notification.findAll({ where: { userId: payload.id, readed: false } });
+                if (not.length >= 0) {
+                    ws.send((not.length && "start") || "stop");
+                }
+            }
             try {
                 await session.reload();
             }
@@ -85,7 +91,7 @@ async function onlineTracker(ws, req) {
             } catch (err) {
                 console.log("WebSocket ping error:", err);
             }
-        }, 30000);
+        }, 500);
         ws.on("pong", () => {
             active = true;
         });

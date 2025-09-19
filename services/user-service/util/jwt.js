@@ -62,7 +62,6 @@ const verify = async (token, secret, callback) => {
         return await callback("token expired", payload);
     }
     if (header.exp && Number(header.exp) < Math.floor(Date.now() / 1000)) {
-        console.log(`======================token expired for ${id}======================`);
         new_token = sign(payload, JWT_SECRET, { expiresIn: TIME_TOKEN_EXPIRATION });
     }
     return await callback(null, { payload, new_token });

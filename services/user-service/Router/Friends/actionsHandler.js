@@ -4,6 +4,7 @@ const cancelFriendRequest = require("./cancel");
 const unblockAction = require("./unblock");
 const blockUser = require("./block");
 const db = require("../../models");
+const { Op } = require('sequelize');
 const actionsHandler = async (req, reply) => {
   try {
     const { check, payload } = await checkAuthJWT(req, reply);
@@ -31,8 +32,10 @@ const actionsHandler = async (req, reply) => {
     // Remove any existing friend request notifications between the two users
     await db.Notification.destroy({
       where: {
-        userId: payload.id,
-        notifierId: friend.id,
+        [Op.or]:[
+          { userId: userId, notifierId: friend.id },
+          { userId: friend.id, notifierId: userId }
+        ],
         type: 'FRIEND_REQUEST'
       }
     });
