@@ -41,7 +41,6 @@ export const Barre: ComponentFunction<BarreProps> = ({
   });
 
   const filteredFriends = friendsArray.filter(f => {
-    // Ensure both f.name and inputV are strings before calling toLowerCase
     const friendName = f.name ? String(f.name).toLowerCase() : "";
     const searchValue = inputV ? String(inputV).toLowerCase() : "";
     return friendName.includes(searchValue);
@@ -68,7 +67,6 @@ export const Barre: ComponentFunction<BarreProps> = ({
 
   function handleFriendSelect(user: Friend) {
     onSelectFriend(user);
-    setsearch(false);
     setInput("");
   }
 
