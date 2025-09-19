@@ -18,18 +18,16 @@ interface NotificationPanelProps {
     closeModal: () => void;
     isModalOpen: (modal: 'search' | 'notification') => boolean;
   };
+  open: boolean;
 }
 
-export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ modalManager }) => {
+export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ modalManager, open }) => {
   const [pendingFriends, setPendingFriends] = useState<Friend[]>([]);
   const [showAll, setShowAll] = useState(false);
 
   const fetchPendingFriends = async () => {
     try {
-      const response = await fetch(
-        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/pending-friends`,
-        { credentials: 'include' }
-      );
+      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/pending-friends`, { credentials: 'include' });
   
       if (!response.ok) {
         throw new Error('Failed to fetch pending friends');
@@ -49,14 +47,14 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
   };
 
   useEffect(() => {
-    if (modalManager.isModalOpen('notification')) {
+    if (open) {
       fetchPendingFriends();
     }
-  }, [modalManager.isModalOpen('notification')]);
+  }, [open]);
 
   const handleFriendAction = async (username: string, action: 'accept' | 'decline') => {
     try {
-      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
+      const response = await fetch('/api/friends/actions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -106,7 +104,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 
   return (
     <div 
-      className="absolute top-[58px] -right-40 mt-2 w-96 h-96 bg-[#5D9FA9] opacity-95 rounded-lg shadow-xl flex flex-col z-[9999]"
+      className={`absolute top-[58px] -right-40 mt-2 w-96 h-96 bg-[#5D9FA9] opacity-95 rounded-lg shadow-xl flex flex-col z-[9999] ${open ? '' : 'hidden'}`}
       onClick={(e: MouseEvent) => e.stopPropagation()}
     >
       <div className="p-4 border-b border-[#4E92A2] bg-[#5D9FA9] text-white rounded-t-lg">
@@ -192,7 +190,7 @@ export const NotificationButton: ComponentFunction<NotificationButtonProps> = ({
       }
     };
 
-    // Add a small delay to prevent immediate closing
+
     const timeoutId = setTimeout(() => {
       document.addEventListener('click', handleClickOutside, true);
     }, 50);
@@ -206,14 +204,13 @@ export const NotificationButton: ComponentFunction<NotificationButtonProps> = ({
   return (
     <div className="relative" ref={containerRef}>
       <button 
+        type="button"
         onClick={handleButtonClick}
         className="flex items-center gap-2 md:px-3 py-1 overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95"
       >
         <img src="/images/home-assests/notif-icon.svg" alt="notif" className="w-6 h-6 md:w-10 md:h-10" />
       </button>
-      {showNotif && (
-        <NotificationPanel modalManager={modalManager} />
-      )}
+      <NotificationPanel modalManager={modalManager} open={showNotif} />
     </div>
   );
 };

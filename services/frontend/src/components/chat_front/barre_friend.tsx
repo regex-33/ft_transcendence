@@ -1,4 +1,3 @@
-
 import { h } from '../../vdom/createElement';
 import { ComponentFunction } from "../../types/global";
 import { useState } from '../../hooks/useState';
@@ -32,21 +31,27 @@ export const Barre: ComponentFunction<BarreProps> = ({
   const [inputV, setInput] = useState<string>("");
   const [friendl, setFriendl] = useState<boolean>(false);
   const [search, setsearch] = useState<boolean>(false);
-  
-  const friendsWithConversations = friend.filter(f => {
+
+  const friendsArray = Array.isArray(friend) ? friend : [];
+  const friendsWithConversations = friendsArray.filter(f => {
     return messages.some(msg => 
       (msg.from === currentUserId && msg.to === f.id) || 
       (msg.from === f.id && msg.to === currentUserId)
     );
   });
 
-  const filteredFriends = friend.filter(f => 
-    f.name.toLowerCase().includes(inputV.toLowerCase())
-  );
+  const filteredFriends = friendsArray.filter(f => {
+    // Ensure both f.name and inputV are strings before calling toLowerCase
+    const friendName = f.name ? String(f.name).toLowerCase() : "";
+    const searchValue = inputV ? String(inputV).toLowerCase() : "";
+    return friendName.includes(searchValue);
+  });
 
   function getInput(event: Event) {
-    const target = event.target as HTMLInputElement;
-    setInput(target.value);
+    const target = event.target as HTMLInputElement | null;
+    if (target) {
+      setInput(target.value || ""); 
+    }
   }
 
   function changeBlock() {
