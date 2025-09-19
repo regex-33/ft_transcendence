@@ -217,7 +217,7 @@ export const NotificationButton: ComponentFunction<NotificationButtonProps> = ({
         <img src="/images/home-assests/notif-icon.svg" alt="notif" className="w-6 h-6 md:w-10 md:h-10" />
         {
           redpoint && (
-            <span className="absolute top-0 right-0 block w-3 h-3 bg-red-600 border-2 border-white rounded-full animate-ping"></span>
+            <span className="absolute top-2 right-4 block w-3 h-3 bg-red-600 border-2 border-white rounded-full animate-ping"></span>
           )
         }
       </button>

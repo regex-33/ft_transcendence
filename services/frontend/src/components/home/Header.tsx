@@ -132,7 +132,7 @@ export const Header: ComponentFunction = () => {
             <img src="/images/home-assests/chat-icon.svg" alt="chat" className="w-6 h-6 md:w-10 md:h-10" />
           </a>
           {hasNotif && (
-                <span className="absolute top-3 right-5 block h-2 w-2 rounded-full bg-red-600 animate-ping"></span>
+               <span className="absolute top-2 right-4 block w-3 h-3 bg-red-600 border-2 border-white rounded-full animate-ping"></span>
             )}
           </button>
         </div>
