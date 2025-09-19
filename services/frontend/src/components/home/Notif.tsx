@@ -197,7 +197,7 @@ export const NotificationButton: ComponentFunction<NotificationButtonProps> = ({
       }
     };
 
-    // Add a small delay to prevent immediate closing
+    // Add a small delay to prevent immediate closing when opening
     const timeoutId = setTimeout(() => {
       document.addEventListener('click', handleClickOutside, true);
     }, 50);
