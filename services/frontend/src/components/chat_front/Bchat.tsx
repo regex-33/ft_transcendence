@@ -211,7 +211,7 @@ export const Bchat: ComponentFunction = () => {
           </h2>
           <button onClick={()=>nameFriend ? setbareinfo(!showinfo) : setbareinfo(showinfo)}>
             <img 
-              className='absolute top-2 left-2 rounded-full h-11 w-11' 
+              className='absolute top-2 left-2 rounded-full h-10 w-10' 
               src={nameFriend ? nameFriend.image : "/images/chat/lock.png"} 
               alt='avatar' 
             />
