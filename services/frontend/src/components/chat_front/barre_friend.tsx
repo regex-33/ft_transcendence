@@ -114,7 +114,7 @@ export const Barre: ComponentFunction<BarreProps> = ({
                                       hover:border hover:border-white hover:bg-white/10 
                                       focus:outline-none active:scale-95 w-100% h-[10%]">
                                 <img
-                                  className="rounded-2xl w-10% h-70%"
+                                  className="rounded-full w-10 h-10"
                                   src={user.image}
                                   alt={user.name}
                                 />
@@ -145,7 +145,7 @@ export const Barre: ComponentFunction<BarreProps> = ({
               )}
 
               <div 
-                className="absolute top-[25%] left-[5%] w-[90%] h-[60%] overflow-y-auto" 
+                className="absolute top-[25%] left-[5%] w-[90%] h-[75%] overflow-y-auto" 
                 style={{
                   scrollbarWidth: 'thin',
                   scrollbarColor: '#4D8995 transparent',
@@ -182,7 +182,7 @@ export const GetListFriend: ComponentFunction<GetListFriendProps> = ({ friends, 
                        focus:outline-none active:scale-95"
           >
             <img
-              className="rounded-full w-[15%] h-[15%]"
+              className="rounded-full w-10 h-10"
               src={user.image}
               alt={user.name}
             />
