@@ -257,9 +257,9 @@ export const FriendsSettings: ComponentFunction = () => {
                   style={{ backgroundImage: "url('/images/setting-assests/bg-friends.svg')" }}
                 >
                   <div className="flex flex-col items-center justify-center h-full">
-                    
-                    <div className="relative w-[100px] h-[100px] flex-shrink-0 mt-10"
-                   onClick={(e: Event) => handleProfileClick(friend.username, e)}
+
+                    <div className="relative w-[100px] h-[100px] flex-shrink-0 mt-10 transition-transform duration-200 hover:scale-95"
+                     onClick={(e: Event) => handleProfileClick(friend.username, e)}
                     >
                       {friend.status === 'friend' ? (
                         <div
