@@ -61,8 +61,17 @@ export const ChatPanel: ComponentFunction = () => {
         console.error('Error fetching friends:', err);
       } 
     };
-
     fetchFriends();
+
+    //every 5 seconds
+    const intervalId = setInterval(() => {
+      fetchFriends();
+    }, 5000);
+
+    // Cleanup function to clear interval when component unmounts
+    return () => {
+      clearInterval(intervalId);
+    };
   }, []);
 
   const friendColumns = chunk(friends, 2);
