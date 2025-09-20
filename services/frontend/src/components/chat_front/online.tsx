@@ -18,7 +18,7 @@ export const GetUser: ComponentFunction<GetUserProps> = ({ data_friend, name_fri
     console.log("map khawian");
     return <div></div>;
   } 
-  // Show only online friends when the flag exists; otherwise show all
+
   const onlineOnly = data_friend.filter((u) => (typeof u.online === 'boolean' ? u.online : true));
 
   return (

@@ -57,7 +57,6 @@ function remove_connection(userId, connection)
   if (remaining.length > 0) clients.set(userId, remaining);
   else {
     clients.delete(userId);
-    broadcast_offline(userId);
   }
 }
 
@@ -67,37 +66,6 @@ function set_user_friends(userId, friends)
   userFriends.set(userId, friends.filter(f => !blocked.includes(f.id)));
 }
 
-function broadcast_online(userId) 
-{
-  const friends = userFriends.get(userId) || [];
-  const online_friends = friends.filter(f => clients.has(f.id));
-
-  const userConns = clients.get(userId) || [];
-  userConns.forEach(conn => {
-    conn.send(JSON.stringify({ type: "status", online: online_friends }));
-  });
-
-  online_friends.forEach(friend => {
-    const friendConns = clients.get(friend.id) || [];
-    friendConns.forEach(conn => {
-      const friendList = (userFriends.get(friend.id) || []).filter(f => clients.has(f.id) && f.id !== friend.id);
-      conn.send(JSON.stringify({ type: "status", online: friendList }));
-    });
-  });
-}
-
-function broadcast_offline(userId) 
-{
-  const friends = userFriends.get(userId) || [];
-  friends.forEach(friend => {
-    if (clients.has(friend.id)) {
-      const friendConns = clients.get(friend.id);
-      friendConns.forEach(conn => {
-        conn.send(JSON.stringify({ type: "status", offline: [{ id: userId }] }));
-      });
-    }
-  });
-}
 
 function broadcast_all(data_send) {
   const conns = clients.get(data_send.to) || [];
@@ -196,7 +164,6 @@ fastify.register(async function (fastify){
       if (data.type === 'user-info') {
         connection.userId = data.id;
         add_connection(data.id, connection);
-        broadcast_online(data.id);
       }
       if(data.type == 'notification')
       {

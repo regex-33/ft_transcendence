@@ -80,7 +80,6 @@ export const Bchat: ComponentFunction = () => {
         }
       }, 30000);
     };
-
     socket.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
@@ -92,16 +91,8 @@ export const Bchat: ComponentFunction = () => {
           to: Number(data.to),
         }]);
       }
-
       if (data.type === 'pong') 
         return;
-
-      if (data.type === 'status') {
-        if (data.online) setFriends(data.online);
-        if (data.offline) {
-          setFriends(prev => prev.filter(f => !data.offline.some((off: any) => off.id === f.id)));
-        }
-      }
     };
 
     socket.current.onclose = () => console.log('Disconnected from server');
@@ -138,7 +129,41 @@ export const Bchat: ComponentFunction = () => {
     }
   }
 
-
+  const handleBlockUser = async () => {
+    if (nameFriend && id !== null) {
+      try {
+        const resBlock = await fetch(
+          `http://localhost/api/friends/actions`,
+          {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: nameFriend.name,
+              action: 'block',
+            }),
+          }
+        );
+  
+        if (!resBlock.ok) {
+          alert("Error blocking the user: " + resBlock.statusText);
+          return;
+        }
+  
+        const blockStatus = await resBlock.json();
+        if (blockStatus.success) {
+          setIsBlocked(true);
+          alert("User has been blocked.");
+        } else {
+          alert("Error blocking the user: " + (blockStatus.message || "Unknown error"));
+        }
+      } catch (error) {
+        alert("Error blocking the user: " + error);
+      }
+    }
+  };
+  
+  
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter' && nameFriend && id !== null) {
       sendMessage({ from: id, to: nameFriend.id }, message);
@@ -160,7 +185,7 @@ export const Bchat: ComponentFunction = () => {
             <img src='images/chat/friend.png' alt='friend' />
           </button>
         )}
-        {active && <Online data_friend={friends} name_friend={setNameFriend} />}
+        {/* {active && <Online data_friend={friends} name_friend={setNameFriend} />} */}
         <Barre 
             friend={allfriend} 
             onSelectFriend={setNameFriend} 
@@ -175,10 +200,6 @@ export const Bchat: ComponentFunction = () => {
                             flex flex-col items-center gap-4 z-50">
 
               <p className="text-white text-lg font-semibold">
-                Status: 
-                <span className={`ml-2 ${friends.some(f => f.id === nameFriend.id) ? 'text-green-400' : 'text-red-500'}`}>
-                  {friends.some(f => f.id === nameFriend.id) ? 'Online' : 'Offline'}
-                </span>
               </p>
 
               <div className="flex flex-row items-center justify-center gap-3 w-full">
@@ -187,6 +208,7 @@ export const Bchat: ComponentFunction = () => {
                   { src: "/images/chat/close.png", alt: "close", onClick: () => setbareinfo(false) },
                   { src: "/images/chat/profilchat.png", alt: "profilchat", onClick: () => {/* open profile */} },
                   { src: "/images/chat/gamechat.png", alt: "chatgame", onClick: () => {/* invite game */} },
+                  { src: "/images/chat/block.png", alt: "blockchat", onClick: handleBlockUser  }
                 ].map((btn, i) => (
                   <button 
                     key={i}

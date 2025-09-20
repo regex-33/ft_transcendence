@@ -5,10 +5,10 @@ import { useState } from '../../hooks/useState';
 import { ComponentFunction } from "../../types/global";
 import { useEffect } from '../../hooks/useEffect';
 import { Bchat } from './Bchat';
-
+import { Online } from './online';
+import { Wsonline } from './ws_online';
 
 export const ChatService: ComponentFunction = () => {
-
     return (
        <div
          className="relative flex flex-col overflow-hidden h-screen w-screen"
@@ -26,6 +26,7 @@ export const ChatService: ComponentFunction = () => {
          {/* <div className="relative z-10"> */}
            <Header />
            <Bchat/>
+           <Wsonline/>
          {/* </div> */}
        </div>
      );

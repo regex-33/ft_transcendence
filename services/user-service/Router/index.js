@@ -20,7 +20,8 @@ function safeHandler(handler) {
   return async function wrappedHandler(req, reply) {
     try {
       return await handler(req, reply);
-    } catch (err) {
+    } 
+    catch (err) {
       console.log(err);
       return reply.status(500).send({ error: 'Internal Server Error' });
     }
