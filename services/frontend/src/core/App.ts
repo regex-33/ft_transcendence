@@ -11,8 +11,8 @@ import { useEffect } from "../hooks/useEffect";
 import { useMemo } from "../hooks/useMemo";
 import { useRef } from "../hooks/useRef";
 import { useCallback } from "../hooks/useCallback";
-import { AuthForm } from "../components/examples/AuthForm";
-import { Welcome } from "../components/examples/Welcome";
+import { AuthForm } from "../components/login-welcome/AuthForm";
+import { Welcome } from "../components/login-welcome/Welcome";
 
 
 import { Home } from "../components/home/Home";

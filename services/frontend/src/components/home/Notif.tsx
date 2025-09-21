@@ -4,12 +4,22 @@ import { useEffect } from '../../hooks/useEffect';
 import { useState } from '../../hooks/useState';
 import { useRef } from '../../hooks/useRef';
 import { ws } from '../../main'
-type Friend = {
-  id: number;
-  username: string;
-  avatar: string;
-  online: boolean;
-};
+
+type NotificationType = 'MATCH_NOTIFICATION' | 'FRIEND_REQUEST';
+
+interface Notification {
+  userId: number;
+  type: NotificationType;
+  notifierId: number;
+  readed: boolean;
+  createdAt: string;
+  gameId?: string;
+  user: {
+    id: number;
+    username: string;
+    avatar: string;
+  };
+}
 
 interface NotificationPanelProps {
   modalManager: {
@@ -22,85 +32,148 @@ interface NotificationPanelProps {
 }
 
 export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ modalManager, open }) => {
-  const [pendingFriends, setPendingFriends] = useState<Friend[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showAll, setShowAll] = useState(false);
 
-  const fetchPendingFriends = async () => {
+  const fetchNotifications = async () => {
     try {
       const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/notifications`, { credentials: 'include' });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch pending friends');
+        throw new Error('Failed to fetch notifications');
       }
 
       const data = await response.json();
-
-      const friendsArray: Friend[] = Array.isArray(data)
-        ? data.map((f: any) => ({ ...f, status: 'pending' }))
-        : [];
-
-      setPendingFriends(friendsArray);
+      setNotifications(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('Error fetching pending friends:', err);
-      setPendingFriends([]);
+      console.error('Error fetching notifications:', err);
+      setNotifications([]);
     }
   };
 
   useEffect(() => {
     if (open) {
-      fetchPendingFriends();
+      fetchNotifications();
     }
   }, [open]);
 
-  const handleFriendAction = async (username: string, action: 'accept' | 'decline') => {
+  const handleFriendAction = async (username: string, action: 'accept' | 'cancel') => {
     try {
-      const response = await fetch('/api/friends/actions', {
+      const response = await fetch('/api/actions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ username, action: action === 'decline' ? 'cancel' : action })
+        body: JSON.stringify({ username, action })
       });
 
       if (!response.ok) throw new Error(`Failed to ${action} friend request`);
 
-      await fetchPendingFriends();
+      await fetchNotifications();
     } catch (err) {
       console.error(`Error performing ${action} action:`, err);
     }
   };
 
-  const renderActionButton = (friend: Friend) => {
-    return (
-      <div className="flex gap-2">
-        <button
-          onClick={(e: MouseEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleFriendAction(friend.username, 'accept');
-          }}
-          className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-accept.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
-        >
-          <i className="fa-solid fa-check text-sm"></i>
-          <span>Accept</span>
-        </button>
-        <button
-          onClick={(e: MouseEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleFriendAction(friend.username, 'decline');
-          }}
-          className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-decline.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
-        >
-          <i className="fa-solid fa-xmark text-sm"></i>
-          <span>Decline</span>
-        </button>
-      </div>
-    );
+  const handleMatchAction = async (gameId: string, action: 'accept' | 'refuse') => {
+    try {
+      const response = await fetch('/api/action_match', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ gameId, action })
+      });
+
+      if (!response.ok) throw new Error(`Failed to ${action} match`);
+
+      await fetchNotifications();
+    } catch (err) {
+      console.error(`Error performing ${action} match action:`, err);
+    }
   };
 
-  const displayUsers = showAll
-    ? (Array.isArray(pendingFriends) ? pendingFriends : [])
-    : (Array.isArray(pendingFriends) ? pendingFriends.slice(0, 4) : []);
+  const renderActionButton = (notification: Notification) => {
+    // Don't show action buttons if notification is already read
+    if (notification.readed) {
+      return null;
+    }
+
+    if (notification.type === 'FRIEND_REQUEST') {
+      return (
+        <div className="flex gap-2">
+          <button
+            onClick={(e: MouseEvent) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleFriendAction(notification.user.username, 'accept');
+            }}
+            className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-accept.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
+          >
+            <i className="fa-solid fa-check text-sm"></i>
+            <span>Accept</span>
+          </button>
+          <button
+            onClick={(e: MouseEvent) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleFriendAction(notification.user.username, 'cancel');
+            }}
+            className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-decline.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
+          >
+            <i className="fa-solid fa-xmark text-sm"></i>
+            <span>Decline</span>
+          </button>
+        </div>
+      );
+    }
+
+    if (notification.type === 'MATCH_NOTIFICATION' && notification.gameId) {
+      return (
+        <div className="flex gap-2">
+          <button
+            onClick={(e: MouseEvent) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleMatchAction(notification.gameId!, 'accept');
+            }}
+            className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-accept.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
+          >
+            <i className="fa-solid fa-check text-sm"></i>
+            <span>Accept</span>
+          </button>
+          <button
+            onClick={(e: MouseEvent) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleMatchAction(notification.gameId!, 'refuse');
+            }}
+            className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-decline.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
+          >
+            <i className="fa-solid fa-xmark text-sm"></i>
+            <span>Refuse</span>
+          </button>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  const getNotificationText = (notification: Notification) => {
+    if (notification.type === 'FRIEND_REQUEST') {
+      return 'sent you a friend request';
+    }
+    if (notification.type === 'MATCH_NOTIFICATION') {
+      return 'wants to play a match with you';
+    }
+    return '';
+  };
+
+  const displayNotifications = showAll
+    ? notifications
+    : notifications.slice(0, 4);
+
+  const unreadCount = notifications.filter(n => !n.readed).length;
+  const totalCount = notifications.length;
 
   return (
     <div
@@ -110,42 +183,61 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
       <div className="p-4 border-b border-[#4E92A2] bg-[#5D9FA9] text-white rounded-t-lg">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">Your Notifications</h3>
-          <button className="text-sm hover:underline">✓ Mark all as read</button>
+        </div>
+        <div className="mt-3">
+          <div className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full shadow-md border border-white/30">
+            <span className="text-sm font-medium text-white">
+              ALL {unreadCount === 0 ? 0 : totalCount}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className={`flex-1 ${showAll ? 'overflow-y-auto' : 'overflow-hidden'}`}>
         <ul className="space-y-3 p-3">
-          {displayUsers.map(user => (
+          {displayNotifications.map((notification, index) => (
             <li
-              key={user.id}
-              className="flex items-center justify-between gap-3 pb-1 border-b border-[#91C7D6]"
+              key={`${notification.notifierId}-${notification.type}-${index}`}
+              className={`flex items-center justify-between gap-3 pb-1 border-b border-[#91C7D6] ${
+                notification.readed ? 'opacity-60' : ''
+              }`}
             >
-              <div className="flex items-center gap-3">
-                <img
-                  src={user.avatar}
-                  className="w-14 h-14 rounded-full object-cover border-4 border-white/20"
-                  alt="Avatar"
-                />
-                <span className="font-irish text-white">{user.username}</span>
+              <div className="flex items-center gap-3 flex-1">
+                <div className="relative">
+                  <img
+                    src={notification.user.avatar}
+                    className="w-14 h-14 rounded-full object-cover border-4 border-white/20"
+                    alt="Avatar"
+                  />
+                  {!notification.readed && (
+                    <span className="absolute -top-1 -right-1 block w-4 h-4 bg-red-500 border-2 border-white rounded-full"></span>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="font-irish text-white">{notification.user.username}</div>
+                  <div className="text-sm text-white/80">{getNotificationText(notification)}</div>
+                  <div className="text-xs text-white/60">
+                    {new Date(notification.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
               </div>
-              {renderActionButton(user)}
+              {renderActionButton(notification)}
             </li>
           ))}
         </ul>
       </div>
 
-      {pendingFriends.length > 4 && (
-        <div className="p-3 border-t border-[#4E92A2] text-center">
+      {notifications.length > 4 && (
+        <div className="p-3 border-t border-[#4E92A2] bg-[#5D9FA9]/50 rounded-b-lg">
           <button
             onClick={(e: MouseEvent) => {
               e.preventDefault();
               e.stopPropagation();
               setShowAll(prev => !prev);
             }}
-            className="text-sm text-teal-600 hover:underline"
+            className="w-full px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg shadow-md border border-white/30 text-sm text-white font-medium hover:bg-white/30 transition-colors duration-200"
           >
-            {showAll ? 'See less' : 'See more notifications'}
+            {showAll ? 'See less notifications' : 'See more notifications'}
           </button>
         </div>
       )}
@@ -165,9 +257,12 @@ interface NotificationButtonProps {
 export const NotificationButton: ComponentFunction<NotificationButtonProps> = ({ modalManager }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [redpoint, setredpoint] = useState<Boolean>(false);
+  
+  
   ws.onmessage = (ev) => {
     setredpoint(ev.data == "start");
   }
+  
   const showNotif = modalManager.isModalOpen('notification');
 
   const handleButtonClick = (e: MouseEvent) => {
@@ -181,7 +276,7 @@ export const NotificationButton: ComponentFunction<NotificationButtonProps> = ({
     }
   };
 
-  // Handle click outside to close modal
+  
   useEffect(() => {
     if (!showNotif) return;
 
@@ -192,7 +287,6 @@ export const NotificationButton: ComponentFunction<NotificationButtonProps> = ({
         modalManager.closeModal();
       }
     };
-
 
     const timeoutId = setTimeout(() => {
       document.addEventListener('click', handleClickOutside, true);
