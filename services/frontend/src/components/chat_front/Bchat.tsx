@@ -176,6 +176,12 @@ export const Bchat: ComponentFunction = () => {
       sendMessage({ from: id, to: nameFriend.id }, message);
     }
   };
+  const handleProfileClick = (username: string, e: Event) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.history.pushState({}, "", `/profile/${username}`);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  };
   
   return (
     <div>
@@ -206,7 +212,7 @@ export const Bchat: ComponentFunction = () => {
                 
                 {[
                   { src: "/images/chat/close.png", alt: "close", onClick: () => setbareinfo(false) },
-                  { src: "/images/chat/profilchat.png", alt: "profilchat", onClick: () => {/* open profile */} },
+                  { src: "/images/chat/profilchat.png", alt: "profilchat", onClick: (e: Event) => { if (nameFriend) handleProfileClick(nameFriend.name, e)} },
                   { src: "/images/chat/gamechat.png", alt: "chatgame", onClick: () => {/* invite game */} },
                   { src: "/images/chat/block.png", alt: "blockchat", onClick: handleBlockUser  }
                 ].map((btn, i) => (

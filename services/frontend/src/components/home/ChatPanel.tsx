@@ -13,6 +13,12 @@ interface Friend {
 }
 
 const FriendItem: ComponentFunction = (props = {}) => {
+    const handleProfileClick = (username: string, e: Event) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.history.pushState({}, "", `/profile/${username}`);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  };
   const friend = props.friend as Friend;
   const cadreBg = friend.online ? "/images/home-assests/cir-online.svg" : "/images/home-assests/cir-offline.svg";
   return (
@@ -20,6 +26,7 @@ const FriendItem: ComponentFunction = (props = {}) => {
       <div 
         className="w-20 h-20 relative flex items-center justify-center bg-no-repeat bg-contain"
         style={{ backgroundImage: `url(${cadreBg})` }}
+         onClick={(e: Event) => handleProfileClick(friend.username, e)}
       >
         <img
           src={friend.avatar}

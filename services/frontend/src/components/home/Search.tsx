@@ -160,6 +160,12 @@ export const Search: ComponentFunction<SearchProps> = ({ modalManager }) => {
       setSearchQuery('');
     }
   };
+     const handleProfileClick = (username: string, e: Event) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.history.pushState({}, "", `/profile/${username}`);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  };
 
   const handleSearchButtonClick = (e: MouseEvent) => {
     e.preventDefault();
@@ -296,18 +302,22 @@ else if (user.friendStatus === 'request')
                   {displayUsers.map(user => (
                     <li
                       key={user.id}
-                      className="flex ml-5 w-[420px] items-center justify-between gap-3 pb-1 border-b border-[#91C7D6]"
+                      className="flex ml-5 w-[420px] items-center justify-between gap-3 pb-1 border-b
+                       border-[#91C7D6] cursor-pointer hover:bg-[#91C7D6]/20 p-2 rounded-lg"
                     >
-                      
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3"
+                    onClick={(e: Event) => handleProfileClick(user.username, e)}
+                      >
                       {user.status === 'friend' ? (
                         <div
-                          className="relative w-14 h-14 flex items-center justify-center bg-no-repeat bg-contain"
+                          className="relative w-14 h-14 flex items-center 
+                          justify-center bg-no-repeat bg-contain transition-transform duration-200 hover:scale-95"
                           style={{
                             backgroundImage: user.online
                               ? 'url("/images/home-assests/cir-online.svg")'
                               : 'url("/images/home-assests/cir-offline.svg")'
                           }}
+                          
                         >
                           <img
                             src={user.avatar}
@@ -316,11 +326,12 @@ else if (user.friendStatus === 'request')
                           />
                         </div>
                       ) : (
+                        <div className="transition-transform duration-200 hover:scale-95">
                         <img
                           src={user.avatar}
                           className="w-14 h-14 rounded-full object-cover border-4 border-white/20"
                           alt="Avatar"
-                        />
+                        /></div>
                       )}
                         <span className="font-irish text-white">{user.username}</span>
                       </div>
