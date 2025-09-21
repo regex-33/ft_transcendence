@@ -177,7 +177,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 
   return (
     <div
-      className={`absolute top-[58px] -right-40 mt-2 w-96 h-96 bg-[#5D9FA9] opacity-95 rounded-lg shadow-xl flex flex-col z-[9999] ${open ? '' : 'hidden'}`}
+      className={`absolute top-[58px] -right-40 mt-2 w-96 h-96 bg-[#5D9FA9] opacity-95 rounded-lg shadow-xl flex flex-col z-[9998] ${open ? '' : 'hidden'}`}
       onClick={(e: MouseEvent) => e.stopPropagation()}
     >
       <div className="p-4 border-b border-[#4E92A2] bg-[#5D9FA9] text-white rounded-t-lg">

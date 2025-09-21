@@ -32,7 +32,7 @@ export const Bchat: ComponentFunction = () => {
   const [nameFriend, setNameFriend] = useState<Friend | null>(null);
   const [isBlocked, setIsBlocked] = useState<boolean>(false);
   const [allfriend, setallfriend] = useState<Friend[]>([]);
-  const [showinfo, setbareinfo] = useState<boolean>(false)
+  const [showinfo, setbareinfo] = useState<boolean>(false);
   const [onlinefriends, onlinefriendssetFriends] = useState<Friend[]>([]);
   
   useEffect(() => {

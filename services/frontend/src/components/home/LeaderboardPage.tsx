@@ -9,9 +9,7 @@ export const Leaderboard: ComponentFunction = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
  
-  interface Friend { id: number; name: string; image: string; online?: boolean; }
-  const [friends, setFriends] = useState<Friend[]>([]);
-  const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
+  interface Friend { id: number; username: string; avatar: string; online?: boolean; }
     
   useEffect(() => {
     const checkAuth = async () => {
@@ -114,6 +112,43 @@ export const Leaderboard: ComponentFunction = () => {
   if (loading) {
     return <div className="text-white p-4">Checking authentication...</div>;
   }
+  ////////////////////////////////////////////////////////////////
+  const [friends, setFriends] = useState<Friend[]>([]);
+    // const [loading, setLoading] = useState<boolean>(true);
+    // const [error, setError] = useState<string | null>(null);
+  
+    useEffect(() => {
+      const fetchFriends = async () => {
+        try {
+          const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`,
+            {
+              credentials: 'include',
+              method: "GET",
+            }
+          );
+          if (!response.ok) {
+            throw new Error(`Failed to fetch friends: ${response.status} ${response.statusText}`);
+          }
+          
+          const data = await response.json();
+          setFriends(data);
+        } catch (err) {
+          console.error('Error fetching friends:', err);
+        } 
+      };
+      fetchFriends();
+  
+      //every 5 seconds
+      const intervalId = setInterval(() => {
+        fetchFriends();
+      }, 5000);
+  
+      // Cleanup function to clear interval when component unmounts
+      return () => {
+        clearInterval(intervalId);
+      };
+    }, []);
+    ////////////////////////////////////////////////////////////////
   
   if (isAuthenticated) {
     return (
@@ -133,7 +168,30 @@ export const Leaderboard: ComponentFunction = () => {
         <div className="relative z-10 ">
           <Header />
           <div className="relative h-[calc(100vh-72px)]">
-            <Online data_friend={friends} name_friend={setSelectedFriend} />
+            <div>
+          <div
+              className="absolute top-14% inset-0 bg-sky-custom/35 w-5% h-82%  rounded-lg object-cover  mx-1% overflow-y-auto"  style={{
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#659EAC transparent',
+                  msOverflowStyle: 'auto',
+                }}>
+             <Online 
+                friends={friends.filter(friend => friend.online)}          
+              />
+          </div>
+          <img src='images/chat/icon_online.png' alt="icon online" className=" absolute top-12% mx-4% h-2.5% w-1.5% "></img>
+          <div
+              className="absolute top-14% right-0 bg-sky-custom/35 w-5% h-82%  rounded-lg object-cover  mx-1% overflow-y-auto"  style={{
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#4D8995 transparent',
+                  msOverflowStyle: 'auto',
+                }}>
+              <Online 
+                friends={friends.filter(friend => friend.online)}          
+              />
+          </div>
+          <img src='images/chat/icon_online.png' alt="icon online" className=" absolute top-12% mx-97% h-2.5% w-1.5%"></img>
+      </div>
             <div className="absolute top-5% left-7% right-7% h-90% overflow-hidden">
               <div className="w-full flex flex-col items-center">
                 <div className="w-[500px] h-[250px] flex flex-col items-center justify-center text-center">
