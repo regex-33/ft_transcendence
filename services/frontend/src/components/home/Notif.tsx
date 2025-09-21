@@ -74,13 +74,13 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
     }
   };
 
-  const handleMatchAction = async (gameId: string, action: 'accept' | 'refuse') => {
+  const handleMatchAction = async (username: string, action: 'accept' | 'refuse') => {
     try {
       const response = await fetch('/api/action_match', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ gameId, action })
+        body: JSON.stringify({ username, action })
       });
 
       if (!response.ok) throw new Error(`Failed to ${action} match`);
@@ -133,7 +133,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
             onClick={(e: MouseEvent) => {
               e.preventDefault();
               e.stopPropagation();
-              handleMatchAction(notification.gameId!, 'accept');
+              handleMatchAction(notification.user.username, 'accept');
             }}
             className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-accept.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
           >
@@ -144,7 +144,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
             onClick={(e: MouseEvent) => {
               e.preventDefault();
               e.stopPropagation();
-              handleMatchAction(notification.gameId!, 'refuse');
+              handleMatchAction(notification.user.username, 'refuse');
             }}
             className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-decline.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
           >
