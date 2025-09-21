@@ -12,7 +12,7 @@ interface Friend {
   online: boolean;
 }
 
-const FriendItem: ComponentFunction = (props = {}) => {
+export const FriendItem: ComponentFunction = (props = {}) => {
     const handleProfileClick = (username: string, e: Event) => {
     e.preventDefault();
     e.stopPropagation();

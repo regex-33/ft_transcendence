@@ -104,11 +104,12 @@ fastify.get('/api/chat/friends', async (req, reply) => {
     if (!res.ok) return reply.status(res.status).send({ error: 'Cannot fetch friends' });
     
     const data = await res.json();
-    console.log("friend is : ", data)
+    console.log("friend is bakend: ", data)
     const friends = data.map(f => ({
       id: f.id,
       name: f.username,
-      image: f.avatar
+      image: f.avatar,
+      online:f.online
     }));
     reply.send(friends);
   } catch (err) {

@@ -5,6 +5,8 @@ import { useState } from '../../hooks/useState';
 import { useRef } from '../../hooks/useRef';
 import { Online } from './online';
 import { Barre } from './barre_friend';
+import {FriendItem} from '../home/ChatPanel'
+
 interface Friend {
   id: number;
   name: string;
@@ -31,6 +33,8 @@ export const Bchat: ComponentFunction = () => {
   const [isBlocked, setIsBlocked] = useState<boolean>(false);
   const [allfriend, setallfriend] = useState<Friend[]>([]);
   const [showinfo, setbareinfo] = useState<boolean>(false)
+  const [onlinefriends, onlinefriendssetFriends] = useState<Friend[]>([]);
+  
   useEffect(() => {
     socket.current = new WebSocket('ws://localhost/ws/chat');
     
@@ -183,15 +187,62 @@ export const Bchat: ComponentFunction = () => {
     window.dispatchEvent(new PopStateEvent("popstate"));
   };
   
+  useEffect(() => {
+    const fetchFriends = async () => {
+      try {
+        const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`,
+          {
+            credentials: 'include',
+            method: "GET",
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`Failed to fetch friends: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log("hhhhh : ",data )
+        onlinefriendssetFriends(data);
+      } catch (err) {
+        console.error('Error fetching friends:', err);
+      } 
+    };
+    fetchFriends();
+    const intervalId = setInterval(() => {
+      fetchFriends();
+    }, 2000);
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
   return (
     <div>
       <div>
-        {!active && (
-          <button className='absolute top-[13%] left-[1%] h-[5%] w-[5%]' onClick={() => setActive(true)}>
-            <img src='images/chat/friend.png' alt='friend' />
-          </button>
-        )}
-        {/* {active && <Online data_friend={friends} name_friend={setNameFriend} />} */}
+      <div>
+          <div
+              className="absolute top-14% inset-0 bg-sky-custom/35 w-5% h-82%  rounded-lg object-cover  mx-1% overflow-y-auto"  style={{
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#659EAC transparent',
+                  msOverflowStyle: 'auto',
+                }}>
+             <Online 
+                friends={onlinefriends}          
+              />
+          </div>
+          <img src='images/chat/icon_online.png' alt="icon online" className=" absolute top-12% mx-4% h-2.5% w-1.5% "></img>
+          <div
+              className="absolute top-14% right-0 bg-sky-custom/35 w-5% h-82%  rounded-lg object-cover  mx-1% overflow-y-auto"  style={{
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#4D8995 transparent',
+                  msOverflowStyle: 'auto',
+                }}>
+              <Online 
+                friends={onlinefriends}          
+              />
+          </div>
+          <img src='images/chat/icon_online.png' alt="icon online" className=" absolute top-12% mx-97% h-2.5% w-1.5%"></img>
+      </div>
+
         <Barre 
             friend={allfriend} 
             onSelectFriend={setNameFriend} 
