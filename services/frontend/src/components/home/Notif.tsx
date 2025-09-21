@@ -37,7 +37,8 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/notifications`, { credentials: 'include' });
+      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/notifications`, 
+        { credentials: 'include' });
 
       if (!response.ok) {
         throw new Error('Failed to fetch notifications');
@@ -57,23 +58,26 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
     }
   }, [open]);
 
-  const handleFriendAction = async (username: string, action: 'accept' | 'cancel') => {
+ const handleFriendAction = async (username: string, action: 'accept' | 'cancel') => {
     try {
-      const response = await fetch('/api/actions', {
+      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         credentials: 'include',
         body: JSON.stringify({ username, action })
       });
 
-      if (!response.ok) throw new Error(`Failed to ${action} friend request`);
-
+      if (!response.ok) {
+        throw new Error(`Failed to ${action} friend`);
+      }
       await fetchNotifications();
     } catch (err) {
       console.error(`Error performing ${action} action:`, err);
     }
   };
-
+    //  we wait for badr igad lina dakchi dyal matchat
   const handleMatchAction = async (username: string, action: 'accept' | 'refuse') => {
     try {
       const response = await fetch('/api/action_match', {
@@ -92,33 +96,30 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
   };
 
   const renderActionButton = (notification: Notification) => {
-    // Don't show action buttons if notification is already read
-    if (notification.readed) {
-      return null;
-    }
-
     if (notification.type === 'FRIEND_REQUEST') {
       return (
-        <div className="flex gap-2">
-          <button
-            onClick={(e: MouseEvent) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleFriendAction(notification.user.username, 'accept');
-            }}
-            className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-accept.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
-          >
+       <div className="flex gap-1">
+          <button 
+            onClick={() => handleFriendAction(notification.user.username, 'accept')}
+            className="
+            flex items-center gap-1 px-4 h-[25px]
+            bg-[url('/images/setting-assests/bg-accept.svg')]
+            bg-no-repeat bg-center bg-contain
+            text-white font-semibold text-sm
+            transition-transform duration-200 hover:scale-95 
+          ">
             <i className="fa-solid fa-check text-sm"></i>
             <span>Accept</span>
           </button>
-          <button
-            onClick={(e: MouseEvent) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleFriendAction(notification.user.username, 'cancel');
-            }}
-            className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-decline.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
-          >
+          <button 
+            onClick={() => handleFriendAction(notification.user.username, 'cancel')}
+            className="
+            flex items-center gap-1 px-4 h-[25px]
+            bg-[url('/images/setting-assests/bg-decline.svg')]
+            bg-no-repeat bg-center bg-contain
+            text-white font-semibold text-sm
+            transition-transform duration-200 hover:scale-95 
+          ">
             <i className="fa-solid fa-xmark text-sm"></i>
             <span>Decline</span>
           </button>
@@ -128,28 +129,30 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 
     if (notification.type === 'MATCH_NOTIFICATION' && notification.gameId) {
       return (
-        <div className="flex gap-2">
-          <button
-            onClick={(e: MouseEvent) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleMatchAction(notification.user.username, 'accept');
-            }}
-            className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-accept.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
-          >
-            <i className="fa-solid fa-check text-sm"></i>
-            <span>Accept</span>
+        <div className="flex gap-1">
+          <button 
+            onClick={() => handleMatchAction(notification.user.username, 'accept')}
+            className="
+            flex items-center gap-1 px-4 h-[25px]
+            bg-[url('/images/setting-assests/bg-accept.svg')]
+            bg-no-repeat bg-center bg-contain
+            text-white font-semibold text-sm
+            transition-transform duration-200 hover:scale-95 
+          ">
+            <i className="fa-solid fa-table-tennis-paddle-ball text-red-500 text-sm"></i>
+            <span>Play match</span>
           </button>
-          <button
-            onClick={(e: MouseEvent) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleMatchAction(notification.user.username, 'refuse');
-            }}
-            className="flex items-center gap-2 px-4 h-[30px] bg-[url('/images/setting-assests/bg-decline.svg')] bg-no-repeat bg-center bg-contain text-white font-semibold text-sm transition-transform duration-200 hover:scale-95"
-          >
+          <button 
+            onClick={() => handleMatchAction(notification.user.username, 'refuse')}
+            className="
+            flex items-center gap-1 px-4 h-[25px]
+            bg-[url('/images/setting-assests/bg-decline.svg')]
+            bg-no-repeat bg-center bg-contain
+            text-white font-semibold text-sm
+            transition-transform duration-200 hover:scale-95 
+          ">
             <i className="fa-solid fa-xmark text-sm"></i>
-            <span>Refuse</span>
+            <span>refuse</span>
           </button>
         </div>
       );
@@ -170,9 +173,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 
   const displayNotifications = showAll
     ? notifications
-    : notifications.slice(0, 4);
-
-  const unreadCount = notifications.filter(n => !n.readed).length;
+    : notifications.slice(0, 3);
   const totalCount = notifications.length;
 
   return (
@@ -187,37 +188,49 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
         <div className="mt-3">
           <div className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full shadow-md border border-white/30">
             <span className="text-sm font-medium text-white">
-              ALL {unreadCount === 0 ? 0 : totalCount}
+              ALL {totalCount}
             </span>
           </div>
         </div>
       </div>
 
       <div className={`flex-1 ${showAll ? 'overflow-y-auto' : 'overflow-hidden'}`}>
-        <ul className="space-y-3 p-3">
+        <ul className="space-y-3 p-3 overflow-x-auto overflow-y-hidden"
+          style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#64B0C5 transparent',
+              msOverflowStyle: 'auto',
+            }}>
           {displayNotifications.map((notification, index) => (
             <li
               key={`${notification.notifierId}-${notification.type}-${index}`}
-              className={`flex items-center justify-between gap-3 pb-1 border-b border-[#91C7D6] ${
-                notification.readed ? 'opacity-60' : ''
-              }`}
+              className="flex items-center justify-between gap-3 pb-1 border-b 
+                border-[#91C7D6] "
+            
             >
               <div className="flex items-center gap-3 flex-1">
-                <div className="relative">
-                  <img
-                    src={notification.user.avatar}
-                    className="w-14 h-14 rounded-full object-cover border-4 border-white/20"
-                    alt="Avatar"
-                  />
-                  {!notification.readed && (
-                    <span className="absolute -top-1 -right-1 block w-4 h-4 bg-red-500 border-2 border-white rounded-full"></span>
-                  )}
-                </div>
+               <div
+          key={notification.user.id}
+          className="relative w-10 h-10 flex items-center 
+                          justify-center bg-no-repeat bg-contain transition-transform duration-200 hover:scale-95"
+           style={{
+                 backgroundImage: 'url("/images/home-assests/cir-online.svg")',
+                  }}
+        >
+          <img
+            src={notification.user.avatar || '/images/default-avatar.png'}
+            alt={notification.user.username}
+            className="w-8 h-8 rounded-full object-cover"
+          />
+        </div>
                 <div className="flex-1">
-                  <div className="font-irish text-white">{notification.user.username}</div>
+                  <div className="w-[100px]">
+                    <span className="font-irish text-white">{notification.user.username}</span>
+                    </div>
                   <div className="text-sm text-white/80">{getNotificationText(notification)}</div>
                   <div className="text-xs text-white/60">
                     {new Date(notification.createdAt).toLocaleDateString()}
+                    {/* <span>{notification.createdAt}</span> */}
                   </div>
                 </div>
               </div>
@@ -227,7 +240,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
         </ul>
       </div>
 
-      {notifications.length > 4 && (
+      {notifications.length > 3 && (
         <div className="p-3 border-t border-[#4E92A2] bg-[#5D9FA9]/50 rounded-b-lg">
           <button
             onClick={(e: MouseEvent) => {
