@@ -3,9 +3,11 @@ import { ComponentFunction } from "../../types/global";
 
 interface Friend {
   id: number;
-  username: string;
-  avatar: string;
+  username?: string;
+  avatar?: string;
   online?: boolean;
+  name: string;
+  image: string;
 }
 
 interface OnlineProps {
