@@ -98,29 +98,29 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
   const renderActionButton = (notification: Notification) => {
     if (notification.type === 'FRIEND_REQUEST') {
       return (
-       <div className="flex gap-1">
+       <div className="flex ">
           <button 
             onClick={() => handleFriendAction(notification.user.username, 'accept')}
             className="
-            flex items-center gap-1 px-4 h-[25px]
+            flex items-center gap-1 px-4 h-[20px] min-w-[65px]
             bg-[url('/images/setting-assests/bg-accept.svg')]
             bg-no-repeat bg-center bg-contain
-            text-white font-semibold text-sm
+            text-white font-semibold text-xs
             transition-transform duration-200 hover:scale-95 
           ">
-            <i className="fa-solid fa-check text-sm"></i>
+            <i className="fa-solid fa-check text-xs"></i>
             <span>Accept</span>
           </button>
           <button 
             onClick={() => handleFriendAction(notification.user.username, 'cancel')}
             className="
-            flex items-center gap-1 px-4 h-[25px]
+            flex items-center gap-1 px-4 h-[20px] min-w-[65px]
             bg-[url('/images/setting-assests/bg-decline.svg')]
             bg-no-repeat bg-center bg-contain
-            text-white font-semibold text-sm
+            text-white font-semibold text-xs
             transition-transform duration-200 hover:scale-95 
           ">
-            <i className="fa-solid fa-xmark text-sm"></i>
+            <i className="fa-solid fa-xmark text-xs"></i>
             <span>Decline</span>
           </button>
         </div>
@@ -129,29 +129,29 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 
     if (notification.type === 'MATCH_NOTIFICATION' && notification.gameId) {
       return (
-        <div className="flex gap-1">
+        <div className="flex gap-1 justify-end">
           <button 
             onClick={() => handleMatchAction(notification.user.username, 'accept')}
             className="
-            flex items-center gap-1 px-4 h-[25px]
+            flex items-center gap-1 px-2 h-[20px] min-w-[70px]
             bg-[url('/images/setting-assests/bg-accept.svg')]
             bg-no-repeat bg-center bg-contain
-            text-white font-semibold text-sm
+            text-white font-semibold text-[10px]
             transition-transform duration-200 hover:scale-95 
           ">
-            <i className="fa-solid fa-table-tennis-paddle-ball text-red-500 text-sm"></i>
+            <i className="fa-solid fa-table-tennis-paddle-ball text-red-500 text-[10px]"></i>
             <span>Play match</span>
           </button>
           <button 
             onClick={() => handleMatchAction(notification.user.username, 'refuse')}
             className="
-            flex items-center gap-1 px-4 h-[25px]
+            flex items-center gap-1 px-2 h-[20px] min-w-[50px]
             bg-[url('/images/setting-assests/bg-decline.svg')]
             bg-no-repeat bg-center bg-contain
-            text-white font-semibold text-sm
+            text-white font-semibold text-[10px]
             transition-transform duration-200 hover:scale-95 
           ">
-            <i className="fa-solid fa-xmark text-sm"></i>
+            <i className="fa-solid fa-xmark text-[10px]"></i>
             <span>refuse</span>
           </button>
         </div>
@@ -185,17 +185,20 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">Your Notifications</h3>
         </div>
-        <div className="mt-3">
-          <div className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full shadow-md border border-white/30">
-            <span className="text-sm font-medium text-white">
-              ALL {totalCount}
-            </span>
+        <div className="mt-4 translate-y-2">
+          <div className="flex justify-center items-center w-20 h-6
+               gap-2 bg-[#FFFFFF] opacity-80 rounded-lg shadow-md 
+               hover:shadow-2xl  shadow-black/30">
+              <span className ="text-sm font-medium text-[#62CEF5] gap-2">All</span>
+              <div className="w-3 h-3 bg-green-500 text-white mb-[2px] flex items-center justify-center">
+              <span className="text-xs text-[#FFFFFF]  gap-2">{totalCount}</span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className={`flex-1 ${showAll ? 'overflow-y-auto' : 'overflow-hidden'}`}>
-        <ul className="space-y-3 p-3 overflow-x-auto overflow-y-hidden"
+        <ul className="space-y-1 p-2 px-5"
           style={{
               scrollbarWidth: 'thin',
               scrollbarColor: '#64B0C5 transparent',
@@ -204,33 +207,29 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
           {displayNotifications.map((notification, index) => (
             <li
               key={`${notification.notifierId}-${notification.type}-${index}`}
-              className="flex items-center justify-between gap-3 pb-1 border-b 
-                border-[#91C7D6] "
-            
+              className="p-1 border-b border-[#4E92A2]  h-[80px] w-[300px] flex flex-col justify-between"
             >
-              <div className="flex items-center gap-3 flex-1">
-               <div
-          key={notification.user.id}
-          className="relative w-10 h-10 flex items-center 
-                          justify-center bg-no-repeat bg-contain transition-transform duration-200 hover:scale-95"
-           style={{
-                 backgroundImage: 'url("/images/home-assests/cir-online.svg")',
-                  }}
-        >
-          <img
-            src={notification.user.avatar || '/images/default-avatar.png'}
-            alt={notification.user.username}
-            className="w-8 h-8 rounded-full object-cover"
-          />
-        </div>
-                <div className="flex-1">
-                  <div className="w-[100px]">
-                    <span className="font-irish text-white">{notification.user.username}</span>
-                    </div>
-                  <div className="text-sm text-white/80">{getNotificationText(notification)}</div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="relative w-8 h-8 flex items-center justify-center 
+                             bg-no-repeat bg-contain flex-shrink-0"
+                  style={{ backgroundImage: 'url("/images/home-assests/cir-online.svg")' }}
+                >
+                  <img
+                    src={notification.user.avatar || '/images/default-avatar.png'}
+                    alt={notification.user.username}
+                    className="w-6 h-6 rounded-full object-cover"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-irish text-white text-xs font-medium truncate">
+                    {notification.user.username}
+                  </div>
+                  <div className="text-xs text-white/80">
+                    {getNotificationText(notification)}
+                  </div>
                   <div className="text-xs text-white/60">
                     {new Date(notification.createdAt).toLocaleDateString()}
-                    {/* <span>{notification.createdAt}</span> */}
                   </div>
                 </div>
               </div>
@@ -241,14 +240,14 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
       </div>
 
       {notifications.length > 3 && (
-        <div className="p-3 border-t border-[#4E92A2] bg-[#5D9FA9]/50 rounded-b-lg">
+        <div className="p-2 border-t border-[#4E92A2] bg-[#5D9FA9]/50 rounded-b-lg">
           <button
             onClick={(e: MouseEvent) => {
               e.preventDefault();
               e.stopPropagation();
               setShowAll(prev => !prev);
             }}
-            className="w-full px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg shadow-md border border-white/30 text-sm text-white font-medium hover:bg-white/30 transition-colors duration-200"
+            className="w-full px-4 py-2  text-sm text-[#62CEF5] font-medium hover:underline transition-colors duration-200"
           >
             {showAll ? 'See less notifications' : 'See more notifications'}
           </button>
