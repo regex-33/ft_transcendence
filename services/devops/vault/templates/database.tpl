@@ -14,4 +14,6 @@ DB_NAME={{ .Data.data.database }}
 DB_USER={{ .Data.data.username }}
 DB_PASSWORD={{ .Data.data.password }}
 DB_DIALECT=postgres
+DATABASE_URL={{ .Data.data.url }}
+
 {{ end }}

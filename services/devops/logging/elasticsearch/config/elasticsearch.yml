@@ -52,7 +52,7 @@ http.max_header_size: 8kb
 http.max_initial_line_length: 4kb
 
 # ---------------------------------- Various -----------------------------------
-action.auto_create_index: "+ft-transcendence-*,+microservices-logs-*,+api-gateway-logs-*,+game-events-*,+chat-messages-*,+security-events-*,+.monitoring-*,+.watches,+.triggered_watches,+.watcher-history-*,+.ml-*,-.security-*"
+action.auto_create_index: "+ft-transcendence-*,+microservices-logs-*,+game-events-*,+chat-messages-*,+security-events-*,+.monitoring-*,+.watches,+.triggered_watches,+.watcher-history-*,+.ml-*,-.security-*"
 action.destructive_requires_name: true
 
 

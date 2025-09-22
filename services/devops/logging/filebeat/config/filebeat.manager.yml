@@ -1,63 +1,5 @@
-# ======================== Filebeat Configuration 8.15.0 ============================
-
 # ============================== Filebeat inputs ===============================
 filebeat.inputs:
-
-# Auth service logs - CORRECTED PATHS
-- type: filestream
-  id: auth-service-logs
-  enabled: true
-  paths:
-    - /var/log/ft-transcendence/auth-service/auth.log
-    - /var/log/ft-transcendence/auth-service/auth-access.log
-    - /var/log/ft-transcendence/auth-service/auth-error.log
-  fields:
-    logtype: auth-service
-    service: auth-service
-    environment: "${ENVIRONMENT:development}"
-    service_group: ft-transcendence
-    datacenter: "${DATACENTER:local}"
-  fields_under_root: true
-  json.keys_under_root: false
-  json.add_error_key: true
-
-# Auth security logs
-- type: filestream
-  id: auth-security-logs
-  enabled: true
-  paths:
-    - /var/log/ft-transcendence/auth-service/auth-security.log
-    - /var/log/ft-transcendence/auth-service/security-events.log
-    - /var/log/ft-transcendence/security/*.log
-  fields:
-    logtype: security-events
-    service: auth-service
-    environment: "${ENVIRONMENT:development}"
-    service_group: ft-transcendence
-    datacenter: "${DATACENTER:local}"
-  fields_under_root: true
-  json.keys_under_root: false
-  json.add_error_key: true
-
-# API Gateway logs - CREATE THESE DIRECTORIES IF THEY DON'T EXIST
-- type: filestream
-  id: api-gateway-logs
-  enabled: true
-  paths:
-    - /var/log/ft-transcendence/api-gateway/*.log
-    - /var/log/nginx/ft-transcendence-*.log
-  fields:
-    logtype: api-gateway
-    service: api-gateway
-    environment: "${ENVIRONMENT:development}"
-    service_group: ft-transcendence
-    datacenter: "${DATACENTER:local}"
-  fields_under_root: true
-  json.keys_under_root: false
-  json.add_error_key: true
-  multiline.pattern: '^\d{4}-\d{2}-\d{2}'
-  multiline.negate: true
-  multiline.match: after
 
 # Chat messages logs
 - type: filestream
@@ -65,7 +7,7 @@ filebeat.inputs:
   enabled: true
   paths:
     - /var/log/ft-transcendence/chat-service/messages/*.log
-    - /var/log/ft-transcendence/chat-messages/*.log
+    - /var/log/ft-transcendence/chat-service/*.log
   fields:
     logtype: chat-messages
     service: chat-service
@@ -82,7 +24,7 @@ filebeat.inputs:
   enabled: true
   paths:
     - /var/log/ft-transcendence/game-service/events/*.log
-    - /var/log/ft-transcendence/game-events/*.log
+    - /var/log/ft-transcendence/game-service/*.log
   fields:
     logtype: game-events
     service: game-service
@@ -187,13 +129,13 @@ processors:
       fields: ["agent.ephemeral_id", "agent.id", "ecs.version", "host.architecture", "host.os.family", "host.os.version", "host.os.kernel"]
       ignore_missing: true
   - timestamp:
-      field: "@timestamp"
+      field: json.time
       layouts:
-        - '2006-01-02T15:04:05.000Z'
+        - '2006-01-02T15:04:05.999999999Z07:00'
+        - '2006-01-02T15:04:05.999Z'
         - '2006-01-02T15:04:05Z'
-        - '2006-01-02 15:04:05'
       test:
-        - '2023-12-25T09:30:00.000Z'
+        - '2019-06-22T16:33:51Z'
 
 # ================================ Output Configuration ===============================
 output.logstash:
@@ -229,15 +171,12 @@ setup.template.enabled: false
 setup.ilm.enabled: false
 
 # ================================ Kibana ===============================
-# setup.kibana:
-#   host: "kibana:5601"
-#   protocol: "http"
 setup.kibana:
   host: "https://kibana:5601"
   protocol: "https"
   ssl.verification_mode: "none"  # Skip SSL verification for self-signed certificates
-  username: "${KIBANA_USERNAME:-elastic}"  # Use environment variable or default to 'elastic'
-  password: "${KIBANA_PASSWORD:-changeme}"  # Use environment variable or default to 'changeme'
+  username: "${ELASTIC_USERNAME:-elastic}"  # Use environment variable or default to 'elastic'
+  password: "${ELASTIC_PASSWORD:-changeme}"  # Use environment variable or default to 'changeme'
 
 # ================================ Paths ===============================
 path.home: /usr/share/filebeat

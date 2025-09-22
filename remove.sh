@@ -1,21 +1,20 @@
 #!/bin/bash
-
+set -e
 
 echo "🧹 Stopping all running containers..."
-docker stop $(docker ps -q)
+docker ps -q | xargs -r docker stop
 
-echo "Removing all containers..."
-docker rm $(docker ps -a -q)
+echo "🗑 Removing all containers..."
+docker ps -aq | xargs -r docker rm
 
 echo "🧯 Removing all volumes..."
-docker volume rm $(docker volume ls -q)
+docker volume ls -q | xargs -r docker volume rm
 
 echo "🔌 Removing all unused networks..."
 docker network prune -f
-docker builder prune --all -force
-# Optional: Remove all images
-echo "🖼️ Removing all images..."
-docker rmi $(docker images -q)
 
-echo " Done. Docker is cleaned."
+echo "🖼️ Removing all images..."
+docker images -q | xargs -r docker rmi -f
+
+echo "Done. Docker is cleaned."
 

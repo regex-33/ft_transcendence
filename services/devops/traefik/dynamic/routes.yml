@@ -4,7 +4,7 @@ http:
   routers:
     # Traefik Dashboard Router
     traefik-dashboard:
-      rule: "Host(`traefik.regex-33.com`)"
+      rule: "Host(`traefik.ft-transcendence.com`)"
       service: "api@internal"
       middlewares:
         - "basic-auth"

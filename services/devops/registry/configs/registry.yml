@@ -12,7 +12,7 @@ http:
   addr: :5000
   headers:
     X-Content-Type-Options: [nosniff]
-    Access-Control-Allow-Origin: ['https://registry-ui.regex-33.com']
+    Access-Control-Allow-Origin: ['https://registry-ui.ft-transcendence.com']
     Access-Control-Allow-Methods: ['HEAD', 'GET', 'OPTIONS', 'DELETE']
     Access-Control-Allow-Headers: ['Authorization', 'Accept', 'Cache-Control']
 health:

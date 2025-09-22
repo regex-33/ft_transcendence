@@ -23,6 +23,7 @@ IMAGES=(
     "ft_transcendence/frontend"
     "ft_transcendence/user-service"
     "ft_transcendence/chat-service"
+    "ft_transcendence/xo-game"
     "ft_transcendence/nginx"
     "ft_transcendence/postgres"
     "ft_transcendence/redis"
@@ -78,6 +79,7 @@ push_image() {
     
     # Clean up local registry tag
     docker rmi "$registry_tag" > /dev/null 2>&1 || true
+    # docker rmi "$image" > /dev/null 2>&1 || true
     
     echo ""
 }

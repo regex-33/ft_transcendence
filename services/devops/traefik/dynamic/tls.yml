@@ -1,14 +1,14 @@
 tls:
   certificates:
-    - certFile: /etc/ssl/certs/regex-33.crt
-      keyFile: /etc/ssl/certs/regex-33.key
+    - certFile: /etc/ssl/certs/ft-transcendence.crt
+      keyFile: /etc/ssl/certs/ft-transcendence.key
       stores:
         - default
   stores:
     default:
       defaultCertificate:
-        certFile: /etc/ssl/certs/regex-33.crt
-        keyFile: /etc/ssl/certs/regex-33.key
+        certFile: /etc/ssl/certs/ft-transcendence.crt
+        keyFile: /etc/ssl/certs/ft-transcendence.key
   options:
     default:
       minVersion: "VersionTLS12"

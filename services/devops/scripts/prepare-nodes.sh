@@ -6,11 +6,11 @@ set -e
 
 # Load environment variables
 source .env
+echo "SSH_PASS=$SSH_PASS"
+echo "SSH_USER=$SSH_USER"
 
 IP=$1
 NODE_TYPE=$2
-SSH_USER=root
-SSH_PASS=regex-33
 SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR"
 
 # Colors
@@ -83,12 +83,9 @@ apt-get install -f -y || true
 apt-get update -y > /dev/null
 apt-get upgrade -y > /dev/null || true
 apt-get install -y curl wget apt-transport-https ca-certificates gnupg lsb-release software-properties-common > /dev/null
+echo -e "${YELLOW}Installing monitoring tools...${NC}"
+apt-get install -y htop iotop nethogs ncdu tree jq > /dev/null
 '
-
-
-# Install required packages
-echo -e "${YELLOW}Installing required packages...${NC}"
-ssh_exec "apt-get install -y curl wget apt-transport-https ca-certificates gnupg lsb-release software-properties-common > /dev/null"
 
 # Install Docker if not installed
 echo -e "${YELLOW}Installing Docker...${NC}"
@@ -96,15 +93,12 @@ ssh_exec "
 if ! command -v docker &> /dev/null; then
     sudo apt-get install -y docker.io
     sudo apt-get install -y docker-compose
-    sudo apt-get install -y python3-pip
+    sudo apt-get install -y python3-pip # For docker-compose because it's a python package so it's needs some libraries
     sudo systemctl start docker
     sudo systemctl enable docker
 
     # Update package index
     apt-get update
-    
-    # Install Docker Engine
-    apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
     
     # Start and enable Docker
     systemctl start docker
@@ -117,10 +111,14 @@ fi
 "
 
 # Configure Docker daemon
-echo -e "${YELLOW}Configuring Docker daemon...${NC}"
+echo -e "${YELLOW}Configuring Docker daemon... for insecure registry...${NC}"
 ssh_exec "
 # Create Docker daemon configuration
 mkdir -p /etc/docker
+# Check if daemon.json exists and backup
+if [ -f /etc/docker/daemon.json ]; then
+    cp /etc/docker/daemon.json /etc/docker/daemon.json.backup
+fi
 cat > /etc/docker/daemon.json << EOF
 {
     \"log-driver\": \"json-file\",
@@ -130,7 +128,8 @@ cat > /etc/docker/daemon.json << EOF
     },
     \"storage-driver\": \"overlay2\",
     \"metrics-addr\": \"0.0.0.0:9323\",
-    \"experimental\": false 
+    \"experimental\": false,
+    \"insecure-registries\": [\"$MANAGER_IP:5000\", \"registry:5000\", \"localhost:5000\"]
 }
 EOF
 
@@ -188,55 +187,6 @@ echo -e \"${GREEN}Configuring UFW...${NC}\"
 echo -e \"${GREEN}Firewall configuration done.${NC}\"
 "
 
-# Create directories based on node type
-echo -e "${YELLOW}Creating directories for $NODE_TYPE node...${NC}"
-case $NODE_TYPE in
-    "manager")
-        ssh_exec "
-        # Create log directories
-        mkdir -p /var/log/transcendence/{nginx,frontend,user-service,chat-service,postgres,redis}
-        chmod -R 755 /var/log/transcendence
-        
-        # Create data directories
-        mkdir -p /opt/transcendence/{postgres,redis}
-        chmod -R 755 /opt/transcendence
-        
-        # Create SSL directory
-        mkdir -p /etc/transcendence/ssl
-        chmod 700 /etc/transcendence/ssl
-        "
-        ;;
-    "logging")
-        ssh_exec "
-        # Create Elasticsearch data directory
-        mkdir -p /opt/elasticsearch/data
-        chmod 755 /opt/elasticsearch/data
-        chown 1000:1000 /opt/elasticsearch/data
-        
-        # Create Kibana config directory
-        mkdir -p /opt/kibana/config
-        chmod 755 /opt/kibana/config
-        
-        # Create Logstash directories
-        mkdir -p /opt/logstash/{config,pipeline}
-        chmod 755 /opt/logstash/{config,pipeline}
-        "
-        ;;
-    "monitoring")
-        ssh_exec "
-        # Create Prometheus data directory
-        mkdir -p /opt/prometheus/data
-        chmod 755 /opt/prometheus/data
-        chown 65534:65534 /opt/prometheus/data
-        
-        # Create Grafana data directory
-        mkdir -p /opt/grafana/data
-        chmod 755 /opt/grafana/data
-        chown 472:472 /opt/grafana/data
-        "
-        ;;
-esac
-
 
 echo -e "${YELLOW}Configuring system limits...${NC}"
 ssh_exec "
@@ -276,24 +226,6 @@ EOF
 sysctl --system
 "
 
-
-# # Install monitoring tools
-# ssh_exec "
-# apt-get install -y htop iotop nethogs ncdu tree jq > /dev/null
-# "
-
-echo -e "${YELLOW}Installing required packages...${NC}"
-ssh_exec '
-# Wait for any dpkg locks
-while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
-    echo "⏳ Waiting for other package managers to finish..."
-    sleep 5
-done
-
-echo -e "${YELLOW}Installing monitoring tools...${NC}"
-apt-get install -y htop iotop nethogs ncdu tree jq > /dev/null
-'
-
 # Configure log rotation
 echo -e "${YELLOW}Configuring log rotation...${NC}"
 ssh_exec "
@@ -317,12 +249,6 @@ ssh_exec "
 timedatectl set-timezone UTC
 "
 
-# Create backup directory
-ssh_exec "
-mkdir -p /opt/backups
-chmod 755 /opt/backups
-"
-
 echo -e "${GREEN}✓ Node $IP ($NODE_TYPE) prepared successfully${NC}"
 
 # Verify installation
@@ -333,9 +259,6 @@ docker --version
 
 echo 'Docker Compose version:'
 docker-compose --version
-
-# echo 'Node health:'
-# /usr/local/bin/node-health.sh
 "
 
 echo -e "${GREEN}✓ Node preparation completed for $IP${NC}"

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+export VAULT_ADDR="http://127.0.0.1:8200"
 vtree() {
     local path="${1:-secret/}"
     echo "Vault secrets tree for $path:"

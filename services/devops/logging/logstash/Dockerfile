@@ -22,7 +22,7 @@ RUN chown -R logstash:logstash /usr/share/logstash/ && \
 
 USER logstash
 
-EXPOSE 5044 5045 5046 5047 5048 5001 5002 5003 8081 9600
+EXPOSE 5044 5001 5002 5003 8081 9600
 
 
 

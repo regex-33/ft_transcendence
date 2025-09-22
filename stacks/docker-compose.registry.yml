@@ -60,13 +60,20 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.constraint-label=traefik-public"
-        - "traefik.http.routers.registry-ui.rule=Host(`registry-ui.regex-33.com`)"
-        - "traefik.http.routers.registry-ui.entrypoints=web,websecure"
+        - "traefik.http.routers.registry-ui.rule=Host(`registry-ui.ft-transcendence.com`)"
+        - "traefik.http.routers.registry-ui.entrypoints=websecure"
         - "traefik.http.routers.registry-ui.tls=true"
         - "traefik.http.services.registry-ui.loadbalancer.server.port=80"
         - "traefik.http.routers.registry-ui.middlewares=registry-ui-auth@file,security-headers@file"
         # Replace these with your generated hashes
         - "traefik.docker.network=traefik-public"
+        # HTTP router for redirect
+        - "traefik.http.routers.registry-ui-http.rule=Host(`registry-ui.ft-transcendence.com`)"
+        - "traefik.http.routers.registry-ui-http.entrypoints=web"
+        - "traefik.http.routers.registry-ui-http.middlewares=redirect-to-https"
+        - "traefik.http.routers.registry-ui-http.tls=false"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
     networks:
       - registry-network
       - traefik-public

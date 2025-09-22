@@ -1,7 +1,19 @@
+# Ignore all .DS_Store files in any directory
+**/.DS_Store
+.DS_Store
+docs/docker.md
+docs/shell-commands.md
+docs/cheetsheet.md
+todo.md
+# Node modules
+# Vite build output
+dist/
+**/dist/
+node_modules/
+**/node_modules/
+services/devops/traefik/certs/ft-transcendence.key
 services/frontend/.vite
-services/frontend/node_modules
 debugging-scripts/nots.md
 node_modules
 secrets/vault-certs
 uploads
-*.sqlite

@@ -157,6 +157,7 @@ build-images: generate-certs
 	@echo "$(BLUE) Building Docker images...$(NC)"
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/frontend ./services/frontend/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/user-service ./services/user-service/
+	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/xo-game ./services/xo-game/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/chat-service ./services/chat-service/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/nginx ./services/devops/nginx/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/postgres ./services/devops/databases/postgres/
@@ -246,14 +247,14 @@ generate-certs:
 .PHONY: show-hosts
 show-hosts:
 	@echo "$(YELLOW)Add these entries to your /etc/hosts file:$(NC)"
-	@echo "$(MANAGER_IP)    regex-33.com"
-	@echo "$(MANAGER_IP)    traefik.regex-33.com"
-	@echo "$(MANAGER_IP)    registry.regex-33.com"
-	@echo "$(MANAGER_IP)    registry-ui.regex-33.com"
-	@echo "$(WORKER1_IP)    logging.regex-33.com"
-	@echo "$(WORKER2_IP)    monitoring.regex-33.com"
-	@echo "$(WORKER2_IP)    prometheus.regex-33.com"
-	@echo "$(WORKER2_IP)    alertmanager.regex-33.com"
+	@echo "$(MANAGER_IP)    ft-transcendence.com"
+	@echo "$(MANAGER_IP)    traefik.ft-transcendence.com"
+	@echo "$(MANAGER_IP)    registry.ft-transcendence.com"
+	@echo "$(MANAGER_IP)    registry-ui.ft-transcendence.com"
+	@echo "$(WORKER1_IP)    logging.ft-transcendence.com"
+	@echo "$(WORKER2_IP)    monitoring.ft-transcendence.com"
+	@echo "$(WORKER2_IP)    prometheus.ft-transcendence.com"
+	@echo "$(WORKER2_IP)    alertmanager.ft-transcendence.com"
 	@echo ""
 	@echo "$(RED) Note: You'll need to accept self-signed certificate warnings in your browser$(NC)"
 
@@ -336,16 +337,16 @@ swarm-cluster: check-env check-prerequisites test-connection prepare-nodes destr
 	@echo "$(GREEN)✓ Docker Swarm cluster with private registry setup completed successfully!$(NC)"
 	@echo ""
 	@echo "$(YELLOW)Access Points:$(NC)"
-	@echo "  Application: https://regex-33.com"
+	@echo "  Application: https://ft-transcendence.com"
 	@echo "  Private Registry: http://$(MANAGER_IP):5000"
 	@echo "  Registry UI: http://$(MANAGER_IP):5001"
-	@echo "  Traefik Dashboard: https://traefik.regex-33.com (admin/admin123)"
-	@echo "  Kibana: https://logging.regex-33.com"
-	@echo "  Grafana: https://monitoring.regex-33.com"
-	@echo "  Prometheus: https://prometheus.regex-33.com (admin/admin123)"
+	@echo "  Traefik Dashboard: https://traefik.ft-transcendence.com (admin/admin123)"
+	@echo "  Kibana: https://logging.ft-transcendence.com"
+	@echo "  Grafana: https://monitoring.ft-transcendence.com"
+	@echo "  Prometheus: https://prometheus.ft-transcendence.com (admin/admin123)"
 	@echo ""
 	@echo "$(YELLOW)Vault Access:$(NC)"
-	@echo "  Vault UI: https://vault.regex-33.com"
+	@echo "  Vault UI: https://vault.ft-transcendence.com"
 	@echo ""
 	@make show-hosts
 
@@ -364,14 +365,14 @@ swarm-cluster-vault: check-env check-prerequisites test-connection prepare-nodes
 	@echo "$(GREEN)✓ Docker Swarm cluster with Vault setup completed successfully!$(NC)"
 	@echo ""
 	@echo "$(YELLOW)Access Points:$(NC)"
-	@echo "  Application: https://regex-33.com"
-	@echo "  Vault UI: https://vault.regex-33.com"
+	@echo "  Application: https://ft-transcendence.com"
+	@echo "  Vault UI: https://vault.ft-transcendence.com"
 	@echo "  Private Registry: http://$(MANAGER_IP):5000"
-	@echo "  Traefik Dashboard: https://traefik.regex-33.com"
-	@echo "  Kibana: https://logging.regex-33.com"
-	@echo "  Grafana: https://monitoring.regex-33.com"
-	@echo "  Prometheus: https://prometheus.regex-33.com"
-	@echo "  Vault: https://vault.regex-33.com"
+	@echo "  Traefik Dashboard: https://traefik.ft-transcendence.com"
+	@echo "  Kibana: https://logging.ft-transcendence.com"
+	@echo "  Grafana: https://monitoring.ft-transcendence.com"
+	@echo "  Prometheus: https://prometheus.ft-transcendence.com"
+	@echo "  Vault: https://vault.ft-transcendence.com"
 	@echo ""
 	@make show-hosts
 

@@ -9,8 +9,6 @@ source .env
 MANAGER_IP=$1
 WORKER1_IP=$2
 WORKER2_IP=$3
-SSH_USER=root
-SSH_PASS=regex-33
 SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR"
 REGISTRY_URL="$MANAGER_IP:5000"
 
@@ -45,44 +43,7 @@ scp_copy_folder() {
 
 echo -e "${BLUE} Deploying Docker Stacks with Private Registry${NC}"
 
-# Install sshpass on manager node if not already installed
-echo -e "${YELLOW}Installing sshpass on manager node...${NC}"
-ssh_exec "
-if ! command -v sshpass &> /dev/null; then
-    if command -v apt-get &> /dev/null; then
-        apt-get update && apt-get install -y sshpass
-    elif command -v yum &> /dev/null; then
-        yum install -y sshpass
-    elif command -v apk &> /dev/null; then
-        apk add --no-cache sshpass
-    else
-        echo 'Cannot install sshpass - unsupported package manager'
-        exit 1
-    fi
-fi
-"
 
-# Create deployment directory on manager
-echo -e "${YELLOW}Creating deployment directory...${NC}"
-ssh_exec "rm -rf /opt/transcendence/deploy && mkdir -p /opt/transcendence/deploy"
-
-# Copy application files to manager
-echo -e "${YELLOW}Copying application files...${NC}"
-scp_copy_folder "./" "/opt/transcendence/deploy/"
-
-# Setup Traefik
-echo -e "${BLUE} Setting up Traefik...${NC}"
-ssh_exec "mkdir -p /opt/traefik/data /opt/traefik/certs \
-            && cd /opt/transcendence/deploy \
-            && cp ./services/devops/traefik/certs/* /opt/traefik/certs/ || true \
-            && chmod 600 /opt/traefik/certs/*.key || true \
-            && chmod 644 /opt/traefik/certs/*.crt || true"
-
-
-
-# Setup Logging Directory
-echo -e "${YELLOW}Creating logging directory...${NC}"
-scp_copy "./services/devops/logging/setup/create-log-structure.sh" "/opt/transcendence/deploy/"
 # Check if the Logging structure was already exists:
 if ssh_exec "tree /var/log/ft-transcendence"; then
     echo -e "${GREEN}✓ Logging structure already exists.${NC}"
@@ -92,20 +53,10 @@ else
     echo -e "${GREEN}✓ Logging structure created successfully.${NC}"
 fi
 
-# Copy compose files to manager
-echo -e "${YELLOW}Copying compose files...${NC}"
-scp_copy "stacks/docker-compose.app.yml" "/opt/transcendence/deploy/"
-scp_copy "stacks/docker-compose.logging.yml" "/opt/transcendence/deploy/"
-scp_copy "stacks/docker-compose.monitoring.yml" "/opt/transcendence/deploy/"
-scp_copy "stacks/docker-compose.registry.yml" "/opt/transcendence/deploy/"
-scp_copy "stacks/docker-compose.traefik.yml" "/opt/transcendence/deploy/"
-scp_copy "stacks/docker-compose.logging.yml" "/opt/transcendence/deploy/"
-scp_copy ".env" "/opt/transcendence/deploy/"
-
 # Update compose files to use registry images
 echo -e "${YELLOW}Updating compose files to use private registry...${NC}"
 ssh_exec "
-cd /opt/transcendence/deploy
+cd /opt/transcendence/deploy/stacks
 
 # Function to update image references in compose files
 update_compose_file() {
@@ -137,7 +88,7 @@ echo -e "${YELLOW}Checking if registry is running...${NC}"
 if ! ssh_exec "curl -s http://$MANAGER_IP:5000/v2/ > /dev/null"; then
 
     echo -e "${YELLOW}Registry not running, deploying it first...${NC}"
-    ssh_exec "cd /opt/transcendence/deploy && docker stack deploy -c docker-compose.registry.yml ft-registry"
+    ssh_exec "cd /opt/transcendence/deploy && source .env && docker stack deploy -c stacks/docker-compose.registry.yml ft-registry"
     
     # Wait for registry to be ready
     echo -e "${YELLOW}Waiting for registry to be ready...${NC}"
@@ -159,6 +110,7 @@ IMAGES=(
     "ft_transcendence/frontend"
     "ft_transcendence/user-service"
     "ft_transcendence/chat-service"
+    "ft_transcendence/xo-game"
     "ft_transcendence/nginx"
     "ft_transcendence/postgres"
     "ft_transcendence/redis"
@@ -198,15 +150,14 @@ echo -e "${GREEN}✓ All required images are available in the registry${NC}"
 # Deploy stacks in order
 echo -e "${BLUE} Deploying stacks...${NC}"
 
-
 # 1. Deploy Traefik stack
 echo -e "${YELLOW}Deploying Traefik stack...${NC}"
-ssh_exec "cd /opt/transcendence/deploy && source .env && docker stack deploy -c docker-compose.traefik.yml ft-traefik"
+ssh_exec "cd /opt/transcendence/deploy && source .env && docker stack deploy -c stacks/docker-compose.traefik.yml ft-traefik"
 
 
 # 1. Deploy main application stack
 echo -e "${YELLOW}Deploying main application stack...${NC}"
-ssh_exec "cd /opt/transcendence/deploy && source .env && docker stack deploy -c docker-compose.app.yml ft-app"
+ssh_exec "cd /opt/transcendence/deploy && source .env && docker stack deploy -c stacks/docker-compose.app.yml ft-app"
 
 # Wait for application deployment
 echo -e "${YELLOW}Waiting for application stack to initialize...${NC}"
@@ -214,7 +165,7 @@ sleep 60
 
 # 2. Deploy logging stack
 echo -e "${YELLOW}Deploying logging stack...${NC}"
-ssh_exec "cd /opt/transcendence/deploy && source .env && docker stack deploy -c docker-compose.logging.yml ft-logging"
+ssh_exec "cd /opt/transcendence/deploy && source .env && docker stack deploy -c stacks/docker-compose.logging.yml ft-logging"
 
 # Wait for logging stack to be ready
 echo -e "${YELLOW}Waiting for logging stack to initialize...${NC}"
@@ -233,7 +184,7 @@ done
 
 # 3. Deploy monitoring stack
 echo -e "${YELLOW}Deploying monitoring stack...${NC}"
-ssh_exec "cd /opt/transcendence/deploy && source .env && docker stack deploy -c docker-compose.monitoring.yml ft-monitoring"
+ssh_exec "cd /opt/transcendence/deploy && source .env && docker stack deploy -c stacks/docker-compose.monitoring.yml ft-monitoring"
 
 # Wait for monitoring stack
 echo -e "${YELLOW}Waiting for monitoring stack to initialize...${NC}"
@@ -251,6 +202,7 @@ check_service_health() {
 
 # Check all stacks
 check_service_health "ft-traefik"
+check_service_health "ft-vault"
 check_service_health "ft-registry"
 check_service_health "ft-app"
 check_service_health "ft-logging"
@@ -269,32 +221,13 @@ for i in {1..20}; do
 done
 
 
-# sshpass -p "regex-33" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null 
-#-o LogLevel=ERROR root@10.13.249.247 
-#"sudo docker container ls --format '{{.ID}} {{.Image}}' | grep 'ft_transcendence/kibana' | 
-#awk '{print \$1}' | xargs -I {} sudo docker exec {} /scripts/import_dashboards.sh"
-
-
-
-# for i in {1..20}; do
-#     PENDING_SERVICES=$(ssh_exec "docker service ls --format '{{.Replicas}}' | grep '0/' | wc -l")
-#     if [ "$PENDING_SERVICES" -eq 0 ]; then
-#         echo -e "${GREEN}✓ All services are running${NC}"
-#         break
-#     elif [ "$PENDING_SERVICES" -gt 0 ]; then
-#         echo -e "${YELLOW}Updating pending services... | $i | ${NC}"
-#         ssh_exec "docker service update --force $i"
-#     fi
-#     sleep 80
-#     echo -e "${GREEN}✓ Service $i updated${NC}"
-# done
 
 
 # Minimal /etc/hosts update logic
 declare -A hosts_entries=(
-    ["$MANAGER_IP    regex-33.com traefik.regex-33.com registry-ui.regex-33.com vault.regex-33.com"]="Traefik with Application"
-    ["$WORKER1_IP    logging.regex-33.com"]="Logging"
-    ["$WORKER2_IP    monitoring.regex-33.com prometheus.regex-33.com alertmanager.regex-33.com"]="Monitoring"
+    ["$MANAGER_IP    ft-transcendence.com traefik.ft-transcendence.com registry-ui.ft-transcendence.com vault.ft-transcendence.com"]="Traefik with Application"
+    ["$WORKER1_IP    logging.ft-transcendence.com"]="Logging"
+    ["$WORKER2_IP    monitoring.ft-transcendence.com prometheus.ft-transcendence.com alertmanager.ft-transcendence.com"]="Monitoring"
 )
 
 for entry in "${!hosts_entries[@]}"; do
@@ -313,13 +246,13 @@ echo -e "${BLUE} Performing final health checks...${NC}"
 # Check web services
 echo -e "${YELLOW}Checking web services...${NC}"
 services_to_check=(
-    "regex-33.com|Application"
-    "traefik.regex-33.com|Reverse Proxy (Traefik)"
-    "registry-ui.regex-33.com|Registry UI (Docker Registry)"
-    "logging.regex-33.com|Logging (Kibana)"
-    "monitoring.regex-33.com|Monitoring (Grafana)"
-    "prometheus.regex-33.com|Prometheus (Prometheus)"
-    "alertmanager.regex-33.com|Alertmanager (Alertmanager)"
+    "ft-transcendence.com|Application"
+    "traefik.ft-transcendence.com|Reverse Proxy (Traefik)"
+    "registry-ui.ft-transcendence.com|Registry UI (Docker Registry)"
+    "logging.ft-transcendence.com|Logging (Kibana)"
+    "monitoring.ft-transcendence.com|Monitoring (Grafana)"
+    "prometheus.ft-transcendence.com|Prometheus (Prometheus)"
+    "alertmanager.ft-transcendence.com|Alertmanager (Alertmanager)"
 )
 
 for service in "${services_to_check[@]}"; do
@@ -331,11 +264,45 @@ for service in "${services_to_check[@]}"; do
         echo -e "${RED}✗${NC}"
     fi
 done
+sleep 100
 
-sleep 120
+docker service update --force ft-logging_kibana  > /dev/null 2>&1 || true
+
+
+# its_not_init_populate_or_secrets_creator() {
+#     local pending_services
+#     pending_services=$(ssh_exec "docker service ls --format '{{.Name}} {{.Replicas}}' | grep '0/' | awk '{print \$1}'")
+#
+#     echo "Pending services names: $pending_services"
+#     
+#     for service in $pending_services; do
+#         if [[ "$service" != "ft-vault_vault-init" && "$service" != "ft-vault_vault-populate" && "$service" != "ft-vault_vault-secrets-creator" ]]; then
+#             return 1
+#         fi
+#     done
+#     return 0
+# }
+    
+# for i in {1..20}; do
+#     PENDING_SERVICES=$(ssh_exec "docker service ls --format '{{.Replicas}}' | grep '0/' | wc -l")
+#
+#     echo "Pending services: $PENDING_SERVICES"
+#     if [ "$PENDING_SERVICES" -eq 0 ]; then
+#         echo -e "${GREEN}✓ All services are running${NC}"
+#         break
+#     elif [ "$PENDING_SERVICES" -eq 3 ] && its_not_init_populate_or_secrets_creator; then
+#         echo -e "${GREEN}✓ Only init, populate, and secrets-creator services are pending, which is expected.${NC}"
+#         break
+#     elif [ "$PENDING_SERVICES" -gt 0 ]; then
+#         echo -e "${YELLOW}Updating pending services... | $i | ${NC}"
+#         ssh_exec "docker service update --force $i"
+#         break 
+#     fi
+#     sleep 100
+# done
 
 #check if kibana is running befor run import_dashboards.sh
-if curl -k -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "https://logging.regex-33.com" | grep -q "200\|401\|302"; then
+if curl -k -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "https://logging.ft-transcendence.com" | grep -q "200\|401\|302"; then
     ssh_exec_logging "sudo docker container ls --format '{{.ID}} {{.Image}}' | grep 'ft_transcendence/kibana' | awk '{print \$1}' | xargs -I {} sudo docker exec --user root  {} /scripts/import_dashboards.sh"
     echo -e "${GREEN}✓ Kibana is running, dashboards imported successfully.${NC}"
 else
@@ -343,7 +310,7 @@ else
 fi
 
 # Check if Grafana is running before running setup-dashboards.sh
-if curl -k -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "https://monitoring.regex-33.com" | grep -q "200\|401\|302"; then
+if curl -k -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "https://monitoring.ft-transcendence.com" | grep -q "200\|401\|302"; then
     ssh_exec_monitoring "sudo docker container ls --format '{{.ID}} {{.Image}}' | grep 'ft_transcendence/grafana' | awk '{print \$1}' | xargs -I {} sudo docker exec --user root {} /usr/local/bin/setup-dashboards.sh"
     echo -e "${GREEN}✓ Grafana is running, dashboards setup successfully.${NC}"
 else
@@ -383,32 +350,5 @@ echo -e "  ${YELLOW}Kibana:${NC} https://$WORKER1_IP:5601"
 echo -e "  ${YELLOW}Grafana:${NC} http://$WORKER2_IP:3001 (admin/admin123)"
 echo -e "  ${YELLOW}Prometheus:${NC} http://$WORKER2_IP:9090"
 echo -e "  ${YELLOW}Elasticsearch:${NC} http://$WORKER1_IP:9200"
-
-# Save deployment info
-ssh_exec "
-cat > /opt/transcendence/deployment-info.txt << EOF
-ft_transcendence Docker Swarm Deployment with Private Registry
-Deployment Date: \$(date)
-Manager IP: $MANAGER_IP
-Worker 1 (Logging): $WORKER1_IP
-Worker 2 (Monitoring): $WORKER2_IP
-Private Registry: http://$MANAGER_IP:5000
-
-Access URLs:
-- Frontend: http://$MANAGER_IP
-- Private Registry: http://$MANAGER_IP:5000
-- Registry UI: http://$MANAGER_IP:5002
-- Kibana: https://$WORKER1_IP:5601
-- Grafana: http://$WORKER2_IP:3001
-- Prometheus: http://$WORKER2_IP:9090
-- Elasticsearch: https://$WORKER1_IP:9200
-
-Credentials:
-- Grafana: admin/admin123
-- PostgreSQL: $POSTGRES_USER/$POSTGRES_PASSWORD
-- Redis: Password protected with: $REDIS_PASSWORD
-- Registry: admin/admin123 (for web UI)
-EOF
-"
 
 echo -e "${GREEN} All stacks deployed successfully with private registry!${NC}"

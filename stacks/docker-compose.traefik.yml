@@ -7,7 +7,7 @@ services:
     ports:
       - "80:80"     # HTTP (redirects to HTTPS)
       - "443:443"   # HTTPS
-      - "8080:8080" # Dashboard (optional)
+      - "8080:8080"
     deploy:
       replicas: 1
       placement:
@@ -19,7 +19,7 @@ services:
       labels:
         # Traefik Dashboard (optional)
         - "traefik.enable=true"
-        - "traefik.http.routers.dashboard.rule=Host(`traefik.regex-33.com`)"
+        - "traefik.http.routers.dashboard.rule=Host(`traefik.ft-transcendence.com`)"
         - "traefik.http.routers.dashboard.tls=true"
         - "traefik.http.routers.dashboard.service=api@internal"
         - "traefik.http.routers.dashboard.middlewares=basic-auth,security-headers"

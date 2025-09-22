@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN apk add --no-cache make g++ python3
+RUN apk add --no-cache make g++ python3 bash
 COPY . .
 
 RUN npm i nodemon -g

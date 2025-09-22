@@ -53,3 +53,11 @@ template {
   destination = "/vault/secrets/oauth.env"
   perms = 0640
 }
+
+// elastic
+template {
+  source = "/vault/config/elasticsearch.tpl"
+  destination = "/vault/secrets/elasticsearch.env"
+  perms = 0640
+  command = "echo 'Elasticsearch secrets updated'"
+}

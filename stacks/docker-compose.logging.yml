@@ -89,7 +89,7 @@ services:
       - logging-network
     depends_on:
       - vault-agent-logging
-    command: ["bash", "-c", "set -a && source /vault/secrets/elasticsearch.env && set +a && /usr/local/bin/docker-entrypoint.sh"]
+    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/elasticsearch.env && set +a && /usr/local/bin/docker-entrypoint.sh"]
     ulimits:
       memlock:
         soft: -1
@@ -115,11 +115,11 @@ services:
         target: /certs/kibana.key
     environment:
       # Keep non-sensitive config
-      - KIBANA_PORT=5601
-      - SERVER_REWRITEBASEPATH=false
       - KIBANA_INIT_TIMEOUT=300000
-      - SERVER_PUBLICBASEURL=https://logging.regex-33.com
+      - SERVER_PORT=5601
       - SERVER_HOST=0.0.0.0
+      - SERVER_PUBLICBASEURL=https://logging.ft-transcendence.com
+      - SERVER_SSL_ENABLED=true
     deploy:
       replicas: 1
       placement:
@@ -135,13 +135,14 @@ services:
           memory: 512M
       labels:
         - "traefik.enable=true"
-        - "traefik.tcp.routers.kibana.rule=HostSNI(`logging.regex-33.com`)"
+        - "traefik.tcp.routers.kibana.rule=HostSNI(`logging.ft-transcendence.com`)"
         - "traefik.tcp.routers.kibana.entrypoints=websecure"
         - "traefik.tcp.routers.kibana.tls.passthrough=true"
         - "traefik.tcp.services.kibana.loadbalancer.server.port=5601"
         - "traefik.docker.network=traefik-public"
+
     env_file:
-      - ./services/devops/logging/secrets/.env.kibana.token
+      - ./../services/devops/logging/secrets/.env.kibana.token
     networks:
       - traefik-public
       - logging-network
@@ -179,10 +180,6 @@ services:
       - LOG_LEVEL=info
     ports:
       - "5044:5044"
-      - "5045:5045"
-      - "5046:5046"
-      - "5047:5047"
-      - "5048:5048"
       - "5003:5003"
       - "8081:8081"
       - "9600:9600"
@@ -204,7 +201,7 @@ services:
     depends_on:
       - vault-agent-logging
       - elasticsearch
-    command: ["bash", "-c", "set -a && source /vault/secrets/logstash.env && source /vault/secrets/elasticsearch.env && set +a && /usr/local/bin/docker-entrypoint"]
+    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/logstash.env && source /vault/secrets/elasticsearch.env && set +a && /usr/local/bin/docker-entrypoint"]
 
   # Filebeat for Logging Node
   filebeat-logging:
@@ -423,16 +420,16 @@ secrets:
 
   # Elasticsearch secrets remain the same
   elasticsearch.keystore:
-    file: ./services/devops/logging/secrets/keystore/elasticsearch.keystore
+    file: ./../services/devops/logging/secrets/keystore/elasticsearch.keystore
   elasticsearch.service_tokens:
-    file: ./services/devops/logging/secrets/service_tokens
+    file: ./../services/devops/logging/secrets/service_tokens
   elastic.ca:
-    file: ./services/devops/logging/secrets/certs/ca/ca.crt
+    file: ./../services/devops/logging/secrets/certs/ca/ca.crt
   elasticsearch.certificate:
-    file: ./services/devops/logging/secrets/certs/elasticsearch/elasticsearch.crt
+    file: ./../services/devops/logging/secrets/certs/elasticsearch/elasticsearch.crt
   elasticsearch.key:
-    file: ./services/devops/logging/secrets/certs/elasticsearch/elasticsearch.key
+    file: ./../services/devops/logging/secrets/certs/elasticsearch/elasticsearch.key
   kibana.certificate:
-    file: ./services/devops/logging/secrets/certs/kibana/kibana.crt
+    file: ./../services/devops/logging/secrets/certs/kibana/kibana.crt
   kibana.key:
-    file: ./services/devops/logging/secrets/certs/kibana/kibana.key
+    file: ./../services/devops/logging/secrets/certs/kibana/kibana.key

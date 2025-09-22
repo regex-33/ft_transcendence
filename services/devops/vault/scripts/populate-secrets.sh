@@ -379,7 +379,8 @@ populate_app_secrets() {
         "port=${POSTGRES_PORT:-5432}" \
         "database=${POSTGRES_DB:-postgres_db}" \
         "username=${POSTGRES_USER:-postgres_user}" \
-        "password=${POSTGRES_PASSWORD:-postgres_password}"
+        "password=${POSTGRES_PASSWORD:-postgres_password}" \
+        "url=postgresql://${POSTGRES_USER:-postgres_user}:${POSTGRES_PASSWORD:-postgres_password}@${POSTGRES_HOST:-postgres}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-postgres_db}?schema=chat"
     
     # Redis credentials
     store_secrets "app/redis" \
@@ -397,21 +398,21 @@ populate_app_secrets() {
         store_secrets "app/oauth/github" \
             "client_id=${GITHUB_CLIENT_ID}" \
             "client_secret=${GITHUB_CLIENT_SECRET}" \
-            "callback_url=https://regex-33.com/api/auth/github/callback"
+            "callback_url=https://ft-transcendence.com/api/auth/github/callback"
     fi
     
     if [ -n "${INTRA_CLIENT_ID:-}" ] && [ -n "${INTRA_CLIENT_SECRET:-}" ]; then
         store_secrets "app/oauth/intra" \
             "client_id=${INTRA_CLIENT_ID}" \
             "client_secret=${INTRA_CLIENT_SECRET}" \
-            "callback_url=https://regex-33.com/api/auth/intra/callback"
+            "callback_url=https://ft-transcendence.com/api/auth/intra/callback"
     fi
     
     if [ -n "${GOOGLE_CLIENT_ID:-}" ] && [ -n "${GOOGLE_CLIENT_SECRET:-}" ]; then
         store_secrets "app/oauth/google" \
             "client_id=${GOOGLE_CLIENT_ID}" \
             "client_secret=${GOOGLE_CLIENT_SECRET}" \
-            "callback_url=https://regex-33.com/api/auth/google/callback"
+            "callback_url=https://ft-transcendence.com/api/auth/google/callback"
     fi
     
     # Email configuration
@@ -474,7 +475,7 @@ populate_monitoring_secrets() {
     # Grafana credentials
     store_secrets "monitoring/grafana" \
         "admin_user=${GRAFANA_USER:-admin}" \
-        "admin_password=${GRAFANA_PASSWORD:-admin123}"
+        "admin_password=${GRAFANA_ADMIN_PASSWORD:-admin123}"
     
     # Prometheus configuration
     store_secrets "monitoring/prometheus" \
@@ -500,12 +501,12 @@ populate_infrastructure_secrets() {
     
     # Domain configuration
     store_secrets "infrastructure/domains" \
-        "domain_name=${DOMAIN_NAME:-regex-33.com}" \
-        "app_domain=${APP_DOMAIN:-regex-33.com}" \
-        "logging_domain=${LOGGING_DOMAIN:-logging.regex-33.com}" \
-        "monitoring_domain=${MONITORING_DOMAIN:-monitoring.regex-33.com}" \
-        "traefik_domain=${TRAEFIK_DOMAIN:-traefik.regex-33.com}" \
-        "prometheus_domain=${PROMETHEUS_DOMAIN:-prometheus.regex-33.com}"
+        "domain_name=${DOMAIN_NAME:-ft-transcendence.com}" \
+        "app_domain=${APP_DOMAIN:-ft-transcendence.com}" \
+        "logging_domain=${LOGGING_DOMAIN:-logging.ft-transcendence.com}" \
+        "monitoring_domain=${MONITORING_DOMAIN:-monitoring.ft-transcendence.com}" \
+        "traefik_domain=${TRAEFIK_DOMAIN:-traefik.ft-transcendence.com}" \
+        "prometheus_domain=${PROMETHEUS_DOMAIN:-prometheus.ft-transcendence.com}"
     
     # Load balancer configuration
     store_secrets "infrastructure/nginx" \

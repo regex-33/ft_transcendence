@@ -157,7 +157,7 @@ generate_vault_certs() {
         openssl genrsa -out "$cert_dir/vault.key" 4096
         openssl req -new -key "$cert_dir/vault.key" \
             -out "$cert_dir/vault.csr" \
-            -subj "/CN=vault.regex-33.com/O=ft_transcendence/C=US"
+            -subj "/CN=vault.ft-transcendence.com/O=ft_transcendence/C=US"
         
         # Create extensions file
         cat > "$cert_dir/vault.ext" << EOF
@@ -169,7 +169,7 @@ subjectAltName = @alt_names
 
 [alt_names]
 DNS.1 = vault
-DNS.2 = vault.regex-33.com
+DNS.2 = vault.ft-transcendence.com
 DNS.3 = localhost
 IP.1 = 127.0.0.1
 IP.2 = ${MANAGER_IP}
@@ -375,11 +375,11 @@ show_access_info() {
     echo "    VAULT ACCESS INFORMATION"
     echo "==============================="
     echo
-    echo "Vault UI: https://vault.regex-33.com"
+    echo "Vault UI: https://vault.ft-transcendence.com"
     echo "Vault API: https://${MANAGER_IP}:8200"
     echo
     echo "Add to your /etc/hosts:"
-    echo "${MANAGER_IP}    vault.regex-33.com"
+    echo "${MANAGER_IP}    vault.ft-transcendence.com"
     echo
     warn "Check Vault initialization logs:"
     echo "docker service logs ft-vault_vault-init"
@@ -403,8 +403,8 @@ main() {
     generate_vault_certs
     create_vault_secrets
 
-    create_networks
     create_vault_configs
+    create_networks
     
     if deploy_vault && verify_secrets; then
         # wait_for_vault

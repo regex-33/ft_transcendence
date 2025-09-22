@@ -11,8 +11,6 @@ MANAGER_IP=$2
 WORKER1_IP=$3
 WORKER2_IP=$4
 
-SSH_USER=root
-SSH_PASS=regex-33
 SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR"
 
 # Colors
@@ -211,59 +209,11 @@ case $ACTION in
             "
         fi
         
-        # Create secrets
-        echo -e "${YELLOW}Creating Docker secrets...${NC}"
-        ssh_exec $MANAGER_IP "
-            echo '$POSTGRES_PASSWORD' | docker secret create postgres-password - 2>/dev/null || echo 'postgres-password secret already exists'
-            echo '$REDIS_PASSWORD' | docker secret create redis-password - 2>/dev/null || echo 'redis-password secret already exists'
-            echo '$JWT_SECRET' | docker secret create jwt-secret - 2>/dev/null || echo 'jwt-secret already exists'
-            echo '$GRAFANA_ADMIN_PASSWORD' | docker secret create grafana-password - 2>/dev/null || echo 'grafana-password secret already exists'
-        "
-        
         # Show cluster status
         echo -e "${YELLOW}Final cluster status:${NC}"
         ssh_exec $MANAGER_IP "docker node ls"
         
         echo -e "${GREEN}✓ Swarm cluster configured successfully${NC}"
-        ;;
-        
-    "fix-labels")
-        echo -e "${BLUE} Fixing node labels${NC}"
-        
-        # Get all nodes
-        NODES=$(ssh_exec $MANAGER_IP "docker node ls --format '{{.ID}} {{.Hostname}}'")
-        
-        while IFS= read -r line; do
-            if [ -z "$line" ]; then
-                continue
-            fi
-            
-            NODE_ID=$(echo "$line" | awk '{print $1}')
-            NODE_HOSTNAME=$(echo "$line" | awk '{print $2}')
-            
-            echo "Processing node: $NODE_ID ($NODE_HOSTNAME)"
-            
-            # Determine node type based on hostname
-            case "$NODE_HOSTNAME" in
-                *manager*|*Regex*)
-                    echo "Labeling $NODE_HOSTNAME as application node..."
-                    ssh_exec $MANAGER_IP "docker node update --label-add type=application $NODE_ID"
-                    ;;
-                *logging*)
-                    echo "Labeling $NODE_HOSTNAME as logging node..."
-                    ssh_exec $MANAGER_IP "docker node update --label-add type=logging $NODE_ID"
-                    ;;
-                *monitoring*)
-                    echo "Labeling $NODE_HOSTNAME as monitoring node..."
-                    ssh_exec $MANAGER_IP "docker node update --label-add type=monitoring $NODE_ID"
-                    ;;
-                *)
-                    echo "Unknown node type for $NODE_HOSTNAME, skipping..."
-                    ;;
-            esac
-        done <<< "$NODES"
-        
-        echo -e "${GREEN}✓ Node labels fixed${NC}"
         ;;
         
     "status")
@@ -293,7 +243,7 @@ case $ACTION in
         
     *)
         echo -e "${RED}✗ Invalid action: $ACTION${NC}"
-        echo -e "${YELLOW}Usage: $0 <init|join|configure|fix-labels|status> <manager_ip> [worker1_ip] [worker2_ip]${NC}"
+        echo -e "${YELLOW}Usage: $0 <init|join|configure|status> <manager_ip> [worker1_ip] [worker2_ip]${NC}"
         exit 1
         ;;
 esac

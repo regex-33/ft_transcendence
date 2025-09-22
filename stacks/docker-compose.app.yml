@@ -63,16 +63,26 @@ services:
         delay: 10s
         failure_action: rollback
       labels:
+        # HTTP router for redirect
         - "traefik.enable=true"
-        - "traefik.http.routers.app.rule=Host(`regex-33.com`)"
+        - "traefik.http.routers.app.rule=Host(`ft-transcendence.com`)"
+        - "traefik.http.routers.app.entrypoints=websecure"
         - "traefik.http.routers.app.tls=true"
         - "traefik.http.services.app.loadbalancer.server.port=80"
-        - "traefik.http.routers.app.middlewares=security-headers"
+        - "traefik.http.routers.app.middlewares=security-headers@file"
         - "traefik.http.middlewares.security-headers.headers.frameDeny=true"
         - "traefik.http.middlewares.security-headers.headers.contentTypeNosniff=true"
         - "traefik.http.middlewares.security-headers.headers.browserXssFilter=true"
         - "traefik.http.middlewares.security-headers.headers.referrerPolicy=strict-origin-when-cross-origin"
         - "traefik.http.middlewares.security-headers.headers.customRequestHeaders.X-Forwarded-Proto=https"
+        # HTTP router for redirect
+        - "traefik.http.routers.app-http.rule=Host(`ft-transcendence.com`)"
+        - "traefik.http.routers.app-http.entrypoints=web"
+        - "traefik.http.routers.app-http.middlewares=redirect-to-https"
+        - "traefik.http.routers.app-http.tls=false"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+
     depends_on:
       - user-service
       - chat-service
@@ -139,7 +149,6 @@ services:
         reservations:
           memory: 512M
     volumes:
-      - /app/node_modules
       - vault-app-secrets:/vault/secrets:ro
     networks:
       - app-network
@@ -152,7 +161,7 @@ services:
       - vault-agent-app
       - postgres
       - redis
-    command: ["bash", "-c", "set -a && source /vault/secrets/app.env && source /vault/secrets/database.env && set +a && npm start"]
+    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && source /vault/secrets/database.env && set +a && npm start"]
     logging:
       driver: "json-file"
       options:
@@ -181,8 +190,6 @@ services:
         reservations:
           memory: 512M
     volumes:
-      - ./services/chat-service:/usr/src/app
-      - /usr/src/app/node_modules
       - vault-app-secrets:/vault/secrets:ro
     networks:
       - app-network
@@ -190,16 +197,62 @@ services:
       - NODE_ENV=development
       - PORT=8002
       - USER_SERVICE_URL=http://user-service:8001
+      # - DATABASE_URL=postgresql://postgres_user:postgres_password@postgres:5432/postgres_db?schema=chat
     depends_on:
       - vault-agent-app
       - postgres
       - user-service
-    command: ["bash", "-c", "set -a && source /vault/secrets/app.env && source /vault/secrets/database.env && set +a && npm start"]
+    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && source /vault/secrets/database.env && set +a && npm start"]
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
+
+  xo-game:
+    image: ft_transcendence/xo-game
+    deploy:
+      replicas: 1  # Removed variable interpolation
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 256M
+          cpus: "0.25"
+    networks:
+      - app-network
+    volumes:
+      - vault-app-secrets:/vault/secrets:ro
+    environment:
+      - INTRA_CALLBACK_URL=${INTRA_CALLBACK_URL:-https://ft-transcendence.com/api/oauth/intra/callback}
+      - NODE_ENV=development
+      - PORT=8001
+      - HOME_PAGE=/home
+      - USER_SERVICE_URL=http://user-service:8001
+    depends_on:
+      - vault-agent-app
+      - postgres
+      - user-service
+      - redis
+    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && source /vault/secrets/database.env && set +a && npm run dev"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 
   # PostgreSQL Database - Updated with Vault
   postgres:
@@ -224,7 +277,7 @@ services:
       - app-network
     depends_on:
       - vault-agent-app
-    command: ["bash", "-c", "set -a && source /vault/secrets/database.env && set +a && docker-entrypoint.sh postgres"]
+    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/database.env && set +a && docker-entrypoint.sh postgres"]
     healthcheck:
       test: ["CMD-SHELL", "set -a && source /vault/secrets/database.env && set +a && pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 30s
@@ -260,7 +313,7 @@ services:
       - app-network
     depends_on:
       - vault-agent-app
-    command: ["bash", "-c", "set -a && source /vault/secrets/app.env && set +a && redis-server --requirepass $$REDIS_PASSWORD"]
+    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && set +a && redis-server --requirepass $$REDIS_PASSWORD"]
     healthcheck:
       test: ["CMD-SHELL", "set -a && source /vault/secrets/app.env && set +a && redis-cli --no-auth-warning -a $$REDIS_PASSWORD ping"]
       interval: 30s
@@ -452,7 +505,7 @@ services:
     depends_on:
       - vault-agent-app
       - redis
-    command: ["bash", "-c", "set -a && source /vault/secrets/app.env && set +a && redis_exporter -redis.addr=redis:6379 -redis.password=$$REDIS_PASSWORD"]
+    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && set +a && redis_exporter -redis.addr=redis:6379 -redis.password=$$REDIS_PASSWORD"]
     logging:
       driver: "json-file"
       options:

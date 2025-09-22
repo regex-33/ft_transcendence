@@ -25,13 +25,20 @@ services:
       labels:
         # Traefik configuration for Vault UI
         - "traefik.enable=true"
-        - "traefik.constraint-label=traefik-public"
-        - "traefik.http.routers.vault.rule=Host(`vault.regex-33.com`)"
-        - "traefik.http.routers.vault.entrypoints=web,websecure"
+        - "traefik.http.routers.vault.rule=Host(`vault.ft-transcendence.com`)"
+        - "traefik.http.routers.vault.entrypoints=websecure"
         - "traefik.http.routers.vault.tls=true"
         - "traefik.http.services.vault.loadbalancer.server.port=8200"
         - "traefik.http.routers.vault.middlewares=vault-auth@file,security-headers@file"
         - "traefik.docker.network=traefik-public"
+        - "traefik.constraint-label=traefik-public"
+        # HTTP router for redirect
+        - "traefik.http.routers.vault-http.rule=Host(`vault.ft-transcendence.com`)"
+        - "traefik.http.routers.vault-http.entrypoints=web"
+        - "traefik.http.routers.vault-http.middlewares=redirect-to-https"
+        - "traefik.http.routers.vault-http.tls=false"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
     volumes:
       - vault-data:/vault/data
       - vault-logs:/vault/logs

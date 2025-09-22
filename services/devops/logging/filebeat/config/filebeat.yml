@@ -187,13 +187,13 @@ processors:
       fields: ["agent.ephemeral_id", "agent.id", "ecs.version", "host.architecture", "host.os.family", "host.os.version", "host.os.kernel"]
       ignore_missing: true
   - timestamp:
-      field: "@timestamp"
+      field: json.time
       layouts:
-        - '2006-01-02T15:04:05.000Z'
+        - '2006-01-02T15:04:05.999999999Z07:00'
+        - '2006-01-02T15:04:05.999Z'
         - '2006-01-02T15:04:05Z'
-        - '2006-01-02 15:04:05'
       test:
-        - '2023-12-25T09:30:00.000Z'
+        - '2019-06-22T16:33:51Z'
 
 # ================================ Output Configuration ===============================
 output.logstash:

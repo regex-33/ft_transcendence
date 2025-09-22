@@ -65,13 +65,20 @@ services:
           memory: 1G
       labels:
         - "traefik.enable=true"
-        - "traefik.constraint-label=traefik-public"
-        - "traefik.http.routers.prometheus.rule=Host(`prometheus.regex-33.com`)"
-        - "traefik.http.routers.prometheus.entrypoints=web,websecure"
+        - "traefik.http.routers.prometheus.rule=Host(`prometheus.ft-transcendence.com`)"
+        - "traefik.http.routers.prometheus.entrypoints=websecure"
         - "traefik.http.routers.prometheus.tls=true"
         - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
         - "traefik.http.routers.prometheus.middlewares=prometheus-auth@file,security-headers@file"
+        - "traefik.constraint-label=traefik-public"
         - "traefik.docker.network=traefik-public"
+        # HTTP router for redirect
+        - "traefik.http.routers.prometheus-http.rule=Host(`prometheus.ft-transcendence.com`)"
+        - "traefik.http.routers.prometheus-http.entrypoints=web"
+        - "traefik.http.routers.prometheus-http.middlewares=redirect-to-https"
+        - "traefik.http.routers.prometheus-http.tls=false"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
     ports:
       - "9090:9090"
     volumes:
@@ -95,7 +102,7 @@ services:
         echo 'Vault secrets found, sourcing environment variables...';
         set -a && . /vault/secrets/prometheus.env && set +a;
         echo 'Environment variables loaded, starting Prometheus...';
-        exec /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=30d --storage.tsdb.retention.size=10GB --web.console.libraries=/etc/prometheus/console_libraries --web.console.templates=/etc/prometheus/consoles --web.enable-lifecycle --web.enable-admin-api --log.level=info --web.external-url=https://prometheus.regex-33.com
+        exec /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=30d --storage.tsdb.retention.size=10GB --web.console.libraries=/etc/prometheus/console_libraries --web.console.templates=/etc/prometheus/consoles --web.enable-lifecycle --web.enable-admin-api --log.level=info --web.external-url=https://prometheus.ft-transcendence.com
       "
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
@@ -125,12 +132,19 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.constraint-label=traefik-public"
-        - "traefik.http.routers.grafana.rule=Host(`monitoring.regex-33.com`)"
-        - "traefik.http.routers.grafana.entrypoints=web,websecure"
+        - "traefik.http.routers.grafana.rule=Host(`monitoring.ft-transcendence.com`)"
+        - "traefik.http.routers.grafana.entrypoints=websecure"
         - "traefik.http.routers.grafana.tls=true"
         - "traefik.http.services.grafana.loadbalancer.server.port=3000"
         - "traefik.http.routers.grafana.middlewares=security-headers@file"
         - "traefik.docker.network=traefik-public"
+        # HTTP router for redirect
+        - "traefik.http.routers.grafana-http.rule=Host(`monitoring.ft-transcendence.com`)"
+        - "traefik.http.routers.grafana-http.entrypoints=web"
+        - "traefik.http.routers.grafana-http.middlewares=redirect-to-https"
+        - "traefik.http.routers.grafana-http.tls=false"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
     volumes:
       - grafana-data:/var/lib/grafana
       - grafana-provisioning:/etc/grafana/provisioning
@@ -149,9 +163,9 @@ services:
       - GF_ANALYTICS_CHECK_FOR_UPDATES=false
       - GF_SECURITY_DISABLE_GRAVATAR=true
       - GF_SNAPSHOTS_EXTERNAL_ENABLED=false
-      - GF_SERVER_ROOT_URL=https://monitoring.regex-33.com
+      - GF_SERVER_ROOT_URL=https://monitoring.ft-transcendence.com
       - GF_SERVER_SERVE_FROM_SUB_PATH=false
-      - GF_SERVER_DOMAIN=monitoring.regex-33.com
+      - GF_SERVER_DOMAIN=monitoring.ft-transcendence.com
       - GF_SERVER_ENABLE_GZIP=true
       - GF_SECURITY_CONTENT_TYPE_PROTECTION=true
       - GF_SECURITY_X_CONTENT_TYPE_OPTIONS=nosniff
@@ -159,7 +173,7 @@ services:
     depends_on:
       - vault-agent-monitoring
       - prometheus
-    command: ["bash", "-c", "set -a && source /vault/secrets/grafana.env && set +a && /run.sh"]
+    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/grafana.env && set +a && /run.sh"]
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
       interval: 30s
@@ -312,14 +326,21 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.constraint-label=traefik-public"
-        - "traefik.http.routers.alertmanager.rule=Host(`alertmanager.regex-33.com`)"
-        - "traefik.http.routers.alertmanager.entrypoints=web,websecure"
+        - "traefik.http.routers.alertmanager.rule=Host(`alertmanager.ft-transcendence.com`)"
+        - "traefik.http.routers.alertmanager.entrypoints=websecure"
         - "traefik.http.routers.alertmanager.tls=true"
         - "traefik.http.services.alertmanager.loadbalancer.server.port=9093"
         - "traefik.http.routers.alertmanager.middlewares=alertmanager-auth@file,security-headers@file"
         - "traefik.docker.network=traefik-public"
+        # HTTP router for redirect
+        - "traefik.http.routers.alertmanager-http.rule=Host(`alertmanager.ft-transcendence.com`)"
+        - "traefik.http.routers.alertmanager-http.entrypoints=web"
+        - "traefik.http.routers.alertmanager-http.middlewares=redirect-to-https"
+        - "traefik.http.routers.alertmanager-http.tls=false"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
     volumes:
-      - ./services/devops/monitoring/prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - ./../services/devops/monitoring/prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
       - alertmanager-config:/etc/alertmanager
     networks:
       - traefik-public

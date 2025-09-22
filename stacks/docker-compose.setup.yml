@@ -43,3 +43,22 @@ services:
       ELASTICSEARCH_PORT: ${ELASTICSEARCH_PORT:-9200}
       ES_JAVA_OPTS: "-Xmx${ELASTICSEARCH_HEAP:-512m} -Xms${ELASTICSEARCH_HEAP:-512m} -Des.enforce.bootstrap.checks=true -Dlog4j2.formatMsgNoLookups=true"
       bootstrap.memory_lock: "true"
+  
+  frontend:
+    build:
+      context: ./../services/frontend/
+      dockerfile: Dockerfile
+    command: npm run build
+    environment:
+      - NODE_ENV=development
+      - HOST=0.0.0.0
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - UV_THREADPOOL_SIZE=128
+    volumes:
+      - bundle-dist:/dist
+
+volumes:
+  bundle-dist:
+    driver: local
+
