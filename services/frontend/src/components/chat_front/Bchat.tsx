@@ -226,7 +226,8 @@ export const Bchat: ComponentFunction = () => {
                   msOverflowStyle: 'auto',
                 }}>
              <Online 
-                friends={onlinefriends}          
+                friends={onlinefriends} 
+                position="left"
               />
           </div>
           <img src='images/chat/icon_online.png' alt="icon online" className=" absolute top-12% mx-4% h-2.5% w-1.5% "></img>
@@ -238,6 +239,7 @@ export const Bchat: ComponentFunction = () => {
                 }}>
               <Online 
                 friends={onlinefriends}          
+                position="right"
               />
           </div>
           <img src='images/chat/icon_online.png' alt="icon online" className=" absolute top-12% mx-97% h-2.5% w-1.5%"></img>

@@ -9,7 +9,14 @@ export const Leaderboard: ComponentFunction = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
  
-  interface Friend { id: number; username: string; avatar: string; online?: boolean; }
+  interface Friend {
+    id: number;
+    username: string;
+    avatar?: string;
+    online?: boolean;
+    name: string;
+    image: string;
+  }
     
   useEffect(() => {
     const checkAuth = async () => {
@@ -176,7 +183,8 @@ export const Leaderboard: ComponentFunction = () => {
                   msOverflowStyle: 'auto',
                 }}>
              <Online 
-                friends={friends.filter(friend => friend.online)}          
+                friends={friends.filter(friend => friend.online)} 
+                position="left"        
               />
           </div>
           <img src='images/chat/icon_online.png' alt="icon online" className=" absolute top-12% mx-4% h-2.5% w-1.5% "></img>
@@ -187,7 +195,8 @@ export const Leaderboard: ComponentFunction = () => {
                   msOverflowStyle: 'auto',
                 }}>
               <Online 
-                friends={friends.filter(friend => friend.online)}          
+                friends={friends.filter(friend => friend.online)}         
+                position="right"     
               />
           </div>
           <img src='images/chat/icon_online.png' alt="icon online" className=" absolute top-12% mx-97% h-2.5% w-1.5%"></img>
