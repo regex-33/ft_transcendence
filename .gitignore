@@ -19,3 +19,4 @@ node_modules
 secrets/vault-certs
 uploads
 .vscode
+*.sqlite

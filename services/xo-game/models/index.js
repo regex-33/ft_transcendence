@@ -7,8 +7,8 @@ const basename = path.basename(__filename);
 const db = {};
 
 const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: path.join(__dirname, '../database.sqlite'),
+  dialect: process.env.DB_DIALECT || 'sqlite',
+  storage: process.env.DB_STORAGE || path.join(__dirname, '../database.sqlite'),
   logging: false,
 });
 

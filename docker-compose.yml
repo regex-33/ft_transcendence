@@ -43,14 +43,11 @@ services:
       - PORT=${USER_SERVICE_PORT:-8001}
       - JWT_SECRET=${JWT_SECRET}
       - TIME_TOKEN_EXPIRATION=${TIME_TOKEN_EXPIRATION:-3600}
-      - POSTGRES_HOST=${POSTGRES_HOST}
       - INTRA_CALLBACK_URL=${INTRA_CALLBACK_URL:-http://localhost/api/oauth/intra/callback}
       # - INTRA_CALLBACK_URL=${INTRA_CALLBACK_URL:-https://ft-transcendence.com/api/oauth/intra/callback}
       - HOME_PAGE=${HOME_PAGE:-/home}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - DB_DIALECT=${DB_DIALECT:-postgres}
+      - DB_DIALECT=${DB_DIALECT:-sqlite}
+      - DB_STORAGE=${DB_STORAGE:-./database.sqlite}
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
       - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
       - INTRA_CLIENT_ID=${INTRA_CLIENT_ID}
@@ -84,12 +81,7 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - PORT=${CHAT_SERVICE_PORT:-8002}
       - JWT_SECRET=${JWT_SECRET} 
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=${POSTGRES_USER}
-      - DB_PASSWORD=${POSTGRES_PASSWORD}
-      - DB_NAME=${POSTGRES_DB}
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=chat
+      - SQLITE=file:${DB_STORAGE:-./database.sqlite}
       - USER_SERVICE_URL=http://user-service:${USER_SERVICE_PORT:-8001}
     depends_on:
       - postgres
@@ -172,14 +164,11 @@ services:
       - PORT=${USER_SERVICE_PORT:-8001}
       - JWT_SECRET=${JWT_SECRET}
       - TIME_TOKEN_EXPIRATION=${TIME_TOKEN_EXPIRATION:-3600}
-      - POSTGRES_HOST=${POSTGRES_HOST}
       - INTRA_CALLBACK_URL=${INTRA_CALLBACK_URL:-http://localhost/api/oauth/intra/callback}
       # - INTRA_CALLBACK_URL=${INTRA_CALLBACK_URL:-https://ft-transcendence.com/api/oauth/intra/callback}
       - HOME_PAGE=${HOME_PAGE:-/home}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - DB_DIALECT=${DB_DIALECT:-postgres}
+      - DB_DIALECT=${DB_DIALECT:-sqlite}
+      - DB_STORAGE=${DB_STORAGE:-./database.sqlite}
 volumes:
   ## DATABASES
   redis_data:
