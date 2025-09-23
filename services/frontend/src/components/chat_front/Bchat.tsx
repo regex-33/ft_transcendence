@@ -42,7 +42,7 @@ export const Bchat: ComponentFunction = () => {
       console.log("WebSocket connected");
 
       try {
-        const resUser = await fetch('${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/chat/me', {
+        const resUser = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/chat/me`, {
           credentials: 'include',
           method: "GET",
         });
@@ -51,7 +51,7 @@ export const Bchat: ComponentFunction = () => {
         console.log("user us : ", user);
         setId(user.id);
 
-        const resFriends = await fetch('${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/chat/friends', {
+        const resFriends = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/chat/friends`, {
           method: 'GET',
           credentials: 'include',
         });
