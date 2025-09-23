@@ -15,7 +15,7 @@ export const Header: ComponentFunction = () => {
   useEffect(() => {
     const fetchUserId = async () => {
       try {
-        const resUser = await fetch('${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/chat/me', {
+        const resUser = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/chat/me`, {
           credentials: 'include',
           method: "GET",
         });
