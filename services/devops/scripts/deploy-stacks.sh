@@ -210,13 +210,13 @@ check_service_health "ft-monitoring"
 
 # Wait for all services to be running
 echo -e "${YELLOW}Waiting for all services to be running...${NC}"
-for i in {1..20}; do
+for i in {1..30}; do
     PENDING_SERVICES=$(ssh_exec "docker service ls --format '{{.Replicas}}' | grep '0/' | wc -l")
     if [ "$PENDING_SERVICES" -eq 0 ]; then
         echo -e "${GREEN}✓ All services are running${NC}"
         break
     fi
-    echo -e "${YELLOW}Waiting for services to start... (attempt $i/60)${NC}"
+    echo -e "${YELLOW}Waiting for services to start... (attempt $i/20)${NC}"
     sleep 10
 done
 
@@ -264,9 +264,16 @@ for service in "${services_to_check[@]}"; do
         echo -e "${RED}✗${NC}"
     fi
 done
+
 sleep 100
 
-docker service update --force ft-logging_kibana  > /dev/null 2>&1 || true
+PENDING_SERVICES=$(ssh_exec "docker service ls --format '{{.Name}} {{.Replicas}}' | grep '0/' | awk '{print \$1}'")
+
+echo "Pending services: $PENDING_SERVICES"
+# check if kibana is in pending services and restart it
+if [[ "$PENDING_SERVICES" == *"ft-logging_kibana"* ]]; then
+    docker service update --force ft-logging_kibana  > /dev/null 2>&1 || true
+fi
 
 
 # its_not_init_populate_or_secrets_creator() {
@@ -301,21 +308,21 @@ docker service update --force ft-logging_kibana  > /dev/null 2>&1 || true
 #     sleep 100
 # done
 
-#check if kibana is running befor run import_dashboards.sh
-if curl -k -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "https://logging.ft-transcendence.com" | grep -q "200\|401\|302"; then
-    ssh_exec_logging "sudo docker container ls --format '{{.ID}} {{.Image}}' | grep 'ft_transcendence/kibana' | awk '{print \$1}' | xargs -I {} sudo docker exec --user root  {} /scripts/import_dashboards.sh"
-    echo -e "${GREEN}✓ Kibana is running, dashboards imported successfully.${NC}"
-else
-    echo -e "${RED}✗ Kibana is not running, skipping dashboard import.${NC}"
-fi
+# #check if kibana is running befor run import_dashboards.sh
+# if curl -k -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "https://logging.ft-transcendence.com" | grep -q "200\|401\|302"; then
+#     ssh_exec_logging "sudo docker container ls --format '{{.ID}} {{.Image}}' | grep 'ft_transcendence/kibana' | awk '{print \$1}' | xargs -I {} sudo docker exec --user root  {} /scripts/import_dashboards.sh"
+#     echo -e "${GREEN}✓ Kibana is running, dashboards imported successfully.${NC}"
+# else
+#     echo -e "${RED}✗ Kibana is not running, skipping dashboard import.${NC}"
+# fi
 
-# Check if Grafana is running before running setup-dashboards.sh
-if curl -k -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "https://monitoring.ft-transcendence.com" | grep -q "200\|401\|302"; then
-    ssh_exec_monitoring "sudo docker container ls --format '{{.ID}} {{.Image}}' | grep 'ft_transcendence/grafana' | awk '{print \$1}' | xargs -I {} sudo docker exec --user root {} /usr/local/bin/setup-dashboards.sh"
-    echo -e "${GREEN}✓ Grafana is running, dashboards setup successfully.${NC}"
-else
-    echo -e "${RED}✗ Grafana is not running, skipping dashboard setup.${NC}"
-fi
+# # Check if Grafana is running before running setup-dashboards.sh
+# if curl -k -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "https://monitoring.ft-transcendence.com" | grep -q "200\|401\|302"; then
+#     ssh_exec_monitoring "sudo docker container ls --format '{{.ID}} {{.Image}}' | grep 'ft_transcendence/grafana' | awk '{print \$1}' | xargs -I {} sudo docker exec --user root {} /usr/local/bin/setup-dashboards.sh"
+#     echo -e "${GREEN}✓ Grafana is running, dashboards setup successfully.${NC}"
+# else
+#     echo -e "${RED}✗ Grafana is not running, skipping dashboard setup.${NC}"
+# fi
 
 # Show registry contents
 echo -e "${BLUE} Registry Contents:${NC}"

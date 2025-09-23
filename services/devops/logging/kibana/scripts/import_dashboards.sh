@@ -8,8 +8,13 @@ NC='\033[0m' # No Color
 RED='\033[0;31m'
 YELLOW='\033[0;33m'
 
+source /vault/secrets/elasticsearch.env
+
 ELASTIC_USERNAME="${ELASTIC_USERNAME:-elastic}"
 ELASTIC_PASSWORD="${ELASTIC_PASSWORD:-changeme}"
+
+#echo "User name : $ELASTIC_USERNAME"
+#echo "User name : $ELASTIC_PASSWORD"
 
 if [[ ! -d "/dashboards" ]]; then
   echo "Error: /dashboards directory does not exist."
@@ -26,3 +31,4 @@ for dashboard in /dashboards/*.ndjson; do
       echo -e "${GREEN}Successfully imported dashboard: $dashboard${NC}"
     fi
 done
+

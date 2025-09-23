@@ -81,6 +81,27 @@ rebuild-service:
 		echo "No service name provided. Aborting."; \
 	fi
 
+# #check if kibana is running befor run import_dashboards.sh
+# if curl -k -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "https://logging.ft-transcendence.com" | grep -q "200\|401\|302"; then
+#     ssh_exec_logging "sudo docker container ls --format '{{.ID}} {{.Image}}' | grep 'ft_transcendence/kibana' | awk '{print \$1}' | xargs -I {} sudo docker exec --user root  {} /scripts/import_dashboards.sh"
+#     echo -e "${GREEN}✓ Kibana is running, dashboards imported successfully.${NC}"
+# else
+#     echo -e "${RED}✗ Kibana is not running, skipping dashboard import.${NC}"
+# fi
+
+# # Check if Grafana is running before running setup-dashboards.sh
+# if curl -k -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "https://monitoring.ft-transcendence.com" | grep -q "200\|401\|302"; then
+#     ssh_exec_monitoring "sudo docker container ls --format '{{.ID}} {{.Image}}' | grep 'ft_transcendence/grafana' | awk '{print \$1}' | xargs -I {} sudo docker exec --user root {} /usr/local/bin/setup-dashboards.sh"
+#     echo -e "${GREEN}✓ Grafana is running, dashboards setup successfully.${NC}"
+# else
+#     echo -e "${RED}✗ Grafana is not running, skipping dashboard setup.${NC}"
+# fi
+import-dashboards:
+	@echo "Importing Kibana and Grafana dashboards..."
+	@sshpass -p $(SSH_PASS) ssh $(SSH_OPTS) "$(SSH_USER)@$(WORKER2_IP)" "docker container ls --format '{{.ID}} {{.Image}}' | grep 'ft_transcendence/grafana' | cut -d ' ' -f 1 | xargs -I {} sudo docker exec --user root {} /usr/local/bin/setup-dashboards.sh"
+	@sshpass -p $(SSH_PASS) ssh $(SSH_OPTS) "$(SSH_USER)@$(WORKER1_IP)" "docker container ls --format '{{.ID}} {{.Image}}' | grep 'ft_transcendence/kibana' | cut -d ' ' -f 1 | xargs -I {} sudo docker exec --user root {} bash -c 'source /vault/secrets/elasticsearch.env && /scripts/import_dashboards.sh'"
+	@echo "Dashboards imported."
+
 
 # ==========================================================
 
@@ -333,7 +354,7 @@ deploy-all: check-env deploy-vault
 
 # Main target: Complete cluster setup with private registry
 .PHONY: swarm-cluster
-swarm-cluster: check-env check-prerequisites test-connection prepare-nodes destroy-containers-volume destroy-cluster init-swarm join-workers configure-nodes generate-certs setup build-images setup-registry push-images deploy-all
+swarm-cluster: check-env check-prerequisites test-connection prepare-nodes destroy-containers-volume destroy-cluster init-swarm join-workers configure-nodes generate-certs setup build-images setup-registry push-images deploy-all import-dashboards
 	@echo "$(GREEN)✓ Docker Swarm cluster with private registry setup completed successfully!$(NC)"
 	@echo ""
 	@echo "$(YELLOW)Access Points:$(NC)"
