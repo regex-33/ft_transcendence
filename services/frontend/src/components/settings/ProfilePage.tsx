@@ -61,10 +61,7 @@ export const ProfilePage: ComponentFunction<ProfilePageProps> = (props) => {
         setCurrentUser(currentUserData.username);
 
         const isViewingOwnProfile = !username || username === currentUserData.username;
-        console.log("isViewingownProfileeeeee", isViewingOwnProfile);
-        console.log("usernameeeeeeeeee", username)
         if (isViewingOwnProfile) {
-          console.log("insideeeeeeeeeeee usernameeeeeeeeee");
           window.history.pushState({}, "", `/settings/overview`);
           window.dispatchEvent(new PopStateEvent("popstate"));
           return;
