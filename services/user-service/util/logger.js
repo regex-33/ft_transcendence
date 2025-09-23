@@ -16,7 +16,7 @@ const logger = (req, ...obj) => {
                     action: obj[1] || 'unknown',
                     username: obj[2] || 'unknown',
                     success: obj[3] || false,
-                    error: {error_message:obj[4] || undefined},
+                    error:  obj[4] ? {error_message:obj[4] || undefined}: undefined,
                     session_id: obj[5] || undefined,
                 },
                 service: (obj[1] == 'FileSaving') ? 'file-service' : "user-service",
