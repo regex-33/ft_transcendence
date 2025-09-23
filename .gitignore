@@ -1,6 +1,6 @@
 services/frontend/.vite
 services/frontend/node_modules
-services/user-game/database.sqlite
+services/user-service/database.sqlite
 debugging-scripts/nots.md
 node_modules
 secrets/vault-certs
