@@ -12,12 +12,12 @@ const logger = (req, ...obj) => {
             log_infile({
                 ...req?.object,
                 ... {
-                    type: obj[0] || 'INFO',
+                    level: obj[0] || 'INFO',
                     action: obj[1] || 'unknown',
                     username: obj[2] || 'unknown',
                     success: obj[3] || false,
-                    error: obj[4] || undefined,
-                    token: obj[5] || undefined,
+                    error: {error_message:obj[4] || undefined},
+                    session_id: obj[5] || undefined,
                 },
                 service: (obj[1] == 'FileSaving') ? 'file-service' : "user-service",
                 response: {
