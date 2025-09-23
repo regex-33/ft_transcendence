@@ -5,7 +5,6 @@ import { useState } from '../../hooks/useState';
 import { ComponentFunction } from "../../types/global";
 import { ProfileSettings } from './ProfileSettings';
 import { FriendsSettings } from './FriendsSettings';
-import { AchievementSettings } from './AchievementSettings';
 import { MatchHistory } from './MatchHistory';
 import { OverviewSettings} from './OverviewSettings';
 import { SecuritySettings } from './SecuritySettings';

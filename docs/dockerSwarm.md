@@ -263,6 +263,27 @@ Bandwidth Usage: <1KB/s per node in steady state
 Total Overhead: 50 bytes per packet
 Tunnel ID (VNID): 24-bit identifier (16M networks)
 ```
+To understand VXLAN (Virtual Extensible LAN) and its operation effectively, it is beneficial to have a grasp of the following networking concepts:
+
+## Underlay Network:
+The underlay network is a layer 3 (L3) IP network. The underlay network, also known as the physical network or transport network, refers to the physical infrastructure that provides the basic connectivity and packet forwarding capabilities for data transmission between devices and endpoints in a computer network.  It refers to the network of switches, routers, cables, and other networking devices that operate at the lower layers of the OSI (Open Systems Interconnection) model.
+
+## Overlay  Network:
+An overlay network is a virtual network that runs on top of an existing physical network infrastructure, also known as the underlay network. Overlay networks are used to create virtualized or logical communication paths between devices and endpoints that may not be directly connected in the physical network. With VXLAN, the overlay is a layer 2 (L2) Ethernet network. 
+
+## What is VXLAN?
+VXLAN, which stands for Virtual Extensible LAN, is a network encapsulation protocol used to create overlay networks over existing network infrastructures, such as traditional data center networks or the Internet. It is designed to address the scalability and flexibility limitations of traditional VLANs (Virtual LANs) by extending Layer 2 (data link layer) segments over an IP (Layer 3) network.
+The main purpose of VXLAN is to allow virtual machines (VMs) or workloads running in different physical or virtualized environments to communicate with each other as if they were on the same local network, even if they are physically located in different data centers or cloud providers. 
+
+The main components of VXLAN are as follows:
+
+- VTEP stands for "VXLAN Tunnel Endpoint." It is a critical component in VXLAN technology, responsible for encapsulating and decapsulating VXLAN frames as they traverse between the overlay network (VXLAN) and the underlay network. By using VTEPs, VXLAN enables Layer 2 connectivity and communication between virtual machines and workloads across Layer 3 (IP) networks.  The VTEP encapsulates the traffic in UDP and IP headers. UDP port 4789 is used as the destination port. The traffic is sent over the IP network
+
+- VNI stands for "VXLAN Network Identifier." It is a 24-bit field used in VXLAN technology to uniquely identify different virtual Layer 2 segments within an overlay network. 
+_The VXLAN Network Identifier (VNI) identifies the VXLAN and has a similar function as the VLAN ID for regular VLANs. It is typically a 24-bit value part of the VXLAN header, which can support up to 16 million individual network segments, compared with the 4,096 limit for VLANs (as opposed to 12-bit VLAN ID)._
+
+## Topology diagram of the VXLAN: 
+![Screenshot](./assets/ns_bridge.jpg)
 
 ---
 

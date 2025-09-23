@@ -1326,7 +1326,7 @@ if [input][type] == "container" {
 **Chat Service Logs:**
 ```ruby
 if [service_name] == "chat-service" {
-  # Extract message_id, channel_id, room_id
+  # Extract message_id, channel_id, to_username
   # Add realtime messaging tags
 }
 ```

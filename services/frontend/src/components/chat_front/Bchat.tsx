@@ -37,7 +37,7 @@ export const Bchat: ComponentFunction = () => {
   const [name, setname] = useState<number | null>(null);
 
   useEffect(() => {
-    socket.current = new WebSocket('ws://localhost/ws/chat');
+    socket.current = new WebSocket(`${import.meta.env.VITE_WS_CHAT_SERVICE_HOST}/ws/chat`);
     
     socket.current.onopen = async () => {
       console.log("WebSocket connected");

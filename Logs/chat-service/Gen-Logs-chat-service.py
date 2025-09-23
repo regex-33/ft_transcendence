@@ -48,7 +48,7 @@ class User:
 
 @dataclass
 class Room:
-    room_id: str
+    to_username: str
     channel_id: str
     name: str
     participants: List[str]
@@ -110,7 +110,7 @@ class ChatLogGenerator:
         
         for room_name in room_names:
             room = Room(
-                room_id=f"room_{random.randint(1000, 9999)}",
+                to_username=f"room_{random.randint(1000, 9999)}",
                 channel_id=f"channel_{random.randint(100, 999)}",
                 name=room_name,
                 participants=[],
@@ -188,8 +188,8 @@ class ChatLogGenerator:
         
         # Add to active sessions
         self.active_sessions[user.session_id] = user
-        if room.room_id not in self.active_rooms:
-            self.active_rooms[room.room_id] = room
+        if room.to_username not in self.active_rooms:
+            self.active_rooms[room.to_username] = room
         
         if user.user_id not in room.participants:
             room.participants.append(user.user_id)
@@ -201,7 +201,7 @@ class ChatLogGenerator:
             user_id=user.user_id,
             username=user.username,
             session_id=user.session_id,
-            room_id=room.room_id,
+            to_username=room.to_username,
             channel_id=room.channel_id,
             action="user_join",
             success=True,
@@ -210,7 +210,7 @@ class ChatLogGenerator:
                 "ip": user.ip_address,
                 "user_agent": user.user_agent,
                 "method": "POST",
-                "url": f"/api/chat/rooms/{room.room_id}/join"
+                "url": f"/api/chat/rooms/{room.to_username}/join"
             },
             response={
                 "status": 200,
@@ -226,7 +226,7 @@ class ChatLogGenerator:
             f"System message: {user.username} joined the room",
             user_id="system",
             username="system",
-            room_id=room.room_id,
+            to_username=room.to_username,
             channel_id=room.channel_id,
             message_id=str(uuid.uuid4()),
             event_type="system_message",
@@ -262,7 +262,7 @@ class ChatLogGenerator:
             user_id=user.user_id,
             username=user.username,
             session_id=user.session_id,
-            room_id=user_room.room_id,
+            to_username=user_room.to_username,
             channel_id=user_room.channel_id,
             action="user_leave",
             success=True,
@@ -271,7 +271,7 @@ class ChatLogGenerator:
                 "ip": user.ip_address,
                 "user_agent": user.user_agent,
                 "method": "POST",
-                "url": f"/api/chat/rooms/{user_room.room_id}/leave"
+                "url": f"/api/chat/rooms/{user_room.to_username}/leave"
             },
             response={
                 "status": 200,
@@ -308,7 +308,7 @@ class ChatLogGenerator:
             user_id=user.user_id,
             username=user.username,
             session_id=user.session_id,
-            room_id=user_room.room_id,
+            to_username=user_room.to_username,
             channel_id=user_room.channel_id,
             message_id=message_id,
             action="message_sent",
@@ -318,7 +318,7 @@ class ChatLogGenerator:
                 "ip": user.ip_address,
                 "user_agent": user.user_agent,
                 "method": "POST",
-                "url": f"/api/chat/rooms/{user_room.room_id}/messages"
+                "url": f"/api/chat/rooms/{user_room.to_username}/messages"
             },
             response={
                 "status": 201,
@@ -334,7 +334,7 @@ class ChatLogGenerator:
             message_text,
             user_id=user.user_id,
             username=user.username,
-            room_id=user_room.room_id,
+            to_username=user_room.to_username,
             channel_id=user_room.channel_id,
             message_id=message_id,
             event_type="user_message",

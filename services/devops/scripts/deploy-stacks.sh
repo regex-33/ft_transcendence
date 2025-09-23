@@ -107,7 +107,7 @@ echo -e "${YELLOW}Verifying images in private registry...${NC}"
 MISSING_IMAGES=()
 
 IMAGES=(
-    "ft_transcendence/frontend"
+    # "ft_transcendence/frontend"
     "ft_transcendence/user-service"
     "ft_transcendence/chat-service"
     "ft_transcendence/xo-game"

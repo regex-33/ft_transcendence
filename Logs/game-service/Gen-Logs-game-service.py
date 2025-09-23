@@ -144,7 +144,7 @@ class GameServiceLogGenerator:
                 "service": "game-service",
                 "message": "Game room created",
                 "request_id": request_id,
-                "room_id": f"room_{uuid.uuid4().hex[:6]}",
+                "to_username": f"room_{uuid.uuid4().hex[:6]}",
                 "action": "room_create"
             },
             {

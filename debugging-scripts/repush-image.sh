@@ -6,7 +6,7 @@ set -e
 
 if [ $# -lt 3 ]; then
     echo "Usage: $0 <MANAGER_IP> <dir of build> <IMAGE_NAME>"
-    echo "Example: $0 192.168.1.100 services/devops/vault ft_transcendence/frontend"
+    echo "Example: $0 192.168.1.100 services/devops/vault ft_transcendence/vault"
     exit 1
 fi
 
@@ -51,7 +51,7 @@ fi
 
 # 3. Build image
 echo -e "${BLUE}⚒ Building image: $IMAGE${NC}"
-docker build -t "$IMAGE" "$dir"
+docker build --no-cache -t "$IMAGE" "$dir"
 
 # 4. Tag and push
 docker tag "$IMAGE" "$REGISTRY_IMAGE"

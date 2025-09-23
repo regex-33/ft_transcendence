@@ -75,14 +75,14 @@ groups:
           description: "Service {{ $labels.service_name }} desired: {{ $labels.replicas }}, running: {{ $labels.replicas_running }}"
 
       # Application-specific alerts
-      - alert: FrontendDown
-        expr: up{job="ft-transcendence-frontend"} == 0
-        for: 1m
-        labels:
-          severity: critical
-        annotations:
-          summary: "Frontend service is down"
-          description: "The frontend service has been unreachable for more than 1 minute"
+      # - alert: FrontendDown
+      #   expr: up{job="ft-transcendence-frontend"} == 0
+      #   for: 1m
+      #   labels:
+      #     severity: critical
+      #   annotations:
+      #     summary: "Frontend service is down"
+      #     description: "The frontend service has been unreachable for more than 1 minute"
 
       - alert: user-serviceDown
         expr: up{job="ft-transcendence-user-service"} == 0

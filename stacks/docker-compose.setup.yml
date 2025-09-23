@@ -44,7 +44,7 @@ services:
       ES_JAVA_OPTS: "-Xmx${ELASTICSEARCH_HEAP:-512m} -Xms${ELASTICSEARCH_HEAP:-512m} -Des.enforce.bootstrap.checks=true -Dlog4j2.formatMsgNoLookups=true"
       bootstrap.memory_lock: "true"
   
-  frontend:
+  bundle-frontend:
     build:
       context: ./../services/frontend/
       dockerfile: Dockerfile
@@ -55,8 +55,12 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
       - UV_THREADPOOL_SIZE=128
+      - VITE_USER_SERVICE_HOST=https://ft-transcendence.com
+      - VITE_USER_SERVICE_PORT=443
+      - VITE_WS_USER_SERVICE_HOST=wss://ft-transcendence.com
+      - VITE_WS_CHAT_SERVICE_HOST=wss://ft-transcendence.com
     volumes:
-      - bundle-dist:/dist
+      - ./../services/frontend/dist:/app/dist
 
 volumes:
   bundle-dist:

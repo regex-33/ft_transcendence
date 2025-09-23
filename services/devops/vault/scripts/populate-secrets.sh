@@ -384,6 +384,9 @@ populate_app_secrets() {
         "secret=${JWT_SECRET:-regex-33-jwt-secret}" \
         "expiration=${TIME_TOKEN_EXPIRATION:-3600}"
     
+    store_secrets "app/database" \
+        "storage=${DB_STORAGE:-./database.sqlite}" \
+        "dialect=${DB_DIALECT:-sqlite}" \
     # OAuth credentials - only store if values exist
     if [ -n "${GITHUB_CLIENT_ID:-}" ] && [ -n "${GITHUB_CLIENT_SECRET:-}" ]; then
         store_secrets "app/oauth/github" \
@@ -421,9 +424,9 @@ populate_app_secrets() {
     
     # Application configuration
     store_secrets "app/config" \
-        "name=${APP_NAME:-ft_transcendence}" \
-        "env=${APP_ENV:-production}" \
-        "domain=${DOMAIN:-transcendence.local}" \
+        "app_name=${APP_NAME:-ft_transcendence}" \
+        "app_env=${APP_ENV:-production}" \
+        "domain=${DOMAIN:-ft-transcendence.com}" \
         "home_page=${HOME_PAGE:-/home}" \
         "node_env=${NODE_ENV:-development}"
 }
@@ -605,7 +608,7 @@ main() {
     log "Monitoring secrets: secret/monitoring/*"
     log "Infrastructure secrets: secret/infrastructure/*"
     echo ""
-    log "Admin user: admin (password: ${VAULT_ADMIN_PASSWORD:-admin123})"
+    # log "Admin user: admin (password: ${VAULT_ADMIN_PASSWORD:-admin123})"
     log "Service users: app, logging, monitoring"
     echo ""
     warn "IMPORTANT: Store Vault credentials securely and rotate them regularly!"

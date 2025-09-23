@@ -35,7 +35,7 @@ export const Header: ComponentFunction = () => {
   useEffect(() => {
     if (!userId) return;
 
-    const notificationSocket = new WebSocket('ws://localhost:8002/ws/chat');
+    const notificationSocket = new WebSocket(`${import.meta.env.VITE_WS_CHAT_SERVICE_HOST}/ws/chat`);
 
     notificationSocket.onopen = () => {
       console.log("Notification WebSocket connected");

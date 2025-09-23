@@ -12,7 +12,7 @@
   "success": true,
   "message_id": "msg_4q5r6s7t-8u9v-0w1x-2y3z-4a5b6c7d8e9f",
   "channel_id": "tournament",
-  "room_id": "lobby-1",
+  "to_username": "lobby-1",
   "event_type": "message_sent",
   "request": {
     "method": "POST",
@@ -40,7 +40,7 @@
   "success": true,
   "message_id": "msg_3r2s1t0u-9v8w-7x6y-5z4a-3b2c1d0e9f8g",
   "channel_id": "game-lobby",
-  "room_id": "game-room-1",
+  "to_username": "game-room-1",
   "event_type": "message_sent",
   "request": {
     "method": "POST",
@@ -68,7 +68,7 @@
   "success": false,
   "message_id": "msg_1s0t9u8v-7w6x-5y4z-3a2b-1c0d9e8f7g6h",
   "channel_id": "general",
-  "room_id": "lobby-2",
+  "to_username": "lobby-2",
   "event_type": "message_failed",
   "request": {
     "method": "POST",
@@ -99,7 +99,7 @@
   "success": true,
   "message_id": "msg_9t8u7v6w-5x4y-3z2a-1b0c-9d8e7f6g5h4i",
   "channel_id": "game-lobby",
-  "room_id": "waiting-room",
+  "to_username": "waiting-room",
   "event_type": "message_sent",
   "request": {
     "method": "POST",
@@ -127,7 +127,7 @@
   "success": true,
   "message_id": "msg_7u6v5w4x-3y2z-1a0b-9c8d-7e6f5g4h3i2j",
   "channel_id": "tournament",
-  "room_id": "tournament-room-1",
+  "to_username": "tournament-room-1",
   "event_type": "user_joined",
   "request": {
     "method":

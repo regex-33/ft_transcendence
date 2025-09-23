@@ -144,7 +144,7 @@
         "channel_id": {
           "type": "keyword"
         },
-        "room_id": {
+        "to_username": {
           "type": "keyword"
         },
         "security_event": {

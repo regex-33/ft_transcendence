@@ -164,10 +164,18 @@ keystore:		## Setup Elasticsearch Keystore, by initializing passwords, and add c
 certs:		    ## Generate Elasticsearch SSL Certs.
 	docker-compose -f ${STACKS_DIR}/docker-compose.setup.yml run --rm certs
 
+.PHONY: bundle-frontend
+bundle-frontend:	## Bundle Frontend with production settings.
+	@sudo rm -rf ./services/frontend/dist
+	@docker-compose -f ./stacks/docker-compose.setup.yml build --no-cache bundle-frontend
+	@docker-compose -f ./stacks/docker-compose.setup.yml run --rm bundle-frontend
+	@sudo cp -r ./services/frontend/images ./services/frontend/dist
+
 .PHONY: setup
 setup:		    ## Generate Elasticsearch SSL Certs and Keystore.
 	@make certs
 	@make keystore
+	@make bundle-frontend
 
 
 
@@ -175,7 +183,7 @@ setup:		    ## Generate Elasticsearch SSL Certs and Keystore.
 .PHONY: build-images
 build-images: generate-certs
 	@echo "$(BLUE) Building Docker images...$(NC)"
-	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/frontend ./services/frontend/
+# 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/frontend ./services/frontend/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/user-service ./services/user-service/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/xo-game ./services/xo-game/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/chat-service ./services/chat-service/

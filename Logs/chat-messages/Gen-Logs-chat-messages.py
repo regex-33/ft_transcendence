@@ -31,7 +31,7 @@ class ChatMessage:
     success: bool
     message_id: str
     channel_id: str
-    room_id: str
+    to_username: str
     event_type: str
     request: Optional[Dict] = None
     response: Optional[Dict] = None
@@ -200,7 +200,7 @@ class ChatLogGenerator:
             success=success,
             message_id=self.generate_id(),
             channel_id=random.choice(self.channels),
-            room_id=random.choice(self.rooms),
+            to_username=random.choice(self.rooms),
             event_type=random.choice(self.event_types),
             request=self.generate_request_data(action),
             response=self.generate_response_data(success)

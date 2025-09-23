@@ -2,7 +2,8 @@ import './assets/styles/main.css';
 import { App } from './core/App';
 import { Component } from './core/Component';
 
-const ws = new WebSocket('ws://localhost:8001/api/users/online-tracker');
+const ws = new WebSocket(`${import.meta.env.VITE_WS_USER_SERVICE_HOST}/api/users/online-tracker`);
+
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     const app = new App({

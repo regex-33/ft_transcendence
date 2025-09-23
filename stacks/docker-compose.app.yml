@@ -41,7 +41,7 @@ services:
       - VAULT_SKIP_VERIFY=true
     command: ["vault", "agent", "-config=/vault/config/vault-agent.hcl"]
     healthcheck:
-      test: ["CMD-SHELL", "test -f /vault/secrets/app.env && test -f /vault/secrets/database.env"]
+      test: ["CMD-SHELL", "test -f /vault/secrets/app.env && test -f /vault/secrets/oauth.env && test -f /vault/secrets/database.env"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -86,48 +86,11 @@ services:
     depends_on:
       - user-service
       - chat-service
-      - frontend
     networks:
       - traefik-public
       - app-network
-
-  # Frontend Application
-  frontend:
-    image: ft_transcendence/frontend
-    deploy:
-      replicas: 1  # Removed variable interpolation
-      placement:
-        constraints: 
-          - node.role == manager
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-      update_config:
-        parallelism: 1
-        delay: 10s
-        failure_action: rollback
-        order: start-first
-      resources:
-        limits:
-          memory: 512M
-        reservations:
-          memory: 256M
-    networks:
-      - app-network
-    environment:
-      - NODE_ENV=development
-      - HOST=0.0.0.0
-      - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
-      - UV_THREADPOOL_SIZE=128
-      - VITE_USER_SERVICE_HOST=https://ft-transcendence.com
-      - VITE_USER_SERVICE_PORT=443
-    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    volumes:
+      - ./../services/frontend/dist:/usr/share/nginx/html:ro
 
   # User Management Service - Updated with Vault
   user-service:
@@ -152,6 +115,8 @@ services:
           memory: 512M
     volumes:
       - vault-app-secrets:/vault/secrets:ro
+      - /var/log/ft-transcendence/user-service/user-service.log:/var/log/user-service/user-service.log:rw
+      - /var/log/ft-transcendence/user-service/file-service.log:/var/log/file-service/file-service.log:rw
     networks:
       - app-network
     environment:
@@ -162,7 +127,7 @@ services:
     depends_on:
       - vault-agent-app
       - redis
-    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && source /vault/secrets/database.env && set +a && npm start"]
+    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && source /vault/secrets/oauth.env && set +a && npm start"]
     logging:
       driver: "json-file"
       options:
@@ -192,16 +157,18 @@ services:
           memory: 512M
     volumes:
       - vault-app-secrets:/vault/secrets:ro
+      - /var/log/ft-transcendence/chat-service/chat.log:/usr/src/app/Logs/chat-messages/chat.log:rw
     networks:
       - app-network
     environment:
       - NODE_ENV=development
       - PORT=8002
       - USER_SERVICE_URL=http://user-service:8001
+      - SQLITE=file:${DB_STORAGE:-./database.sqlite}
     depends_on:
       - vault-agent-app
       - user-service
-    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && source /vault/secrets/database.env && set +a && npm start"]
+    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && set +a && npm start"]
     logging:
       driver: "json-file"
       options:
@@ -240,11 +207,13 @@ services:
       - PORT=8001
       - HOME_PAGE=/home
       - USER_SERVICE_URL=http://user-service:8001
+      - DB_DIALECT=${DB_DIALECT:-sqlite}
+      - DB_STORAGE=${DB_STORAGE:-./database.sqlite}
     depends_on:
       - vault-agent-app
       - user-service
       - redis
-    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && source /vault/secrets/database.env && set +a && npm run dev"]
+    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && set +a && npm run dev"]
     logging:
       driver: "json-file"
       options:
@@ -275,9 +244,9 @@ services:
       - app-network
     depends_on:
       - vault-agent-app
-    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && set +a && redis-server --requirepass $$REDIS_PASSWORD"]
+    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/database.env && set +a && redis-server --requirepass $$REDIS_PASSWORD"]
     healthcheck:
-      test: ["CMD-SHELL", "set -a && source /vault/secrets/app.env && set +a && redis-cli --no-auth-warning -a $$REDIS_PASSWORD ping"]
+      test: ["CMD-SHELL", "set -a && source /vault/secrets/database.env && set +a && redis-cli --no-auth-warning -a $$REDIS_PASSWORD ping"]
       interval: 30s
       timeout: 10s
       retries: 3
