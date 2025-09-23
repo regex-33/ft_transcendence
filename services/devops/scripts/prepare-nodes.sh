@@ -166,7 +166,6 @@ echo -e \"${GREEN}Configuring UFW...${NC}\"
         'manager')
             ufw allow 80/tcp     # HTTP
             ufw allow 443/tcp    # HTTPS
-            ufw allow 5432/tcp   # PostgreSQL
             ufw allow 6379/tcp   # Redis
             ;;
         'logging')

@@ -161,7 +161,6 @@ services:
       - USER_SERVICE_URL=http://user-service:8001
     depends_on:
       - vault-agent-app
-      - postgres
       - redis
     command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && source /vault/secrets/database.env && set +a && npm start"]
     logging:
@@ -199,10 +198,8 @@ services:
       - NODE_ENV=development
       - PORT=8002
       - USER_SERVICE_URL=http://user-service:8001
-      # - DATABASE_URL=postgresql://postgres_user:postgres_password@postgres:5432/postgres_db?schema=chat
     depends_on:
       - vault-agent-app
-      - postgres
       - user-service
     command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && source /vault/secrets/database.env && set +a && npm start"]
     logging:
@@ -245,7 +242,6 @@ services:
       - USER_SERVICE_URL=http://user-service:8001
     depends_on:
       - vault-agent-app
-      - postgres
       - user-service
       - redis
     command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && source /vault/secrets/database.env && set +a && npm run dev"]
@@ -255,42 +251,6 @@ services:
         max-size: "10m"
         max-file: "3"
 
-
-  # PostgreSQL Database - Updated with Vault
-  postgres:
-    image: ft_transcendence/postgres
-    deploy:
-      replicas: 1
-      placement:
-        constraints: 
-          - node.role == manager
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-      resources:
-        limits:
-          memory: 2G
-        reservations:
-          memory: 1G
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - vault-app-secrets:/vault/secrets:ro
-    networks:
-      - app-network
-    depends_on:
-      - vault-agent-app
-    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/database.env && set +a && docker-entrypoint.sh postgres"]
-    healthcheck:
-      test: ["CMD-SHELL", "set -a && source /vault/secrets/database.env && set +a && pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 80s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
   # Redis Cache - Updated with Vault
   redis:
@@ -514,50 +474,6 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # PostgreSQL Exporter - Fixed interpolation error
-  postgres-exporter:
-    image: ft_transcendence/postgres-exporter
-    deploy:
-      replicas: 1
-      placement:
-        constraints: 
-          - node.role == manager
-      restart_policy:
-        condition: on-failure
-        delay: 10s  # Increase delay
-        max_attempts: 3
-      resources:
-        limits:
-          memory: 128M
-        reservations:
-          memory: 64M
-    volumes:
-      - vault-app-secrets:/vault/secrets:ro
-    networks:
-      - monitoring-network
-      - app-network  # Add this to access vault
-    depends_on:
-      - vault-agent-app
-      - postgres
-    # Fix the command to ensure vault secrets are available
-    entrypoint: |
-      bash -c "
-        echo 'Waiting for vault secrets...';
-        while [ ! -f /vault/secrets/database.env ]; do 
-          echo 'Waiting for vault secrets to be available...'; 
-          sleep 5; 
-        done;
-        set -a && . /vault/secrets/database.env && set +a;
-        export DATA_SOURCE_NAME=\"postgresql://$${POSTGRES_USER}:$${POSTGRES_PASSWORD}@postgres:$${POSTGRES_PORT:-5432}/$${POSTGRES_DB}?sslmode=disable\";
-        echo 'Starting postgres_exporter with DATA_SOURCE_NAME set';
-        exec /bin/postgres_exporter
-      "
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
 # Network Definitions
 networks:
   app-network:
@@ -573,8 +489,6 @@ networks:
 
 # Volume Definitions
 volumes:
-  postgres-data:
-    driver: local
   redis-data:
     driver: local
   filebeat-data:

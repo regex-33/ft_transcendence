@@ -658,12 +658,6 @@ Docker Swarm provides enterprise-grade secrets management with encryption at res
 **Core Secret Operations:**
 
 ```bash
-# Create a secret from stdin with metadata
-echo "supersecret_db_password" | docker secret create postgres_password - \
-  --label environment=production \
-  --label service=database \
-  --label rotation-policy=90days
-
 # Create secret from file with restricted access
 docker secret create vault_tls_cert /path/to/vault.crt \
   --label purpose=tls \
@@ -676,15 +670,11 @@ echo '{"username":"admin","password":"secure123","host":"db.internal"}' | \
 # List secrets with filtering
 docker secret ls --filter label=environment=production
 
-# Inspect secret metadata (content never exposed)
-docker secret inspect postgres_password --pretty
-
 # Use multiple secrets in service with custom mount paths
 docker service create \
   --name vault \
   --secret source=vault_tls_cert,target=/etc/vault/tls.crt,mode=0400 \
   --secret source=vault_tls_key,target=/etc/vault/tls.key,mode=0400 \
-  --secret source=postgres_password,target=/run/secrets/db_password \
   hashicorp/vault:latest
 ```
 
@@ -1074,14 +1064,6 @@ auto_auth {
     }
   }
 }
-```
-
-#### Application Database Connection Example
-
-```javascript
-// Node.js application
-const connectionString = 'postgresql://user:pass@postgres:5432/mydb';
-// 'postgres' resolves to PostgreSQL service automatically
 ```
 
 ### Load Balancing

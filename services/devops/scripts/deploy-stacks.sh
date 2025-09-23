@@ -112,7 +112,6 @@ IMAGES=(
     "ft_transcendence/chat-service"
     "ft_transcendence/xo-game"
     "ft_transcendence/nginx"
-    "ft_transcendence/postgres"
     "ft_transcendence/redis"
     "ft_transcendence/elasticsearch"
     "ft_transcendence/logstash"

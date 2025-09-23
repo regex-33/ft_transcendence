@@ -102,16 +102,6 @@ groups:
           summary: "Chat service is down"
           description: "The chat service has been unreachable for more than 1 minute"
 
-      # Database alerts
-      - alert: PostgreSQLDown
-        expr: up{job="postgres"} == 0
-        for: 1m
-        labels:
-          severity: critical
-        annotations:
-          summary: "PostgreSQL is down"
-          description: "PostgreSQL database has been unreachable for more than 1 minute"
-
       - alert: RedisDown
         expr: up{job="redis"} == 0
         for: 1m
@@ -120,15 +110,6 @@ groups:
         annotations:
           summary: "Redis is down"
           description: "Redis cache has been unreachable for more than 1 minute"
-
-      - alert: HighDatabaseConnections
-        expr: pg_stat_database_numbackends > 80
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "High number of database connections"
-          description: "PostgreSQL has {{ $value }} active connections"
 
       # Logging stack alerts
       - alert: ElasticsearchDown
@@ -232,12 +213,3 @@ groups:
         annotations:
           summary: "Redis Exporter is down"
           description: "The Redis Exporter has been unreachable for more than 1 minute"
-
-      - alert: PostgresExporterDown
-        expr: up{job="postgres-exporter"} == 0
-        for: 1m
-        labels:
-          severity: critical
-        annotations:
-          summary: "PostgreSQL Exporter is down"
-          description: "The PostgreSQL Exporter has been unreachable for more than 1 minute"

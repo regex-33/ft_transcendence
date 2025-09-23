@@ -594,13 +594,6 @@ alerting:
   metrics_path: '/metrics'              # Metrics endpoint path
   scrape_interval: 10s                  # Frequent scraping for web server metrics
 
-# PostgreSQL metrics
-- job_name: 'postgres'
-  static_configs:
-    - targets: ['postgres-exporter:9187']  # PostgreSQL exporter
-  metrics_path: '/metrics'
-  scrape_interval: 15s                  # Database metrics don't change as frequently
-
 # Redis metrics
 - job_name: 'redis'
   static_configs:
@@ -1101,9 +1094,6 @@ static_configs:
     labels:
       node_type: manager
       
-  - targets: ['postgres-exporter:9187']
-    labels:
-      service_type: database
 ```
 
 #### 3. DNS-Based Discovery

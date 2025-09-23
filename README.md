@@ -14,7 +14,6 @@ ft_transcendence/
 │       ├── databases/
 │       ├── exporters/
 │       │   ├── elasticsearch-exporter/
-│       │   ├── postgres-exporter/
 │       │   └── redis-exporter/
 │       ├── logging
 │       │   ├── elasticsearch/

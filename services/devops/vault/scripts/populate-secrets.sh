@@ -373,15 +373,6 @@ store_secrets() {
 populate_app_secrets() {
     log "Populating application secrets..."
     
-    # Database credentials
-    store_secrets "app/database" \
-        "host=${POSTGRES_HOST:-postgres}" \
-        "port=${POSTGRES_PORT:-5432}" \
-        "database=${POSTGRES_DB:-postgres_db}" \
-        "username=${POSTGRES_USER:-postgres_user}" \
-        "password=${POSTGRES_PASSWORD:-postgres_password}" \
-        "url=postgresql://${POSTGRES_USER:-postgres_user}:${POSTGRES_PASSWORD:-postgres_password}@${POSTGRES_HOST:-postgres}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-postgres_db}?schema=chat"
-    
     # Redis credentials
     store_secrets "app/redis" \
         "host=${REDIS_HOST:-redis}" \
@@ -521,88 +512,6 @@ populate_infrastructure_secrets() {
         "frontend=${FRONTEND_REPLICAS:-1}"
 }
 
-# Setup database credentials rotation using API
-setup_database_rotation() {
-    log "Setting up database credentials rotation..."
-    
-    # PostgreSQL database configuration
-    local db_config='{
-        "plugin_name": "postgresql-database-plugin",
-        "connection_url": "postgresql://{{username}}:{{password}}@postgres:5432/'${POSTGRES_DB:-postgres_db}'?sslmode=disable",
-        "allowed_roles": ["app-db-role"],
-        "username": "'${POSTGRES_USER:-postgres_user}'",
-        "password": "'${POSTGRES_PASSWORD:-postgres_password}'"
-    }'
-    
-    local response
-    response=$(curl -s -w "%{http_code}" -H "X-Vault-Token: $VAULT_TOKEN" \
-        -H "Content-Type: application/json" \
-        -X POST "$VAULT_ADDR/v1/database/config/postgres-db" \
-        -d "$db_config" 2>/dev/null)
-    
-    local http_code="${response: -3}"
-    if [[ "$http_code" =~ ^(200|204)$ ]]; then
-        log "✓ Database connection configured"
-    else
-        warn "Failed to configure database connection (HTTP $http_code)"
-    fi
-    
-    # Create database role for application
-    local role_config='{
-        "db_name": "postgres-db",
-        "creation_statements": ["CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '\''{{password}}'\'' VALID UNTIL '\''{{expiration}}'\''; GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO \"{{name}}\";"],
-        "revocation_statements": ["DROP ROLE IF EXISTS \"{{name}}\";"],
-        "default_ttl": "1h",
-        "max_ttl": "24h"
-    }'
-    
-    response=$(curl -s -w "%{http_code}" -H "X-Vault-Token: $VAULT_TOKEN" \
-        -H "Content-Type: application/json" \
-        -X POST "$VAULT_ADDR/v1/database/roles/app-db-role" \
-        -d "$role_config" 2>/dev/null)
-    
-    http_code="${response: -3}"
-    if [[ "$http_code" =~ ^(200|204)$ ]]; then
-        log "✓ Database role configured"
-    else
-        warn "Failed to configure database role (HTTP $http_code)"
-    fi
-}
-
-# Create admin user using API
-create_admin_user() {
-    log "Creating admin user..."
-    
-    local admin_password="${VAULT_ADMIN_PASSWORD:-admin123}"
-    export VAULT_TOKEN=$(cat "$VAULT_INIT_FILE" | jq -r '.root_token')
-    #  Add this here
-    # echo "[*] Enabling userpass auth method..."
-    # vault auth enable userpass || echo "userpass already enabled"
-    
-    # Create admin user with admin policy
-    local user_config='{
-        "password": "'$admin_password'",
-        "policies": ["admin-policy"]
-    }'
-    
-    local response
-    response=$(curl -s -w "%{http_code}" -H "X-Vault-Token: $VAULT_TOKEN" \
-        -H "Content-Type: application/json" \
-        -X POST "$VAULT_ADDR/v1/auth/userpass/users/admin" \
-        -d "$user_config" 2>/dev/null)
-    
-
-    
-    local http_code="${response: -3}"
-    if [[ "$http_code" =~ ^(200|204)$ ]]; then
-        log "✓ Created admin user with password: $admin_password"
-    else
-        warn "Failed to create admin user (HTTP $http_code)"
-        # Debug the response
-        warn "Response body: ${response%???}"
-    fi
-}
-
 # Create service users using API
 create_service_users() {
     log "Creating service users..."
@@ -642,7 +551,7 @@ create_service_users() {
 verify_secrets() {
     log "Verifying stored secrets..."
     
-    local test_paths=("app/database" "logging/elasticsearch" "monitoring/grafana")
+    local test_paths=("app/redis" "logging/elasticsearch" "monitoring/grafana")
     local verified_count=0
     
     for path in "${test_paths[@]}"; do
@@ -680,9 +589,6 @@ main() {
     populate_monitoring_secrets
     populate_infrastructure_secrets
     
-    # Setup advanced features
-    # setup_database_rotation
-    create_admin_user
     create_service_users
     
     # Verify everything worked

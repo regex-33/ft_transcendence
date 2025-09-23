@@ -25,7 +25,6 @@ IMAGES=(
     "ft_transcendence/chat-service"
     "ft_transcendence/xo-game"
     "ft_transcendence/nginx"
-    "ft_transcendence/postgres"
     "ft_transcendence/redis"
     "ft_transcendence/elasticsearch"
     "ft_transcendence/logstash"
@@ -36,7 +35,6 @@ IMAGES=(
     "ft_transcendence/traefik"
     "ft_transcendence/vault"
     "ft_transcendence/redis-exporter"
-    "ft_transcendence/postgres-exporter"
     "ft_transcendence/elasticsearch-exporter"
 )
 

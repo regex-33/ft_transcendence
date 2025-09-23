@@ -21,7 +21,6 @@ COPY config/filebeat.worker.yml /usr/share/filebeat/filebeat.worker.yml
 
 COPY modules.d/system.yml /usr/share/filebeat/modules.d/system.yml
 COPY modules.d/nginx.yml /usr/share/filebeat/modules.d/nginx.yml
-COPY modules.d/postgresql.yml /usr/share/filebeat/modules.d/postgresql.yml
 COPY modules.d/redis.yml /usr/share/filebeat/modules.d/redis.yml
 
 # Set permissions
@@ -40,7 +39,6 @@ RUN filebeat modules list > /tmp/available_modules.txt 2>&1 || true
 # Enable modules that exist (using || true to not fail if module doesn't exist)
 RUN filebeat modules enable system 
 RUN filebeat modules enable nginx
-RUN filebeat modules enable postgresql 
 RUN filebeat modules enable redis 
 
 # Show what modules are enabled

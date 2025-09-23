@@ -48,7 +48,6 @@ test-up:
 	@echo "  - Frontend: http://localhost:${FRONTEND_PORT}"
 	@echo "  - Nginx Proxy: http://localhost:${NGINX_PORT}"
 	@echo "  - User Service: http://localhost:${USER_SERVICE_PORT}"
-	@echo "  - PostgreSQL: localhost:${POSTGRES_PORT}"
 	@echo "  - Redis: localhost:${REDIS_PORT}"
 
 .PHONY: test-down
@@ -181,7 +180,6 @@ build-images: generate-certs
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/xo-game ./services/xo-game/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/chat-service ./services/chat-service/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/nginx ./services/devops/nginx/
-	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/postgres ./services/devops/databases/postgres/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/redis ./services/devops/databases/redis/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/elasticsearch ./services/devops/logging/elasticsearch/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/logstash ./services/devops/logging/logstash/
@@ -192,7 +190,6 @@ build-images: generate-certs
 	@docker build -t ft_transcendence/traefik ./services/devops/traefik/
 	@docker build -t ft_transcendence/vault ./services/devops/vault/
 	@docker build -t ft_transcendence/redis-exporter ./services/devops/exporters/redis-exporter/
-	@docker build -t ft_transcendence/postgres-exporter ./services/devops/exporters/postgres-exporter/
 	@docker build -t ft_transcendence/elasticsearch-exporter ./services/devops/exporters/elasticsearch-exporter/
 	@echo "$(GREEN)✓ All images built successfully$(NC)"
 
@@ -551,14 +548,6 @@ update: check-env
 	if [ ! -z "$$service" ]; then \
 		sshpass -p $(SSH_PASS) ssh $(SSH_OPTS) $(SSH_USER)@$(MANAGER_IP) "docker service update --force $$service"; \
 	fi
-# Backup important data
-.PHONY: backup
-backup: check-env
-	@echo "$(BLUE) Creating backup...$(NC)"
-	@mkdir -p ./backups/$(shell date +%Y%m%d_%H%M%S)
-	@sshpass -p $(SSH_PASS) ssh $(SSH_OPTS) $(SSH_USER)@$(MANAGER_IP) "docker run --rm -v ft-app_postgres-data:/data -v /tmp:/backup alpine tar czf /backup/postgres_backup_$(shell date +%Y%m%d_%H%M%S).tar.gz -C /data ."
-	@sshpass -p $(SSH_PASS) scp $(SSH_OPTS) $(SSH_USER)@$(MANAGER_IP):/tmp/postgres_backup_*.tar.gz ./backups/$(shell date +%Y%m%d_%H%M%S)/
-	@echo "$(GREEN)✓ Backup completed$(NC)"
 
 
 # Check prerequisites
