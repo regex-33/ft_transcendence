@@ -120,6 +120,8 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
       - UV_THREADPOOL_SIZE=128
+      - VITE_USER_SERVICE_HOST=https://ft-transcendence.com
+      - VITE_USER_SERVICE_PORT=443
     command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
     logging:
       driver: "json-file"

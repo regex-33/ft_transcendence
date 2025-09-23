@@ -27,7 +27,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 
   const fetchPendingFriends = async () => {
     try {
-      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/notifications`, { credentials: 'include' });
+      const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/notifications`, { credentials: 'include' });
 
       if (!response.ok) {
         throw new Error('Failed to fetch pending friends');

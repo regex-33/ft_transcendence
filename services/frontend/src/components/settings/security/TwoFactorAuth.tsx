@@ -37,7 +37,7 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
       setIsCheckingStatus(true);
       
       const twoFAResponse = await fetch(
-        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/2fa/status`,
+        `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/2fa/status`,
         {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
@@ -47,14 +47,14 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
       
       if (twoFAResponse.ok) {
         const twoFAData = await twoFAResponse.json();
-        console.log('2FA Status Response:', twoFAData);
+        // console.log('2FA Status Response:', twoFAData);
         
         const isEnabled = twoFAData.enabled || twoFAData.twoFactorEnabled || false;
         setTwoFAEnabled(isEnabled);
-        console.log('2FA Enabled Status:', isEnabled);
+        // console.log('2FA Enabled Status:', isEnabled);
       } else {
         const userResponse = await fetch(
-          `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
+          `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
           {
             method: 'GET',
             credentials: 'include'
@@ -63,11 +63,11 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
         
         if (userResponse.ok) {
           const userData = await userResponse.json();
-          console.log('User Profile Response:', userData);
+          // console.log('User Profile Response:', userData);
           
           const isEnabled = userData.twoFactorEnabled || userData.two_factor_enabled || false;
           setTwoFAEnabled(isEnabled);
-          console.log('2FA Enabled from Profile:', isEnabled);
+          // console.log('2FA Enabled from Profile:', isEnabled);
         } else {
           throw new Error('Failed to check 2FA status');
         }
@@ -95,7 +95,7 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
 
     try {
       const response = await fetch(
-        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/2fa/generate`,
+        `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/2fa/generate`,
         {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
@@ -111,7 +111,7 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
         setQrCodeUrl(data.qrCodeUrl);
         setShowSetup(true);
         setError('');
-        console.log('QR Code generated successfully');
+        // console.log('QR Code generated successfully');
       }
     } catch (err) {
       setError('Network error while generating QR code.');
@@ -184,7 +184,7 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
     let profileData = null;
     try {
       const response = await fetch(
-        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
+        `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
         {
           method: 'GET',
           credentials: 'include'
@@ -210,10 +210,10 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
     }
 
     try {
-      console.log('Verifying 2FA with username:', profileData.username);
+      // console.log('Verifying 2FA with username:', profileData.username);
 
       const response = await fetch(
-        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/2fa/active2fa`,
+        `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/2fa/active2fa`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -238,7 +238,7 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
       setVerificationCode(['', '', '', '', '', '']);
       setQrCodeUrl('');
       
-      console.log('2FA enabled successfully');
+      // console.log('2FA enabled successfully');
 
     } catch (err) {
       setError('Network error occurred. Please try again.');
@@ -260,7 +260,7 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
     
     try {
       const response = await fetch(
-        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/auth/validate-password`,
+        `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/auth/validate-password`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -279,7 +279,7 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
       setError('');
       setSuccess('');
       const disableResponse = await fetch(
-        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/2fa/disable`,
+        `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/2fa/disable`,
         {
           method: 'GET',
           credentials: 'include'

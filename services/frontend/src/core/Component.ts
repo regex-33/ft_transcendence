@@ -55,8 +55,8 @@ export abstract class Component<
     const nextKeys = Object.keys(next);
     if (prevKeys.length !== nextKeys.length) return true;
     return prevKeys.some(
-      // (key) => !Object.is(prev[key as keyof S], next[key as keyof S])
-      (key) => !Object.is(prev[key], next[key])
+      (key) => !Object.is(prev[key as keyof S], next[key as keyof S])
+      // (key) => !Object.is(prev[key], next[key])
     );
   }
 
@@ -89,7 +89,6 @@ export abstract class Component<
       }
     } catch (error: unknown) {
       const err = error as Error;
-      // console.error("Component render error:", err);
       this.renderErrorState(err);
     } finally {
       this.hooksManager.clearCurrentComponent();
@@ -106,18 +105,14 @@ export abstract class Component<
   }
 
   private renderVirtualDOMWithDiffing(newVNode: VNode): void {
-    // Ensure we have a parent container
     const container = this.element.parentNode as HTMLElement;
     if (!container) {
-      console.error("Component element has no parent node");
+      // console.error("Component element has no parent node");
       return;
     }
 
-    // KEY FIX: Handle first render vs updates differently
     if (this.currentVNode === null) {
 
-      // First render after mount - replace the current element
-    console.log("new VNode:", newVNode);
       const newElement = this.renderer.createElement(newVNode);
 
       if (newVNode.props.ref && typeof newVNode.props.ref === "object") {
@@ -130,7 +125,6 @@ export abstract class Component<
         return;
       }
 
-      // Replace the placeholder div with the actual rendered element
       container.replaceChild(newElement, this.element);
       this.element = newElement;
       this.currentVNode = newVNode;
@@ -150,12 +144,9 @@ export abstract class Component<
         newVNode.props.ref.current = this.element; // <-- where domNode is the rendered element
       }
       if (patches.length > 0) {
-        // CRITICAL FIX: Apply patches to the component's own element, not parent
         this.renderer.patch(this.element, patches);
-        // console.log("PATCHES APPLIED to element:", this.element);
       }
       
-      // Update the current VNode reference
       this.currentVNode = newVNode;
     }
     
@@ -196,9 +187,7 @@ export abstract class Component<
         this.currentVNode = null; // Ensure first render logic is used
         this.renderVirtualDOMWithDiffing(rendered);
         
-        console.log("MOUNTED VDOM COMPONENT");
       } else {
-        console.log(" MOUNTED TRADITIONAL COMPONENT");
         // Traditional DOM element
         this.element = rendered;
         container.appendChild(this.element);
@@ -233,7 +222,6 @@ export abstract class Component<
         this.element.parentNode.removeChild(this.element);
       }
 
-      // Clean up VNode reference
       this.currentVNode = null;
       this.isMounted = false;
     } catch (error) {

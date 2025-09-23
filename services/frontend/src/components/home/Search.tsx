@@ -45,7 +45,7 @@ export const Search: ComponentFunction<SearchProps> = ({ modalManager }) => {
       setLoading(true);
       setError(null);
 
-      const usersResponse = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users`);
+      const usersResponse = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users`);
 
       if (!usersResponse.ok) {
         throw new Error('Failed to fetch users');
@@ -71,7 +71,7 @@ export const Search: ComponentFunction<SearchProps> = ({ modalManager }) => {
       let response;
       
       if (action === 'add') {
-        response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/add`, {
+        response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/add`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -79,7 +79,7 @@ export const Search: ComponentFunction<SearchProps> = ({ modalManager }) => {
           body: JSON.stringify({ username })
         });
       } else {
-        response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
+        response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

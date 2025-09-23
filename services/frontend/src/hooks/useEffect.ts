@@ -5,7 +5,7 @@ export function useEffect(effect: () => void | (() => void), dependencies?: any[
   const hooks = hooksManager.getCurrentComponentHooks();
   const index = hooks.currentEffectIndex++;
 
-  // Initialize effect if it doesn't exist
+  // init effect if it doesn't exist
   if (index >= hooks.effects.length) {
     hooks.effects.push({ value: null, dependencies: undefined });
   }
@@ -17,12 +17,10 @@ export function useEffect(effect: () => void | (() => void), dependencies?: any[
     dependencies.some((dep, i) => !Object.is(dep, currentEffect.dependencies![i]));
 
   if (hasChanged) {
-    // Cleanup previous effect
     if (currentEffect.cleanup) {
       currentEffect.cleanup();
     }
 
-    // Schedule effect to run after render
     Promise.resolve().then(() => {
       const cleanup = effect();
       currentEffect.cleanup = typeof cleanup === 'function' ? cleanup : undefined;

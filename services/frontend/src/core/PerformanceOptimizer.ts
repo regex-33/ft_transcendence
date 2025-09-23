@@ -160,7 +160,6 @@ export class PerformanceOptimizer {
       this.updateQueue.clear();
       this.rafId = null;
 
-      // Execute updates
       [...highPriorityUpdates, ...normalUpdates].forEach(fn => {
         try {
           fn();
@@ -169,7 +168,6 @@ export class PerformanceOptimizer {
         }
       });
 
-      // Update metrics
       this.metrics.batchCount++;
       this.metrics.updateCount += highPriorityUpdates.length + normalUpdates.length;
       
@@ -270,25 +268,21 @@ export class PerformanceOptimizer {
     } = options;
 
     return ((...args: any[]) => {
-      // Create namespaced key to prevent collisions
       const baseKey = keyFn(...args);
       const namespacedKey = `${functionId}:${baseKey}`;
       
       const now = Date.now();
       const cached = this.memoCache.get(namespacedKey);
       
-      // Check cache hit
       if (cached && (now - cached.timestamp) < ttl) {
         cached.accessCount++;
         this.metrics.cacheHits++;
         return cached.value;
       }
       
-      // Cache miss - compute value
       this.metrics.cacheMisses++;
       const result = fn(...args);
       
-      // Store in cache with namespace
       this.memoCache.set(namespacedKey, {
         value: result,
         timestamp: now,
@@ -315,23 +309,20 @@ export class PerformanceOptimizer {
       .filter(([key]) => key.startsWith(`${namespace}:`));
     
     if (namespaceEntries.length <= maxSize) {
-      return; // No cleanup needed
+      return;
     }
 
     const now = Date.now();
     
-    // Remove expired entries first
     namespaceEntries.forEach(([key, cache]) => {
       if (now - cache.timestamp > this.CACHE_TTL) {
         this.memoCache.delete(key);
       }
     });
 
-    // Get updated entries after expiration cleanup
     const remainingEntries = Array.from(this.memoCache.entries())
       .filter(([key]) => key.startsWith(`${namespace}:`));
 
-    // If still over limit, remove least accessed entries
     if (remainingEntries.length > maxSize) {
       const sortedEntries = remainingEntries
         .sort(([, a], [, b]) => a.accessCount - b.accessCount);
@@ -851,7 +842,6 @@ export class PerformanceOptimizer {
 
     lazyImages.forEach(img => imageObserver.observe(img));
 
-    // Preload critical images
     const criticalImages = document.querySelectorAll('img[data-preload]');
     criticalImages.forEach(img => {
       const link = document.createElement('link');

@@ -21,7 +21,9 @@ fastify.register(cors, {
       'http://localhost:3004',
       'http://localhost',
       'http://localhost:3000',
-      'http://localhost:8080'
+      'http://localhost:8080',
+      'https://ft-transcendence.com',
+      'http://ft-transcendence.com'
     ];
 
     if (!origin || allowedOrigins.includes(origin)) {

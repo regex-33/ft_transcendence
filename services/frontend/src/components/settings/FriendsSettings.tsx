@@ -28,7 +28,7 @@ export const FriendsSettings: ComponentFunction = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users`,{
+      const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users`,{
             method: "GET",
             credentials: 'include'
           }
@@ -60,7 +60,7 @@ export const FriendsSettings: ComponentFunction = () => {
 
   const handleFriendAction = async (username: string, action: 'accept' | 'cancel' | 'block' | 'unblock') => {
     try {
-      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
+      const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

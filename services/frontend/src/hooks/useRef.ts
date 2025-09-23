@@ -6,7 +6,6 @@ export function useRef<T>(initialValue: T): { current: T } {
   const hooks = hooksManager.getCurrentComponentHooks();
   const index = hooks.currentRefIndex++;
 
-  // Initialize ref if it doesn't exist
   if (index >= hooks.refs.length) {
     hooks.refs.push({ value: { current: initialValue } });
   }

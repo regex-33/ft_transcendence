@@ -18,8 +18,8 @@ export default defineConfig({
       interval: 500
     },
     allowedHosts: [
-      'regex-33.com',
-      '.regex-33.com']
+      'ft-transcendence.com',
+      '.ft-transcendence.com']
   },
   build: {
     cssCodeSplit: true,
@@ -37,5 +37,5 @@ export default defineConfig({
     //   'localhost',
     //   '127.0.0.1',
     //   'nginx',
-    //   'regex-33.com',
-    //   '.regex-33.com']
+    //   'ft-transcendence.com',
+    //   '.ft-transcendence.com']

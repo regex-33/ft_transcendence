@@ -42,7 +42,7 @@ export const PasswordReset: ComponentFunction<PasswordResetProps> = (props) => {
     
     try {
       const response = await fetch(
-        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/auth/change-password`,
+        `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/auth/change-password`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

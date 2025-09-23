@@ -15,7 +15,7 @@ export const Header: ComponentFunction = () => {
   useEffect(() => {
     const fetchUserId = async () => {
       try {
-        const resUser = await fetch('http://localhost/api/chat/me', {
+        const resUser = await fetch('${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/chat/me', {
           credentials: 'include',
           method: "GET",
         });
@@ -26,7 +26,7 @@ export const Header: ComponentFunction = () => {
         localStorage.setItem('userId', user.id);
         console.log("data user for notif is : ", user);
       } catch (error) {
-        console.log("error is : ", error);
+        console.log("Fixi hadi namoussa had error is : ", error);
       }
     };
     fetchUserId();
@@ -57,7 +57,7 @@ export const Header: ComponentFunction = () => {
   const handleLogout = async () => {
     try {
       await fetch(
-        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/logout`,
+        `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/logout`,
         { 
           credentials: "include",
         }

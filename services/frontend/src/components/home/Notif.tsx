@@ -37,7 +37,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/notifications`, 
+      const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/notifications`, 
         { credentials: 'include' });
 
       if (!response.ok) {
@@ -60,7 +60,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 
  const handleFriendAction = async (username: string, action: 'accept' | 'cancel') => {
     try {
-      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
+      const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

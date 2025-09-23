@@ -41,7 +41,7 @@ export const ProfilePage: ComponentFunction<ProfilePageProps> = (props) => {
 
       try {
         const currentUserResponse = await fetch(
-          `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
+          `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
           {
             method: "GET",
             headers: {
@@ -72,7 +72,7 @@ export const ProfilePage: ComponentFunction<ProfilePageProps> = (props) => {
 
         // Fetch the target user's profile data
         const profileResponse = await fetch(
-          `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/${username}`,
+          `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/${username}`,
           {
             method: "GET",
             headers: {

@@ -52,7 +52,7 @@ export const ChatPanel: ComponentFunction = () => {
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-        const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`,
+        const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`,
           {
             credentials: 'include',
             method: "GET",

@@ -20,7 +20,7 @@ export interface VNode {
   props: VNodeProps;
   children: VNode[];
   key?: string | number;
-  element?: HTMLElement | Text | null; // DOM reference : vdom Element -> dom element
+  element?: HTMLElement | Text | null;
 }
 
 export type VNodeType = string | ComponentFunction | 'TEXT_NODE';
@@ -32,7 +32,6 @@ export interface VNodeProps {
   // ref?: (element: HTMLElement | null) => void;
 }
 
-// Make ComponentFunction generic to accept different prop types
 export type ComponentFunction<P = VNodeProps> = (props: P) => VNode ;
 
 declare const process: {

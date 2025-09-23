@@ -5,7 +5,6 @@ export function useMemo<T>(factory: () => T, dependencies: any[]): T {
   const hooks = hooksManager.getCurrentComponentHooks();
   const index = hooks.currentMemoIndex++;
 
-  // Initialize memo if it doesn't exist
   if (index >= hooks.memos.length) {
     hooks.memos.push({ value: factory(), dependencies: [...dependencies] });
   }

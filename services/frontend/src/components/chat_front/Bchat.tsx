@@ -42,7 +42,7 @@ export const Bchat: ComponentFunction = () => {
       console.log("WebSocket connected");
 
       try {
-        const resUser = await fetch('http://localhost/api/chat/me', {
+        const resUser = await fetch('${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/chat/me', {
           credentials: 'include',
           method: "GET",
         });
@@ -51,7 +51,7 @@ export const Bchat: ComponentFunction = () => {
         console.log("user us : ", user);
         setId(user.id);
 
-        const resFriends = await fetch('http://localhost/api/chat/friends', {
+        const resFriends = await fetch('${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/chat/friends', {
           method: 'GET',
           credentials: 'include',
         });
@@ -62,7 +62,7 @@ export const Bchat: ComponentFunction = () => {
         setallfriend(friendsList)
         socket.current?.send(JSON.stringify({ type: 'user-info', ...user, friends: friendsList }));
 
-        const resHistory = await fetch(`http://localhost/api/chat/messages/${user.id}`);
+        const resHistory = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/chat/messages/${user.id}`);
         const history = await resHistory.json();
         const normalized = Array.isArray(history)
           ? history.map((m: any) => ({
@@ -137,7 +137,7 @@ export const Bchat: ComponentFunction = () => {
     if (nameFriend && id !== null) {
       try {
         const resBlock = await fetch(
-          `http://localhost/api/friends/actions`,
+          `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`,
           {
             method: 'POST',
             credentials: 'include',
@@ -190,7 +190,7 @@ export const Bchat: ComponentFunction = () => {
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-        const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`,
+        const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`,
           {
             credentials: 'include',
             method: "GET",
@@ -201,7 +201,6 @@ export const Bchat: ComponentFunction = () => {
         }
         
         const data = await response.json();
-        console.log("hhhhh : ",data )
         onlinefriendssetFriends(data);
       } catch (err) {
         console.error('Error fetching friends:', err);

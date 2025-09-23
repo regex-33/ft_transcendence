@@ -81,10 +81,10 @@ export const OverviewSettings: ComponentFunction<OverviewSettingsProps> = (props
         let endpoint;
         if (username) {
           // Viewing another user's profile
-          endpoint = `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/${username}`;
+          endpoint = `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/${username}`;
         } else {
           // Viewing own profile
-          endpoint = `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`;
+          endpoint = `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`;
         }
 
         const response = await fetch(endpoint, {

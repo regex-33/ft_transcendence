@@ -83,20 +83,18 @@ export class App {
     this.state.loading = true;
 
     try {
-      // Setup routing
       this.setupRoutes();
 
-      // Setup performance monitoring
-      if (this.config.enablePerformanceMonitoring) {
-        this.setupPerformanceMonitoring();
-      }
+      // // Setup performance monitoring
+      // if (this.config.enablePerformanceMonitoring) {
+      //   this.setupPerformanceMonitoring();
+      // }
 
-      // Setup development tools
-      if (this.config.enableDevTools) {
-        this.setupDevTools();
-      }
+      // // Setup development tools
+      // if (this.config.enableDevTools) {
+      //   this.setupDevTools();
+      // }
 
-      // Start the router
       this.router.start();
       this.state.currentRoute = this.router.getCurrentRoute();
 
@@ -107,7 +105,7 @@ export class App {
         error: null,
       };
 
-      console.log("Application started successfully");
+      // console.log("Application started successfully");
     } catch (error) {
       this.state.error = error instanceof Error ? error.message : "Unknown error";
       this.state.loading = false;
@@ -118,28 +116,24 @@ export class App {
   }
 
   async stop(): Promise<void> {
-    console.log("Stopping application...");
+    // console.log("Stopping application...");
 
-    // Stop performance monitoring
-    if (this.performanceMonitor) {
-      this.performanceMonitor();
-    }
+    // if (this.performanceMonitor) {
+    //   this.performanceMonitor();
+    // }
 
-    // Cancel any pending updates
-    PerformanceOptimizer.cancelUpdates();
+    // // Cancel any pending updates
+    // PerformanceOptimizer.cancelUpdates();
 
-    //  CLEANUP: Destroy router and cleanup components
     this.router.destroy();
     this.cleanupActiveComponents();
 
-    // Cleanup services
     try {
       await this.cleanupServices();
     } catch (error) {
       console.error("App stop failed:", error);
     }
 
-    // Reset state
     this.state = {
       initialized: false,
       loading: false,
@@ -151,13 +145,10 @@ export class App {
 
 
   private async cleanupServices(): Promise<void> {
-    // Cleanup user store
     try{
       console.log("i am in cleanupSrevices\n")
-      // await UserStore.cleanup?.();
     } catch (error) {
       console.warn("Service cleanup error:", error);
-      // Continue cleanup even if one service fails
     }
     
 
@@ -202,20 +193,16 @@ private createFunctionalComponent<P = any>(
     private _currentVNode: VNode | null = null;
 
     render(): VNode {
-      // Set the current component context for hooks
       hooksManager.setCurrentComponent(this);
 
       try {
-        // Call the functional component and get the VNode
         const vnode = componentFn(props);
-        
-        // console.log(" FUNCTIONAL COMPONENT: Generated VNode", vnode);
         
         // Return the VNode directly - this triggers Virtual DOM path in Component.ts
         return vnode;
       } finally {
         // Component.ts will handle clearing the component context
-        // hooksManager.clearCurrentComponent();
+        hooksManager.clearCurrentComponent();
       }
     }
 
@@ -224,7 +211,7 @@ private createFunctionalComponent<P = any>(
     }
 
     componentDidMount(): void {
-      console.log("FUNCTIONAL COMPONENT: Mounted");
+      // console.log("FUNCTIONAL COMPONENT: Mounted");
     }
 
     componentDidUpdate(): void {
@@ -232,7 +219,7 @@ private createFunctionalComponent<P = any>(
     }
 
     componentWillUnmount(): void {
-      console.log("FUNCTIONAL COMPONENT: Will unmount");
+      // console.log("FUNCTIONAL COMPONENT: Will unmount");
     }
   }
 
@@ -260,9 +247,6 @@ private cleanupActiveComponents(): void {
  *  ENHANCED: Updated setupRoutes method with Virtual DOM for functional components
  */
 private setupRoutes(): void {
-  console.log("Setting up routes...");
-  
-
 
 this.router.addRoute('/profile/:username', (params) => {
   console.log("Routing to profile of:", params?.username);
@@ -317,7 +301,6 @@ this.router.addRoute('/settings/achievements', () =>
   this.createFunctionalComponent(Home)
 );
   
-  console.log("Routes configured");
 }
 
   private createPlaceholderComponent(name: string): Component {
@@ -346,7 +329,7 @@ this.router.addRoute('/settings/achievements', () =>
     //   setInterval(() => {
     //     const metrics = PerformanceOptimizer.getMetrics();
     //     if (metrics.updateCount > 0) {
-    //       console.group("🔍 Performance Metrics");
+    //       console.group("Performance Metrics");
     //       console.table(metrics);
     //       console.groupEnd();
     //     }
@@ -393,9 +376,9 @@ this.router.addRoute('/settings/achievements', () =>
     };
 
     // console.log(
-    //   "🔧 Development tools available at window.__FRAMEWORK_DEVTOOLS__"
+    //   "Development tools available at window.__FRAMEWORK_DEVTOOLS__"
     // );
-    // console.log("🐛 Available commands:");
+    // console.log("Available commands:");
     // console.log(
     //   "  - __FRAMEWORK_DEVTOOLS__.getMetrics() - Get performance metrics"
     // );
@@ -410,7 +393,6 @@ this.router.addRoute('/settings/achievements', () =>
   }
 
   async restart(): Promise<void> {
-    console.log("🔄 Restarting application...");
     await this.stop();
     await this.start();
   }

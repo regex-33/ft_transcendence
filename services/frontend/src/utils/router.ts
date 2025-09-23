@@ -94,19 +94,16 @@ export class Router {
       this.currentComponent.unmount();
     }
 
-    //  CLEANUP: Call App's cleanup method if available
     if (this.cleanupCallback) {
       this.cleanupCallback();
     }
 
-    // Clear container and mount new component
     this.container.innerHTML = '';
     component.mount(this.container);
     
-    // Track the new component
     this.currentComponent = component;
     
-    console.log('Router: Mounted new component for route:', this.currentRoute);
+    // console.log('Router: Mounted new component for route:', this.currentRoute);
   }
 
   /**
@@ -230,18 +227,15 @@ export class Router {
    * Cleanup method to be called when router is destroyed
    */
   destroy(): void {
-    // Clean up current component
     if (this.currentComponent && this.currentComponent.isMountedComponent()) {
       this.currentComponent.unmount();
       this.currentComponent = null;
     }
 
-    // Call App's cleanup
     if (this.cleanupCallback) {
       this.cleanupCallback();
     }
 
-    // Remove event listener
     window.removeEventListener('popstate', this.handlePopState.bind(this));
   }
 }

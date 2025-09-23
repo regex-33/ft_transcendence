@@ -22,7 +22,7 @@ export const AuthForm: ComponentFunction = () => {
     let cancelled = false;
     (async () => {
       try {
-        const meUrl = `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`;
+        const meUrl = `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`;
         const resp = await fetch(meUrl, { method: 'GET', credentials: 'include' });
         if (!cancelled && resp.ok) {
           window.location.href = '/home';
@@ -90,7 +90,7 @@ export const AuthForm: ComponentFunction = () => {
         ? { username: formData.username, password: formData.password, twoFA: formData.twoFA }
         : { username: formData.username, password: formData.password, email: formData.email };
           
-      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/${apiUrl}`, {
+      const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/${apiUrl}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

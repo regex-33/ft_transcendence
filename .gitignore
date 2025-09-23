@@ -1,4 +1,5 @@
 # Ignore all .DS_Store files in any directory
+services/devops/logging/secrets/vault-certs/*
 **/.DS_Store
 .DS_Store
 docs/docker.md
@@ -17,3 +18,4 @@ debugging-scripts/nots.md
 node_modules
 secrets/vault-certs
 uploads
+.vscode

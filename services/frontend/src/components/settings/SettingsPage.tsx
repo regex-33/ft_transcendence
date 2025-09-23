@@ -18,7 +18,7 @@ export const SettingsPage: ComponentFunction<SettingsPageProps> = (props) => {
     const checkAuth = async () => {
       try {
         const response = await fetch(
-          `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
+          `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
           {
             method: "GET",
             headers: {

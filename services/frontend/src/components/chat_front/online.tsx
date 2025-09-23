@@ -46,7 +46,7 @@ export const Online: ComponentFunction<OnlineProps> = ({ friends, position = 'ri
   
  const handleBlockUser = async (username: string, action:'block') => {
     try {
-      const response = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
+      const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/actions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,7 +61,7 @@ export const Online: ComponentFunction<OnlineProps> = ({ friends, position = 'ri
 
       // Refresh only this component view by fetching the latest friends list
       try {
-        const refreshRes = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`, {
+        const refreshRes = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`, {
           method: 'GET',
           credentials: 'include',
         });

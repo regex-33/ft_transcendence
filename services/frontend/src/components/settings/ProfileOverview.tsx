@@ -80,7 +80,7 @@ export const ProfileOverview: ComponentFunction<OverviewSettingsProps> = (props)
       
       try {
         let endpoint;
-        endpoint = `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/${username}`;
+        endpoint = `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/${username}`;
        
         const response = await fetch(endpoint, {
           method: 'GET',

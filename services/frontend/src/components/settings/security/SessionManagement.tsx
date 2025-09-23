@@ -33,7 +33,7 @@ export const SessionManagement: ComponentFunction<SessionManagementProps> = (pro
     
     try {
       const response = await fetch(
-        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/auth/sessions`,
+        `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/auth/sessions`,
         {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
@@ -61,7 +61,7 @@ export const SessionManagement: ComponentFunction<SessionManagementProps> = (pro
   const terminateSession = async (sessionId: string) => {
     try {
       const response = await fetch(
-        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/auth/sessions/${sessionId}`,
+        `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/auth/sessions/${sessionId}`,
         {
           method: 'DELETE',
           credentials: 'include'
@@ -90,7 +90,7 @@ export const SessionManagement: ComponentFunction<SessionManagementProps> = (pro
     
     try {
       const response = await fetch(
-        `http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/auth/sessions`,
+        `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/auth/sessions`,
         {
           method: 'DELETE',
           credentials: 'include'

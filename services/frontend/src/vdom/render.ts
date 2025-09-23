@@ -36,21 +36,17 @@ export class Renderer {
     }
 
     if (typeof vnode.type === 'function') {
-      // Component function
       const componentVNode = (vnode.type as ComponentFunction)(vnode.props);
       const element = this.createElement(componentVNode);
       vnode.element = element as HTMLElement;
       return element;
     }
 
-    // Regular HTML element
     const element = document.createElement(vnode.type as string);
     vnode.element = element;
 
-    // Set properties
     this.setProps(element, vnode.props);
 
-    // Render children
     vnode?.children?.forEach(child => {
       const childElement = this.createElement(child);
       element.appendChild(childElement);
@@ -63,24 +59,20 @@ export class Renderer {
    * CRITICAL FIX: Enhanced patch method that handles all patch types correctly
    */
   patch(container: HTMLElement, patches: PatchOperation[]): void {
-    // console.log(`🔧 Applying ${patches.length} patches to container:`, container);
     
     patches.forEach((patch, index) => {
-      // console.log(`📝 Patch ${index + 1}/${patches.length}:`, patch);
       
       switch (patch.type) {
         case 'CREATE':
           if (patch.vnode) {
             const newElement = this.createElement(patch.vnode);
             container.appendChild(newElement);
-            // console.log(`✅ Created new element:`, newElement);
           }
           break;
 
         case 'REMOVE':
           if (patch.element && patch.element.parentNode) {
             patch.element.parentNode.removeChild(patch.element);
-            // console.log(`🗑️ Removed element:`, patch.element);
           }
           break;
 
@@ -88,20 +80,15 @@ export class Renderer {
           if (patch.vnode && patch.element && patch.element.parentNode) {
             const newElement = this.createElement(patch.vnode);
             patch.element.parentNode.replaceChild(newElement, patch.element);
-            // console.log(`🔄 Replaced element:`, patch.element, 'with:', newElement);
           }
           break;
 
         case 'UPDATE':
           if (patch.element && patch.props) {
             if (patch.element instanceof Text) {
-              // Update text content
               const oldText = patch.element.textContent;
               patch.element.textContent = patch.props.textContent;
-              // console.log(`📝 Updated text from "${oldText}" to "${patch.props.textContent}"`);
             } else {
-              // Update element properties
-              // console.log(`📝 Updating props on element:`, patch.element, patch.props);
               this.setProps(patch.element as HTMLElement, patch.props);
             }
           }
@@ -115,70 +102,22 @@ export class Renderer {
             } else {
               patch.parent.appendChild(newElement);
             }
-            // console.log(`✅ Created child element at index ${patch.index}:`, newElement);
           }
           break;
 
         case 'REMOVE_CHILD':
           if (patch.element && patch.parent && patch.parent.contains(patch.element)) {
             patch.parent.removeChild(patch.element);
-            // console.log(`🗑️ Removed child element:`, patch.element);
           }
           break;
 
         default:
-          console.warn(`⚠️ Unknown patch type:`, patch);
+          console.warn(`Unknown patch type:`, patch);
       }
     });
     
-    // console.log(` Applied all ${patches.length} patches`);
   }
 
-  // private setProps(element: HTMLElement, props: VNodeProps): void {
-  //   for (const key in props) {
-  //     if (key === 'key') continue;
-
-  //     const value = props[key];
-
-  //     if (key === 'ref' && typeof value === 'function') {
-  //       value(element);
-  //       continue;
-  //     }
-
-  //     if (key.startsWith('on') && typeof value === 'function') {
-  //       // CRITICAL FIX: Remove old event listeners before adding new ones
-  //       const eventType = key.slice(2).toLowerCase();
-        
-  //       // Remove existing listener if it exists
-  //       const existingListener = (element as any)[`__${key}`];
-  //       if (existingListener) {
-  //         element.removeEventListener(eventType, existingListener);
-  //       }
-        
-  //       // Add new listener and store reference
-  //       element.addEventListener(eventType, value);
-  //       (element as any)[`__${key}`] = value;
-  //       // console.log(`🎯 Added event listener: ${eventType} to`, element);
-  //       continue;
-  //     }
-
-  //     if (key === 'className') {
-  //       element.className = value || '';
-  //       continue;
-  //     }
-
-  //     if (key === 'style' && typeof value === 'object') {
-  //       Object.assign(element.style, value);
-  //       continue;
-  //     }
-
-  //     if (value === null || value === undefined) {
-  //       element.removeAttribute(key);
-  //     } else {
-  //       element.setAttribute(key, String(value));
-  //     }
-  //   }
-  // }
 
   private setProps(element: HTMLElement, props: VNodeProps): void {
     for (const key in props) {
@@ -194,13 +133,11 @@ export class Renderer {
       if (key.startsWith('on') && typeof value === 'function') {
         const eventType = key.slice(2).toLowerCase();
         
-        // Remove existing listener if it exists
         const existingListener = (element as any)[`__${key}`];
         if (existingListener) {
           element.removeEventListener(eventType, existingListener);
         }
         
-        // Add new listener and store reference
         element.addEventListener(eventType, value);
         (element as any)[`__${key}`] = value;
         continue;
@@ -216,20 +153,16 @@ export class Renderer {
         continue;
       }
 
-      // CF: hhhh Handle form input values properly
       if (key === 'value' && (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)) {
-        // For controlled components, always sync the DOM value with the prop value
         if (element.value !== value) {
           element.value = value || '';
-          console.log(` Updated input value from "${element.value}" to "${value}"`);
+          // console.log(` Updated input value from "${element.value}" to "${value}"`);
         }
         continue;
       }
 
-      // Handle other attributes
       if (value === null || value === undefined) {
         element.removeAttribute(key);
-        // Also clear the property for form elements
         if (key === 'value' && (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)) {
           element.value = '';
         }

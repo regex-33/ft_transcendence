@@ -134,7 +134,6 @@ export class HooksManager {
         currentRefIndex: 0
       });
     }
-    // Reset indices for new render cycle
     const hooks = this.componentHooks.get(component)!;
     hooks.currentStateIndex = 0;
     hooks.currentEffectIndex = 0;
@@ -170,13 +169,11 @@ export class HooksManager {
       return;
     }
 
-    // Check if component is still mounted
     if (typeof component.isMountedComponent === 'function' && !component.isMountedComponent()) {
       console.warn('Attempting to update unmounted component');
       return;
     }
 
-    // Add to render queue for batched updates
     this.renderQueue.add(component);
     
     if (!this.isScheduled) {
@@ -325,7 +322,6 @@ export class HooksManager {
   cleanup(component: any): void {
     const hooks = this.componentHooks.get(component);
     if (hooks) {
-      // Cleanup all effects
       hooks.effects.forEach(effect => {
         if (effect.cleanup) {
           try {
@@ -338,7 +334,6 @@ export class HooksManager {
       this.componentHooks.delete(component);
     }
     
-    // Remove from render queue if present
     this.renderQueue.delete(component);
   }
 

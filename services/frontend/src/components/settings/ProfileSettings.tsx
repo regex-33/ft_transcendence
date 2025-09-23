@@ -106,7 +106,7 @@ export const ProfileSettings: ComponentFunction = ({setUpdateAll, profileData}) 
         return;
       }
       
-      const res = await fetch(`http://${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/update`, {
+      const res = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/update`, {
         method: "PUT",
         credentials: 'include',
         body: formData,
