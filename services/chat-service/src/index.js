@@ -5,6 +5,7 @@ import fastifyStatic from '@fastify/static';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { PrismaClient } from '@prisma/client';
+import { logMessage } from './logs_chat.js';
 
 const prisma = new PrismaClient();
 const __filename = fileURLToPath(import.meta.url);
@@ -195,6 +196,14 @@ fastify.register(async function (fastify){
                   notif:true
               }));
           }
+          logMessage({
+            level: 'INFO',
+            message: `send_message: ${data.message}`,
+            action: 'send_message',
+            user_id: fromId,
+            username: data.username || undefined,
+            to: data.username_to
+          });
         });
         try {
           await Promise.all([

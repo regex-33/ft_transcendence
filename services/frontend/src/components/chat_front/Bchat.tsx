@@ -34,7 +34,8 @@ export const Bchat: ComponentFunction = () => {
   const [allfriend, setallfriend] = useState<Friend[]>([]);
   const [showinfo, setbareinfo] = useState<boolean>(false);
   const [onlinefriends, onlinefriendssetFriends] = useState<Friend[]>([]);
-  
+  const [name, setname] = useState<number | null>(null);
+
   useEffect(() => {
     socket.current = new WebSocket('ws://localhost/ws/chat');
     
@@ -49,6 +50,7 @@ export const Bchat: ComponentFunction = () => {
         if (!resUser.ok) throw new Error('Cannot fetch user');
         const user = await resUser.json();
         console.log("user us : ", user);
+        setname(user.username)
         setId(user.id);
 
         const resFriends = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/chat/friends`, {
@@ -113,7 +115,7 @@ export const Bchat: ComponentFunction = () => {
   async function sendMessage(info: { from: number | null; to: number }, messageText: string) {
     if (socket.current && message.trim() !== '') 
     {
-      const data = JSON.stringify({ type: 'message', message: message, from: info.from, to: info.to });
+      const data = JSON.stringify({ type: 'message', username : name,message: message, from: info.from, to: info.to , username_to: nameFriend?.name});
       const resBlocked = await fetch(`http://localhost:8002/api/chat/blocked/${info.to}`, {
         method: 'GET',
         credentials: 'include',
