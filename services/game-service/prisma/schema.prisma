@@ -24,25 +24,75 @@ enum GameStatus {
   ENDED
 }
 
+enum GameTeam {
+   TEAM_A
+   TEAM_B
+}
+
 model Game {
-  id        String      @id @default(uuid())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  status GameStatus @default(LIVE)
-  mode GameMode   @default(CLASSIC)
-  type   GameType   @default(SOLO)
+  duration Int?
+  status   GameStatus @default(WAITING)
+  mode     GameMode   @default(CLASSIC)
+  type     GameType   @default(SOLO)
 
-  players Player[]
+  gamePlayers  GamePlayer[]
+  players      Player[]
+
+  tournament   Tournament?  @relation(fields: [tournamentId], references: [id])
+  tournamentId String?
+
+  @@index([tournamentId])
+}
+
+model GamePlayer {
+  id Int @id @default(autoincrement())
+
+  player   Player @relation(fields: [playerId], references: [userId])
+  playerId Int
+
+  game   Game   @relation(fields: [gameId], references: [id])
+  gameId String
+
+  team       GameTeam
+  score      Int          @default(0)
+
+  @@unique([gameId, playerId])
+  @@index([playerId])
 }
 
 model Player {
-  userId Int @id
+  userId    Int      @id
+  updatedAt DateTime @updatedAt
 
-  gameId String?
-  points  Int   @default(150)
-  score  Int   @default(0)
-  game   Game? @relation(fields: [gameId], references: [id])
+  points        Int     @default(150)
 
-  @@index([gameId])
+  games GamePlayer[]
+
+  activeGameId String?
+  activeGame Game? @relation(fields: [activeGameId], references: [id])
+  wonTournaments Tournament[]
+
+  @@index([activeGameId])
+}
+
+enum TournamentStatus {
+  ONGOING
+  ENDED
+}
+
+model Tournament {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  games    Game[]
+  status   TournamentStatus @default(ONGOING)
+  winner   Player?      @relation(fields: [winnerId], references: [userId])
+  winnerId Int?
+
+  @@index([winnerId])
 }

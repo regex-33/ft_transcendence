@@ -2,114 +2,80 @@ import { h } from '../../vdom/createElement';
 import { useState } from '../../hooks/useState';
 import { useRef } from '../../hooks/useRef';
 import { useEffect } from '../../hooks/useEffect';
-
-class GameConfig {
-	static canvasWidth = 0;
-	static canvasHeight = 0;
-	static paddleWidth = 0;
-	static paddlePercent = 3;
-	static readonly paddleRatio = 15 / 3;
-
-	static onResize(width: number, height: number) {
-		GameConfig.canvasWidth = width;
-		GameConfig.canvasHeight = height;
-		GameConfig.paddleWidth = width * GameConfig.paddlePercent / 100;
-	}
-}
-
-
-type paddleOptions = {
-	color: string,
-	dir: "left" | "right"
-}
-
-const leftPaddleOptions: paddleOptions = {
-	color: "#F9A346",
-	dir: "left"
-}
-
-const rightPaddleOptions: paddleOptions = {
-	color: "#497E87",
-	dir: "right"
-}
-
-type Paddle = {
-	x: number,
-	y: number,
-	options: paddleOptions,
-}
-
-class Game {
-	paddles: Paddle[];
-	constructor(gameId: string) {
-		console.log("game id:", gameId);
-		this.paddles = [];
-	}
-}
-
-//const drawPaddle = (ctx: CanvasRenderingContext2D, x: number, y: number, options: paddleOptions) => {
-const drawPaddle = (ctx: CanvasRenderingContext2D, paddle: Paddle) => {
-	const width = GameConfig.paddleWidth;
-	const height = width * GameConfig.paddleRatio;
-	console.log("paddle width:", width);
-	const radius = width * 1 / 2;
-
-	const { x, y, options } = paddle;
-	ctx.beginPath();
-
-	if (options.dir === "left") {
-		ctx.moveTo(x, y);
-		ctx.lineTo(x + width - radius, y);
-		ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-		ctx.lineTo(x + width, y + height - radius);
-		ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-		ctx.lineTo(x, y + height);
-	}
-	else {
-		ctx.moveTo(x + width, y);
-		ctx.lineTo(x + radius, y);
-		ctx.quadraticCurveTo(x, y, x, y + radius);
-		ctx.lineTo(x, y + height - radius);
-		ctx.quadraticCurveTo(x, y + height, x + radius, y + height);
-		ctx.lineTo(x + width, y + height);
-	}
-	ctx.closePath();
-	ctx.fillStyle = options.color;
-	ctx.fill();
-}
+import { Game, paddleOptions, Paddle, Ball, leftPaddleOptions, rightPaddleOptions, GameConfig, GameType, GameMode } from './game';
+import { Connection } from './connection';
 
 const startGame = (ctx: CanvasRenderingContext2D, game: Game) => {
-	drawPaddle(ctx, { x: 10, y: 10, options: rightPaddleOptions });
-	drawPaddle(ctx, { x: 10, y: 100, options: leftPaddleOptions });
+	ctx;
+	game.start();
 }
 
-export const GameCanvas = () => {
-	const canvasRef = useRef<HTMLCanvasElement | null>(null);
-	useEffect(() => {
-		console.log("called canvas useeffect");
-		console.log("ref is", canvasRef.current);
-		const canvasEl = document.getElementById("game-canvas") as HTMLCanvasElement | null;
-		if (!(canvasEl instanceof HTMLCanvasElement))
-			throw new Error("canvas element not found");
+const initCanvas = async (gameId: string) => {
+	const canvasEl = document.getElementById("game-canvas") as HTMLCanvasElement | null;
+	if (!(canvasEl instanceof HTMLCanvasElement))
+		throw new Error("canvas element not found");
+	const connection = new Connection('ws://localhost:9000/play/' + gameId)
+	await connection.connect();
+	connection.connect().then(() => {
+		console.log("then connect");
+	});
+
+	canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width;
+	GameConfig.onResize(canvasEl.width, canvasEl.height);
+	const context = canvasEl.getContext("2d");
+	if (!context)
+		throw new Error("could not get canvas context");
+	const handleCanvasResize = () => {
+		canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width;
 		GameConfig.onResize(canvasEl.width, canvasEl.height);
-		const context = canvasEl.getContext("2d");
-		if (!context)
-			throw new Error("could not get canvas context");
-		const handleCanvasResize = (e: Event) => {
-			GameConfig.onResize(canvasEl.width, canvasEl.height);
-		};
-		canvasEl.addEventListener('resize', handleCanvasResize);
-		startGame(context, new Game(""));
-		return () => {
-			console.log("canvas unmounted");
-			canvasEl.removeEventListener('resize', handleCanvasResize);
-		}
-	}, []);
+	};
+	window.addEventListener('resize', handleCanvasResize);
+	const gameData = {
+		id: "",
+		type: GameType.SOLO,
+		mode: GameMode.CLASSIC
+	};
+	startGame(context, new Game(canvasEl.getContext("2d")!, gameData));
+	return () => {
+		console.log("canvas unmounted");
+		window.removeEventListener('resize', handleCanvasResize);
+	}
+}
+
+const getGame = async (gameId: string) => {
+	try {
+		const response = await fetch("http://localhost/api/game/" + gameId, {
+			method: "GET",
+			credentials: 'include',
+		});
+		if (!response.ok)
+			return null;
+		const data = await response.json();
+		console.log(data);
+		return data;
+	}
+	catch (err) {
+		console.error("getGame", err);
+	}
+	return null;
+}
+
+export const GameCanvas = (props: { playerId: number, gameId: string }) => {
+	const canvasRef = useRef<HTMLCanvasElement | null>(null);
+	const [game, setGame] = useState(null);
+	useEffect(() => {
+		console.log("gameId:", props.gameId);
+		console.log("ref is", canvasRef.current);
+		getGame(props.gameId).then((data) => {
+			setGame(data)
+		});
+		return initCanvas();
+	}, [canvasRef]);
 	const handleClick = () => {
 		console.log("ref is", canvasRef.current);
 	};
-	//return h("canvas", { class: "w-full rounded-lg  border-[0.9em] border-white-300 p-4 bg-[#91BFBF]", ref: canvasRef }, null);
 	return (
-		<canvas ref={canvasRef} id="game-canvas" onClick={handleClick} className="w-full rounded-lg  border-[0.2em] md:border-[0.9em] border-white-300 p-1 md:p-4 bg-[#91BFBF]"></canvas>
+		<canvas ref={canvasRef} height="500px" width="800px" id="game-canvas" onClick={handleClick}
+			className="rounded-lg bg-[#91BFBF] border-2 border-solid "></canvas>
 	);
 };

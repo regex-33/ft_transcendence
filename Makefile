@@ -41,7 +41,7 @@ all: test-up
 .PHONY: test-up
 test-up:
 	@echo "Starting test environment..."
-	docker-compose -f docker-compose.yml --profile dev up 
+	docker compose -f docker-compose.yml --profile dev up -d
 	@echo "Waiting for services to start..."
 	sleep 10
 	@echo "Services should be running on:"
@@ -54,29 +54,29 @@ test-up:
 .PHONY: test-down
 test-down:
 	@echo "Stopping test environment..."
-	docker-compose -f docker-compose.yml --profile dev down
+	docker compose -f docker-compose.yml --profile dev down
 
 .PHONY: test-logs
 test-logs:
-	docker-compose -f docker-compose.yml --profile dev logs -f
+	docker compose -f docker-compose.yml --profile dev logs -f
 
 .PHONY: test-status
 test-status:
 	@echo "Checking service status..."
-	docker-compose -f docker-compose.yml --profile dev ps
+	docker compose -f docker-compose.yml --profile dev ps
 
 .PHONY: rebuild-test
 rebuild-test:
 	@echo "Rebuilding test services..."
-	docker-compose -f docker-compose.yml --profile dev build --no-cache
-	docker-compose -f docker-compose.yml --profile dev up
+	docker compose -f docker-compose.yml --profile dev build --no-cache
+	docker compose -f docker-compose.yml --profile dev up
 
 rebuild-service:
 	@echo "Rebuilding specific service..."
 	@read -p "Enter service name to rebuild: " service; \
 	if [ ! -z "$$service" ]; then \
-		docker-compose -f docker-compose.yml --profile dev build --no-cache $$service; \
-		docker-compose -f docker-compose.yml --profile dev up -d $$service; \
+		docker compose -f docker-compose.yml --profile dev build --no-cache $$service; \
+		docker compose -f docker-compose.yml --profile dev up -d $$service; \
 	else \
 		echo "No service name provided. Aborting."; \
 	fi

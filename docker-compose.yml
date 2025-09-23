@@ -1,5 +1,22 @@
 version: '3.8'
+
 services:
+  game-service:
+    build:
+      context: ./services/game-service
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    image: game-service
+    pull_policy: build
+    ports:
+      - "9000:3000"
+    volumes:
+      - ./services/game-service/src:/game-service/src
+    networks:
+      - transcendence-network
+    container_name: game-service
+    profiles: ["game-service", "backend", "dev"]
+
   frontend:
     build:
       context: ./services/frontend

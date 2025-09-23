@@ -18,6 +18,8 @@ const createGameSchema = {
 				updatedAt: { type: 'string', format: 'date-time' },
 				status: { $ref: 'GameStatus#' },
 				type: { $ref: 'GameType#' },
+				duration: { type: 'integer' },
+				tournamentId: { type: 'string' },
 				mode: { $ref: 'GameMode#' },
 				players: {
 					type: 'array',
@@ -30,6 +32,12 @@ const createGameSchema = {
 				}
 			},
 			required: ['id', 'createdAt', 'updatedAt', 'status', 'type', 'players']
+		},
+		401: {
+			$ref: 'Error#'
+		},
+		400: {
+			$ref: 'Error#'
 		}
 	}
 }
@@ -40,7 +48,6 @@ const joinGameSchema = {
 		type: 'object',
 		properties: {
 			gameId: { type: 'string' },
-			userId: { type: 'integer' },
 		},
 		required: ['gameId'],
 		additionalProperties: false,
@@ -61,6 +68,28 @@ const joinGameSchema = {
 		}
 	}
 }
+
+const inviteGameSchema = {
+	body: {
+		type: 'object',
+		required: ['gameId', 'playerId'],
+		properties: {
+			gameId: { type: 'string' },
+			playerId: { type: 'number' },
+		},
+		additionalProperties: false,
+	},
+	response: {
+		204: { type: 'null' },
+		404: {
+			$ref: 'Error#'
+		},
+		403: {
+			$ref: 'Error#'
+		}
+	},
+};
+
 
 const getGameSchema = {
 	tags: ['Game'],
@@ -99,4 +128,4 @@ const getGameSchema = {
 	}
 }
 
-export { joinGameSchema, createGameSchema, getGameSchema }
+export { joinGameSchema, inviteGameSchema, createGameSchema, getGameSchema }

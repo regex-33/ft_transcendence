@@ -6,6 +6,7 @@ import { useState } from '../../hooks/useState';
 import Avatar1 from '../../../images/home-assests/avatar1.svg';
 import bgTeam from '../../../images/game-assets/bg-team.png';
 import { GameCanvas } from './GameCanvas';
+import { useAuth } from '../../hooks/useAuth';
 
 const AvatarCircle = ({ avatarImage, key }: { avatarImage: string, key: string }) => (
 	<div className="relative w-6 h-6 md:w-11 md:h-11" key={key}>
@@ -47,7 +48,7 @@ const TeamCard = ({ players }: { players: Player[] }) => {
 	);
 }
 
-export const GamePage: ComponentFunction = () => {
+export const GamePage: ComponentFunction = (props) => {
 	const [players, setPlayers] = useState([
 		{
 			name: "player1",
@@ -60,6 +61,13 @@ export const GamePage: ComponentFunction = () => {
 			avatarImage: Avatar1
 		}
 	]);
+	const [playerId, setPlayerId] = useState<number | null>(null);
+	const [loading, isAuthenticated, user] = useAuth();
+	useEffect(() => {
+		if (!isAuthenticated || !user)
+			return;
+		setPlayerId(user.id);
+	}, [isAuthenticated, user])
 	return (
 		<div
 			className="relative flex flex-col overflow-hidden h-screen w-screen"
@@ -82,8 +90,8 @@ export const GamePage: ComponentFunction = () => {
 				<div className="w-[70%]">
 					<div className="flex justify-between"><TeamBadge reverse={false} player={players[0]} />
 						<TeamBadge reverse={true} player={players[0]} /></div>
-					<div className="p-1 md:p-3 my-2 bg-[#91BFBF] shadow-xs shadow-gray-400 rounded-xl">
-						<GameCanvas />
+					<div className="flex justify-center my-2 bg-[#91BFBF] shadow-xs shadow-gray-400 rounded-xl">
+						<GameCanvas playerId={playerId} gameId={props.gameId} />
 					</div>
 				</div>
 				<TeamCard players={players} />

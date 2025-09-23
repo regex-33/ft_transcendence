@@ -39,5 +39,6 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-  }
+	"include": ["./global.d.ts","./src/types.d.ts"]
+  },
 }

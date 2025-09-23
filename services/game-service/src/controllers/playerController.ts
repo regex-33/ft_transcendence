@@ -1,7 +1,6 @@
-import type { PrismaClient } from "../../generated/prisma";
+import type { PrismaClient, Prisma } from "../../generated/prisma";
 
-const createPlayer = async (db: PrismaClient, data: { id: number }) => {
-	const user = {} // fetch from users service
+const createPlayer = async (db: PrismaClient | Prisma.TransactionClient, data: { id: number }) => {
 	const player = await db.player.upsert({
 		where: { userId: data.id },
 		update: {},
