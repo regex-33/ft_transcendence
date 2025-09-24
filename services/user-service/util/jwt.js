@@ -55,7 +55,7 @@ const verify = async (token, secret, callback) => {
     const user = await db.User.findOne({ where: { id } });
 
     if (!user) {
-        return await callback("user not found", payload);
+        return await callback("user not found", null);
     }
 
     if (user.valid === false) {

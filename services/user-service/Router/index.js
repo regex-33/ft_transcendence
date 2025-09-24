@@ -20,9 +20,9 @@ function safeHandler(handler) {
   return async function wrappedHandler(req, reply) {
     try {
       return await handler(req, reply);
-    } 
+    }
     catch (err) {
-      console.log(err);
+      require(`${process.env.PROJECT_PATH}/util/catch`)(err);
       return reply.status(500).send({ error: 'Internal Server Error' });
     }
   };

@@ -23,7 +23,7 @@ module.exports = async (request, reply) => {
         }
         reply.send({ status: relation.status });
     } catch (error) {
-        console.error("Error fetching relationship:", error);
+        require(`${process.env.PROJECT_PATH}/util/catch`)(error);
         reply.status(500).send({ error: "Internal Server Error" });
     }
 }

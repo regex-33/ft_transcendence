@@ -98,7 +98,7 @@ const handleAuthCallback = async (req, reply) => {
         return Cookies(reply, jwtToken, user.id).redirect(process.env.HOME_PAGE);
 
     } catch (error) {
-        console.error("Error during Google OAuth callback:", error);
+        require(`${process.env.PROJECT_PATH}/util/catch`)(error);
         reply.status(500).send({ error: "Internal Server Error" });
     }
 }

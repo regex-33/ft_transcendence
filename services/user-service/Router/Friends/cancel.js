@@ -17,7 +17,7 @@ const cancelFriendRequest = async (req, reply, payload, username) => {
     });
     return reply.status(200).send({ message: 'friend request canceled' });
   } catch (error) {
-    console.log("Error canceling friend request:", error);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     return reply.status(500).send({ message: 'internal server error' });
   }
 };

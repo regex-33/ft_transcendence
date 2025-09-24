@@ -12,6 +12,7 @@ const update = async (req, res) => {
   try {
     req.body = await multer(req);
   } catch (error) {
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
   }
   if (req.body.username)
     await updateUser(req, res, payload);
@@ -42,7 +43,7 @@ const updateLocation = async (req, res, payload) => {
 
     await user.save();
   } catch (err) {
-    console.error("Error updating user:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
   }
 };
 
@@ -63,7 +64,7 @@ const updateBirthday = async (req, res, payload) => {
 
     await user.save();
   } catch (err) {
-    console.error("Error updating user:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     res.status(500).send({ error: "Internal server error." });
   }
 }
@@ -91,7 +92,7 @@ const updateUser = async (req, res, payload) => {
     await user.save();
     logger(req, "INFO", "updateUserName", username, true, null, req.cookies?.token || null);
   } catch (err) {
-    console.error("Error updating user:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     res.status(500).send({ error: "Internal server error." });
   }
 };
@@ -118,7 +119,7 @@ const updateEmail = async (req, res, payload) => {
     await user.save();
     logger(req, "INFO", "updateEmail", payload.username, true, null, req.cookies?.token || null);
   } catch (err) {
-    console.error("Error updating user:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     res.status(500).send({ error: "Internal server error." });
   }
 };
@@ -145,7 +146,7 @@ const updatePassword = async (req, res) => {
     logger(req, "INFO", "updatePassword", payload.username, true, null, req.cookies?.token || null);
     res.send({ message: "User updated successfully." });
   } catch (err) {
-    console.error("Error updating user:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     res.status(500).send({ error: "Internal server error." });
   }
 };
@@ -154,7 +155,6 @@ const updateAvatar = async (req, res, payload) => {
   const { id } = payload;
   try {
     const { avatar } = req.body;
-    console.log(avatar);
     if (!avatar || !avatar.path) {
       return res.status(400).send({
         error: "Avatar file is required.",
@@ -170,7 +170,7 @@ const updateAvatar = async (req, res, payload) => {
     await user.save();
     logger(req, "INFO", "updateAvatar", payload.username, true, null, req.cookies?.token || null);
   } catch (err) {
-    console.error("Error updating user:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     res.status(500).send({ error: "Internal server error." });
   }
 };
@@ -194,7 +194,7 @@ const updateBio = async (req, res, payload) => {
     await user.save();
     logger(req, "INFO", "updateBio", payload.username, true, null, req.cookies?.token || null);
   } catch (err) {
-    console.error("Error updating user:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     res.status(500).send({ error: "Internal server error." });
   }
 };

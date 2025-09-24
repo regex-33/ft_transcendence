@@ -19,7 +19,7 @@ import { Home } from "../components/home/Home";
 
 
 import { SettingsPage } from '../components/settings/SettingsPage';
-import  { SecuritySettings } from '../components/settings/SecuritySettings';
+import { SecuritySettings } from '../components/settings/SecuritySettings';
 import { Background } from "../components/chat_front/background";
 import { ChatService } from "../components/chat_front/ChatLayouts";
 import { OverviewSettings } from "../components/settings/OverviewSettings";
@@ -30,6 +30,7 @@ import { NotFound } from "../components/settings/security/404";
 import { GamePage } from "../components/game/GamePage";
 import { CreateGamePage } from "../components/game/CreateGamePage";
 import { TournamentPage } from "../components/game/TournamentPage";
+import { Xo_page } from "../components/home/xo/Xo";
 
 
 
@@ -56,7 +57,7 @@ export class App {
   private performanceMonitor?: () => void;
   private hooksManager: HooksManager;
   private renderer: Renderer;
- 
+
   private activeComponents: Component[] = [];
 
   constructor(config: AppConfig = { containerId: "app" }) {
@@ -152,172 +153,175 @@ export class App {
 
 
   private async cleanupServices(): Promise<void> {
-    try{
+    try {
       console.log("i am in cleanupSrevices\n")
     } catch (error) {
       console.warn("Service cleanup error:", error);
     }
-    
+
 
     // Cleanup other services
     // await ApiService.cleanup();
   }
 
 
-/**
- * Creates a class component instance and returns it
- * The router will handle mounting/unmounting the component
- * 
- * @param ComponentClass - The class component constructor
- * @param props - Props to pass to the component
- * @returns Component instance that the router can manage
- */
-private createClassComponent<P extends ComponentProps>(
-  ComponentClass: new (props: P) => Component<P>,
-  props: P = {} as P
-): Component<P> {
-  // Create component instance
-  const componentInstance = new ComponentClass(props);
-  
-  // Store reference for cleanup (optional, depends on your router implementation)
-  this.trackComponentForCleanup?.(componentInstance);
-  
-  return componentInstance;
-}
+  /**
+   * Creates a class component instance and returns it
+   * The router will handle mounting/unmounting the component
+   * 
+   * @param ComponentClass - The class component constructor
+   * @param props - Props to pass to the component
+   * @returns Component instance that the router can manage
+   */
+  private createClassComponent<P extends ComponentProps>(
+    ComponentClass: new (props: P) => Component<P>,
+    props: P = {} as P
+  ): Component<P> {
+    // Create component instance
+    const componentInstance = new ComponentClass(props);
 
-/**
- *  ENHANCED: Creates a functional component wrapper with Virtual DOM support
- * This gives functional components the same benefits as class components
- */
-private createFunctionalComponent<P = any>(
-  componentFn: ComponentFunction<P>,
-  props: P = {} as P
-): Component {
-  const appRenderer = this.renderer;
-  const hooksManager = this.hooksManager;
+    // Store reference for cleanup (optional, depends on your router implementation)
+    this.trackComponentForCleanup?.(componentInstance);
 
-  class FunctionalWrapper extends Component {
-    private _currentVNode: VNode | null = null;
+    return componentInstance;
+  }
 
-    render(): VNode {
-      hooksManager.setCurrentComponent(this);
+  /**
+   *  ENHANCED: Creates a functional component wrapper with Virtual DOM support
+   * This gives functional components the same benefits as class components
+   */
+  private createFunctionalComponent<P = any>(
+    componentFn: ComponentFunction<P>,
+    props: P = {} as P
+  ): Component {
+    const appRenderer = this.renderer;
+    const hooksManager = this.hooksManager;
 
-      try {
-        const vnode = componentFn(props);
-        
-        // Return the VNode directly - this triggers Virtual DOM path in Component.ts
-        return vnode;
-      } finally {
-        hooksManager.clearCurrentComponent();
+    class FunctionalWrapper extends Component {
+      private _currentVNode: VNode | null = null;
+
+      render(): VNode {
+        hooksManager.setCurrentComponent(this);
+
+        try {
+          const vnode = componentFn(props);
+
+          // Return the VNode directly - this triggers Virtual DOM path in Component.ts
+          return vnode;
+        } finally {
+          hooksManager.clearCurrentComponent();
+        }
+      }
+
+      protected setState(newState: any, callback?: () => void): void {
+        super.setState(newState, callback);
+      }
+
+      componentDidMount(): void {
+        // console.log("FUNCTIONAL COMPONENT: Mounted");
+      }
+
+      componentDidUpdate(): void {
+        // console.log("FUNCTIONAL COMPONENT: Updated");
+      }
+
+      componentWillUnmount(): void {
+        // console.log("FUNCTIONAL COMPONENT: Will unmount");
       }
     }
 
-    protected setState(newState: any, callback?: () => void): void {
-      super.setState(newState, callback);
-    }
-
-    componentDidMount(): void {
-      // console.log("FUNCTIONAL COMPONENT: Mounted");
-    }
-
-    componentDidUpdate(): void {
-      // console.log("FUNCTIONAL COMPONENT: Updated");
-    }
-
-    componentWillUnmount(): void {
-      // console.log("FUNCTIONAL COMPONENT: Will unmount");
-    }
+    return new FunctionalWrapper();
   }
 
-  return new FunctionalWrapper();
-}
 
+  private trackComponentForCleanup(component: Component): void {
+    this.activeComponents.push(component);
+  }
 
-private trackComponentForCleanup(component: Component): void {
-  this.activeComponents.push(component);
-}
+  /**
+   * Optional: Cleanup method to call when route changes
+   */
+  private cleanupActiveComponents(): void {
+    this.activeComponents.forEach(component => {
+      if (component.isMountedComponent()) {
+        component.unmount();
+      }
+    });
+    this.activeComponents = [];
+  }
 
-/**
- * Optional: Cleanup method to call when route changes
- */
-private cleanupActiveComponents(): void {
-  this.activeComponents.forEach(component => {
-    if (component.isMountedComponent()) {
-      component.unmount();
-    }
-  });
-  this.activeComponents = [];
-}
+  /**
+   *  ENHANCED: Updated setupRoutes method with Virtual DOM for functional components
+   */
+  private setupRoutes(): void {
+    this.router.addRoute('/profile/:username', (params) => {
+      console.log("Routing to profile of:", params?.username);
+      return this.createFunctionalComponent(ProfilePage, { username: params?.username });
+    });
 
-/**
- *  ENHANCED: Updated setupRoutes method with Virtual DOM for functional components
- */
-private setupRoutes(): void {
-  this.router.addRoute('/profile/:username', (params) => {
-    console.log("Routing to profile of:", params?.username);
-    return this.createFunctionalComponent(ProfilePage, { username: params?.username });
-  });
- 
-  this.router.addRoute('/game/:gameId', (params) => 
-    this.createFunctionalComponent(GamePage, { gameId: params?.gameId })
-  ); 
-  
-  this.router.addRoute("/game", () => 
-    this.createFunctionalComponent(CreateGamePage)
-  );
-  
-  this.router.addRoute("/tournament", () => 
-    this.createFunctionalComponent(TournamentPage)
-  );
+    this.router.addRoute('/game/:gameId', (params) =>
+      this.createFunctionalComponent(GamePage, { gameId: params?.gameId })
+    );
 
-  this.router.addRoute("/Leaderboard", () => 
-    this.createFunctionalComponent(Leaderboard)
-  );
-  this.router.addRoute("/Chat-Friend", () => 
-    this.createFunctionalComponent(ChatService)
-  );
-  this.router.addRoute('/settings', () => 
-    this.createFunctionalComponent(SettingsPage, { defaultTab: 'profile' })
-  ); 
+    this.router.addRoute("/game", () =>
+      this.createFunctionalComponent(CreateGamePage)
+    );
+    this.router.addRoute("/xo", () =>
+      this.createFunctionalComponent(Xo_page)
+    );
 
-  this.router.addRoute('/settings/profile', () => 
-    this.createFunctionalComponent(SettingsPage, { defaultTab: 'profile' })
-  );
+    this.router.addRoute("/tournament", () =>
+      this.createFunctionalComponent(TournamentPage)
+    );
 
-  this.router.addRoute('/settings/friends', () => 
-    this.createFunctionalComponent(SettingsPage, { defaultTab: 'friends' })
-  );
+    this.router.addRoute("/Leaderboard", () =>
+      this.createFunctionalComponent(Leaderboard)
+    );
+    this.router.addRoute("/Chat-Friend", () =>
+      this.createFunctionalComponent(ChatService)
+    );
+    this.router.addRoute('/settings', () =>
+      this.createFunctionalComponent(SettingsPage, { defaultTab: 'profile' })
+    );
 
-  this.router.addRoute('/settings/matchHistory', () => 
-    this.createFunctionalComponent(SettingsPage, { defaultTab: 'matchHistory' })
-  );
+    this.router.addRoute('/settings/profile', () =>
+      this.createFunctionalComponent(SettingsPage, { defaultTab: 'profile' })
+    );
 
-  this.router.addRoute('/settings/overview', () => 
-    this.createFunctionalComponent(SettingsPage, { defaultTab: 'overview' })
-  );
+    this.router.addRoute('/settings/friends', () =>
+      this.createFunctionalComponent(SettingsPage, { defaultTab: 'friends' })
+    );
 
-  this.router.addRoute('/settings/security', () => 
-    this.createFunctionalComponent(SettingsPage, { defaultTab: 'security' })
-  );
+    this.router.addRoute('/settings/matchHistory', () =>
+      this.createFunctionalComponent(SettingsPage, { defaultTab: 'matchHistory' })
+    );
 
-  this.router.addRoute('/settings/achievements', () => 
-    this.createFunctionalComponent(SettingsPage, { defaultTab: 'achievements' })
-  );
+    this.router.addRoute('/settings/overview', () =>
+      this.createFunctionalComponent(SettingsPage, { defaultTab: 'overview' })
+    );
 
-  this.router.addRoute("/login", () => 
-    this.createFunctionalComponent(AuthForm)
-  );
-  this.router.addRoute("/", () => 
-    this.createFunctionalComponent(Welcome)
-  );
+    this.router.addRoute('/settings/security', () =>
+      this.createFunctionalComponent(SettingsPage, { defaultTab: 'security' })
+    );
 
-  this.router.addRoute("/home", () => 
-    this.createFunctionalComponent(Home)
-  );
+    this.router.addRoute('/settings/achievements', () =>
+      this.createFunctionalComponent(SettingsPage, { defaultTab: 'achievements' })
+    );
 
-  // Set static 404 component for Router
-  (Router as any).NotFoundComponent = this.createFunctionalComponent(NotFound);
-}
+    this.router.addRoute("/login", () =>
+      this.createFunctionalComponent(AuthForm)
+    );
+    this.router.addRoute("/", () =>
+      this.createFunctionalComponent(Welcome)
+    );
+
+    this.router.addRoute("/home", () =>
+      this.createFunctionalComponent(Home)
+    );
+
+    // Set static 404 component for Router
+    (Router as any).NotFoundComponent = this.createFunctionalComponent(NotFound);
+  }
 
   private createPlaceholderComponent(name: string): Component {
     class PlaceholderComponent extends Component {

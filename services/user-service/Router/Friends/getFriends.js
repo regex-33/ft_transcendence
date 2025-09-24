@@ -48,7 +48,7 @@ const getFriends = async (request, reply) => {
     });
     reply.send(new_friends || { new_friends: [] });
   } catch (error) {
-    console.error("Error fetching friends:", error);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     reply.status(500).send({ error: "Internal Server Error" });
   }
 };
@@ -94,7 +94,7 @@ const getPendingFriends = async (request, reply) => {
     }));
     reply.send(friends || { friends: [] });
   } catch (error) {
-    console.error("Error fetching friends:", error);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     reply.status(500).send({ error: "Internal Server Error" });
   }
 };
@@ -139,7 +139,7 @@ const getRequestedFriends = async (request, reply) => {
     });
     reply.send(new_friends || { new_friends: [] });
   } catch (error) {
-    console.error("Error fetching friends:", error);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     reply.status(500).send({ error: "Internal Server Error" });
   }
 };
@@ -182,7 +182,7 @@ const getBlockedUsers = async (request, reply) => {
     });
     reply.send(new_friends || { new_friends: [] });
   } catch (error) {
-    console.error("Error fetching friends:", error);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     reply.status(500).send({ error: "Internal Server Error" });
   }
 };

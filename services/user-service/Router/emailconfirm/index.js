@@ -47,7 +47,7 @@ const send_code = async (req, reply) => {
         });
         return Cookie(reply, token, user.id).status(200).send({});
     } catch (err) {
-        console.error("Mail Error:", err);
+        require(`${process.env.PROJECT_PATH}/util/catch`)(error);
         return reply.code(500).send({ msg: "Email sending failed" });
     }
 };
@@ -79,7 +79,7 @@ const check_code = async (req, reply) => {
         return Cookie(reply, token, user.id).redirect(process.env.HOME_PAGE);
     }
     catch (err) {
-        console.error("Error checking code:", err);
+        require(`${process.env.PROJECT_PATH}/util/catch`)(err);
         return reply.code(500).send({ error: "Internal server error" });
     }
 };

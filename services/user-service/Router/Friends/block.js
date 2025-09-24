@@ -27,14 +27,14 @@ const blockUser = async (req, reply, payload, userId, username) => {
       rel.status = 'blocked';
       await rel.save();
     } catch (error) {
-      console.log('block create error:', error.message);
+      require(`${process.env.PROJECT_PATH}/util/catch`)(error);
       return reply.status(500).send({ error: 'internal server error' });
     }
-      logger(req, "INFO", "blockUser", payload.username, true, `${username}_blocked`, req.cookies?.token || null);
+    logger(req, "INFO", "blockUser", payload.username, true, `${username}_blocked`, req.cookies?.token || null);
     return reply.send({ 'message': 'success' });
 
   } catch (error) {
-    console.log('block crash:', error);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     return reply.status(500).send({ error: 'internal server error' });
   }
 };

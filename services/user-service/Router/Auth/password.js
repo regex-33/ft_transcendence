@@ -26,7 +26,7 @@ const changePassword = async (req, res) => {
     await user.save();
     res.status(200).send({ message: "Password changed successfully" });
   } catch (err) {
-    console.error("Error changing password:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     res.status(500).send({ error: "Internal server error" });
   }
 };

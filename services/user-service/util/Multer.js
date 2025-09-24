@@ -29,6 +29,7 @@ const multer = async (request) => {
             };
             logger(request, "INFO", "FileSaving", request.user.username || "guest", true, null, request.cookies?.token || null);
           } catch (err) {
+            require(`${process.env.PROJECT_PATH}/util/catch`)(err);
             logger(request, "ERROR", "FileSaving", request.user.username || "guest", false, "FAILTOSAVE", request.cookies?.token || null);
           }
         } else {
@@ -40,6 +41,7 @@ const multer = async (request) => {
     }
   } catch (error) {
     logger(request, "ERROR", "FileSaving", request.user.username || "guest", false, "FAILTOPROCESS", request.cookies?.token || null);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     throw error;
   }
   return request.body;

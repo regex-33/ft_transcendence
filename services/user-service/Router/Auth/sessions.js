@@ -24,7 +24,7 @@ const getSessions = async (req, res) => {
 
     res.status(200).send({ sessions: sessionData });
   } catch (err) {
-    console.error("Error fetching sessions:", err.message);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     res.status(500).send({ error: "Internal server error" });
   }
 };
@@ -64,7 +64,7 @@ const terminateSession = async (req, res) => {
     logger(req, "INFO", "terminateSession", username, true, null, req.cookies?.token || null);
     res.status(200).send({ message: "Session terminated successfully" });
   } catch (err) {
-    console.error("Error terminating session:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     res.status(500).send({ error: "Internal server error" });
   }
 };
@@ -88,7 +88,7 @@ const terminateAllOtherSessions = async (req, res) => {
     logger(req, "INFO", "terminateAllOtherSessions", username, true, null, req.cookies?.token || null);
     res.status(200).send({ message: "All other sessions terminated successfully" });
   } catch (err) {
-    console.error("Error terminating sessions:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     res.status(500).send({ error: "Internal server error" });
   }
 };

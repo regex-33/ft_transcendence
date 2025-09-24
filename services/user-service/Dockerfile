@@ -3,6 +3,7 @@ FROM node:18-alpine
 WORKDIR /app
 
 COPY package*.json ./
+ENV PROJECT_PATH=/app
 
 RUN apk add --no-cache make g++ python3 bash
 COPY . .

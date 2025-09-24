@@ -64,7 +64,8 @@ const play = async (request, reply) => {
         await saveMap(History, ma, win)
         return reply.send({ map: ma, win: win.winner ? (win.winner == 'X' ? 'OK' : 'KO') : undefined });
     } catch (error) {
-        console.log(error);
+        require(`${process.env.PROJECT_PATH}/src/catch`)(error);
+        return reply.status(500).send({ err: 'internal server error' });
     }
 }
 
@@ -107,17 +108,17 @@ const create = async (request, res) => {
                 map: JSON.parse(History.map_)
             })
         } catch (error) {
-            console.log(error);
+            require(`${process.env.PROJECT_PATH}/src/catch`)(error);
             return res.status(500).send({ err: 'internal server error' });
         }
     }
     catch (error) {
-        console.log(error);
+        require(`${process.env.PROJECT_PATH}/src/catch`)(error);
         return res.status(500).send({ err: 'internal server error' });
     }
 }
 
-const GameRouter = (fastify) => {
+const AiRouter = (fastify) => {
     fastify.post('/create', create);
     fastify.post('/play', play);
     fastify.delete('/reset', reset);
@@ -141,18 +142,28 @@ const GameRouter = (fastify) => {
             if (typeof nid != "number") {
                 return res.status(400).send({ 'msg': 'bad request' });
             }
-            const History = await db.History.findAll({ where: { player: nid, finished: true }, attributes: ['player', 'map_', 'win', 'updatedAt'] });
+            const History = await db.History.findOne({
+                where: {
+                    [Op.or]: [
+                        { player: payload.id },
+                        { opponent: payload.id }
+                    ],
+                    opponent: { [Op.ne]: null },
+                    finished: true
+                }
+                , attributes: ['player', 'map_', 'win', 'updatedAt']
+            });
             const edited = History.map(game => ({
-                win: game.win,
+                win: game.win == id,
                 map: JSON.parse(game.map_),
                 date: game.updatedAt
             }));
             return res.send(edited);
         } catch (error) {
-            console.log("geting history error ", error.message)
+            require(`${process.env.PROJECT_PATH}/src/catch`)(error);
             return res.status(500).send({ "msg": "internal server error" });
         }
     })
 }
 
-module.exports = GameRouter;
+module.exports = AiRouter;

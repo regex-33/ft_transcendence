@@ -1,6 +1,6 @@
 const { User, Relationship } = require("../../models");
 const { logger } = require("../../util/logger");
-const acceptFriendRequest = async (req, reply,payload, ...inputs) => {
+const acceptFriendRequest = async (req, reply, payload, ...inputs) => {
   const [userId, username] = inputs;
   try {
     const friend = await User.findOne({ where: { username } });
@@ -8,13 +8,11 @@ const acceptFriendRequest = async (req, reply,payload, ...inputs) => {
       return reply.status(404).send({ error: "user not found" });
     }
     if (userId === friend.id) {
-
-      console.log(friend.id, userId);
       return reply
         .status(400)
         .send({ error: "You can't accept a friend request from yourself." });
     }
-    
+
     const rel = await Relationship.findOne({
       where: {
         userId: friend.id,
@@ -30,6 +28,7 @@ const acceptFriendRequest = async (req, reply,payload, ...inputs) => {
     logger(req, "INFO", "acceptFriendRequest", userId, true, null, req.cookies?.token || null);
     return reply.status(200).send({ message: "Friend request accepted." });
   } catch (error) {
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     return reply
       .status(500)
       .send({ error: "internal server error" });

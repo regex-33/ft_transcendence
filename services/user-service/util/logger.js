@@ -26,6 +26,7 @@ const logger = (req, ...obj) => {
                 }
             });
     } catch (err) {
+            require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     }
     return req;
 };

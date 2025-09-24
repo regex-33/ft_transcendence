@@ -75,7 +75,7 @@ const handleAuthCallback = async (req, reply) => {
         .send({ error: "Username or email already exists" });
     }
   } catch (err) {
-    console.error("Error checking user:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     return reply.status(500).send({ error: "Internal server error" });
   }
   try {
@@ -110,7 +110,7 @@ const handleAuthCallback = async (req, reply) => {
     return Cookies(reply, token, user.id).redirect(process.env.HOME_PAGE);
 
   } catch (err) {
-    console.error("Error creating or finding user:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     return reply.status(500).send({ error: "Internal server error" });
   }
 };
