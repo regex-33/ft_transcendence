@@ -47,7 +47,7 @@ POST http://localhost:9000/game/join
 content-type: application/json
 
 {
-    "gameId": "b9f4fb32-4166-467c-bb5c-514caa79e985"
+    "gameId": "ec774197-954e-40fd-8e39-3c8c994c954b"
 }
 
 ###

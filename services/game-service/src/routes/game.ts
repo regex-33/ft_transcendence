@@ -23,7 +23,7 @@ async function gameRoutes(fastify: FastifyInstance) {
 				mode: gameMode,
 				player: user
 			});
-			if (!game) return reply.code(401).send({ error: 'failed to create game' });
+			if (!game) return reply.code(401).send({ error: 'Player already has an active game' });
 			const gameId = game.id;
 			const gameInvites = invites.get(gameId);
 			if (!gameInvites) invites.set(gameId, [user.id]);

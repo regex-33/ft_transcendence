@@ -62,6 +62,28 @@ const CardButton = (props: { onClick?: CallableFunction }) => {
 	)
 }
 
+const redirectToActiveGame = async () => 
+{
+	const response = await fetch("http://localhost/api/player/games", {
+		method: 'GET',
+		credentials: 'include'
+	});
+	if (!response.ok)
+		return;
+	const games = await response.json();
+	if (!(typeof games === typeof []))
+		return;
+	for (let i=0; i < games.length; i++)
+	{
+		if (['WAITING', 'LIVE'].includes(games[i].status))
+		{
+			window.history.pushState({}, "", "/game/" + games[i].id);
+			window.dispatchEvent(new PopStateEvent("popstate"));
+			return;
+		}
+	}
+}
+
 export const CreateGamePage: ComponentFunction = () => {
 	const [loading, isAuthenticated, user] = useAuth();
 
@@ -108,13 +130,19 @@ export const CreateGamePage: ComponentFunction = () => {
 			});
 			if (!response.ok) {
 				const data = await response.json();
-				showToast("Failed to create game: " + data.error, "error");
+				if (response.status === 401)
+				{
+					showToast("Failed to create game: " + data.error, "error");
+					redirectToActiveGame();
+				}else{
+					showToast("Failed to create game", "error");
+				}
 				return;
 			}
 			const data = await response.json();
 			showToast("Game created successfully: " + data.id);
 			setTimeout(() => {
-				window.history.pushState({}, "", "/game");
+				window.history.pushState({}, "", "/game/" + data.id);
 				window.dispatchEvent(new PopStateEvent("popstate"));
 			}, 2000);
 		}
@@ -138,23 +166,15 @@ export const CreateGamePage: ComponentFunction = () => {
 	return (
 		<div
 			className="relative flex flex-col overflow-hidden h-screen w-screen"
-			style={{ backgroundColor: 'rgba(94, 156, 171, 0.9)' }}
+			style={{ backgroundColor: 'rgba(94, 156, 171, 0.4)' }}
 		>
 			<Toast con={toast.content} type={toast.type} show={toast.show} />
-			<div
-				className="absolute inset-0 z-0"
-				style={{
-					backgroundImage: 'url(/images/bg-home1.png)',
-					backgroundRepeat: 'no-repeat',
-					backgroundSize: '100% 100%',
-				}}
-			/>
 			<div className="relative z-10">
 				<Header />
 			</div>
-			<div className="z-10 flex items-center gap-10 my-10 flex-col md:flex-row md:justify-between mx-5">
+			<div className="flex items-center gap-10 my-10 flex-col md:flex-row md:justify-between mx-5">
 				<TeamCard players={players} />
-				<div className="z-10 gap-10 my-10 m-auto grid md:grid-rows-1 md:grid-cols-3 w-[80%] md:w-full items-center md:justify-between ">
+				<div className="gap-10 my-10 m-auto grid md:grid-rows-1 md:grid-cols-3 w-[80%] md:w-full items-center md:justify-between ">
 					<div>
 						<Badge text="local" />
 						<CardContainer>

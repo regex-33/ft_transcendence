@@ -2,15 +2,10 @@ import { h } from "../../vdom/createElement";
 import { useState } from "../../hooks/useState";
 import { useRef } from "../../hooks/useRef";
 import { useEffect } from "../../hooks/useEffect";
-import {
-  Game,
-  GameConfig,
-  GameType,
-  GameMode,
-} from "./game";
+import { Game, GameConfig, GameType, GameMode } from "./game";
 import { Connection } from "./connection";
 import { Player } from "./GamePage";
-import bgTeam from '../../../images/game-assets/bg-team.png';
+import bgTeam from "../../../images/game-assets/bg-team.png";
 
 const startGame = (ctx: CanvasRenderingContext2D, game: Game) => {
   ctx;
@@ -107,7 +102,7 @@ const TeamBadge = ({
 
   return (
     <div className={reverse ? "flex gap-1 flex-row-reverse" : "flex gap-1"}>
-      <AvatarCircle avatarImage={player.avatar} key={""+player.userId} />{" "}
+      <AvatarCircle avatarImage={player.avatar} key={"" + player.userId} />{" "}
       {nameBadge}
     </div>
   );
@@ -115,13 +110,16 @@ const TeamBadge = ({
 
 export const GameCanvas = (props: { playerId: number; game: any }) => {
   const [scores, setScores] = useState([0, 0]);
+
   const [players, setPlayers] = useState<Player[]>([]);
+  const canvasRef = useRef(null);
 
   useEffect(() => {
+    console.log("ref", canvasRef);
     if (!props.game?.id) return;
     console.log("gameId:", props.game.id);
-	const players = props.game.players;
-	setPlayers(players);
+    const players = props.game.players;
+    setPlayers(players);
     const canvasEl = document.getElementById(
       "game-canvas"
     ) as HTMLCanvasElement | null;
@@ -134,26 +132,39 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
       window.removeEventListener("resize", resizeHandler);
     };
   }, [props.game]);
+  useEffect(() => {
+    console.log("ref", canvasRef);
+    console.log("game", props.game);
+  });
   const handleClick = () => {};
   return (
     <div>
-      <div className="flex justify-between items-center">
-        <TeamBadge reverse={false} player={players[0]} />
-        <div className="flex">
-          <span>{scores[0]}</span>
-          <div>|</div>
-          <span>{scores[1]}</span>
+      <div className="flex justify-center">
+        <div className="flex justify-between items-center">
+          {
+            players.length > 1 ? (
+              <div>
+          <TeamBadge reverse={false} player={players[0]} />
+          <div className="flex">
+            <span>{scores[0]}</span>
+            <div>||</div>
+            <span>{scores[1]}</span>
+          </div>
+          <TeamBadge reverse={true} player={players[1]} />
+            </div>
+            ) : <div className="m-auto text-gray-800 text:sm md:text-xl font-luckiest">waiting for players</div>
+          }
         </div>
-        <TeamBadge reverse={true} player={players[1]} />
-      </div>
-      <div className="flex justify-center my-2 bg-[#91BFBF] shadow-xs shadow-gray-400 rounded-xl">
-        <canvas
-          height="400px"
-          width="800px"
-          id="game-canvas"
-          onClick={handleClick}
-          className="rounded-lg bg-[#91BFBF] border-2 border-solid "
-        ></canvas>
+        <div className="flex justify-center my-2 bg-[#91BFBF] shadow-xs shadow-gray-400 rounded-xl">
+          <canvas
+            ref={canvasRef}
+            height="400px"
+            width="800px"
+            id="game-canvas"
+            onClick={handleClick}
+            className="rounded-lg bg-[#91BFBF] border-2 border-solid "
+          ></canvas>
+        </div>
       </div>
     </div>
   );

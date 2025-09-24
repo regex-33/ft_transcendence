@@ -107,6 +107,17 @@ const drawBall = (ctx: CanvasRenderingContext2D, ball: Ball) => {
   ctx.stroke();
 };
 
+export type PlayerState = 
+{
+  id: number;
+  score: number;
+  paddle: {
+    x: number;
+    y: number;
+    dir: "LEFT" | "RIGHT";
+  };
+}
+
 export class Game {
   paddles: Paddle[];
   ball: Ball = {
@@ -163,15 +174,7 @@ export class Game {
 
   onServerUpdate = (data: {
     ball: { x: number; y: number };
-    players: {
-      id: number;
-      score: number;
-      paddle: {
-        x: number;
-        y: number;
-        dir: "LEFT" | "RIGHT";
-      };
-    }[];
+    players: PlayerState[];
   }) => {
     this.ball.x = data.ball.x * (GameConfig.canvasWidth / 200);
     const serverHeight = 200 * GameConfig.canvasRatio;
@@ -213,8 +216,29 @@ export class Game {
       //console.log("fetch data:", data);
     });
     connection.on("GAME_UPDATE", this.onServerUpdate);
+    connection.on("PLAYER_DISCONNECT", this._onPlayerDisconnect);
+    connection.on("PLAYER_CONNECT", this._onPlayerDisconnect);
     this._connection = connection;
   };
+
+  private _onPlayerDisconnect = (data: {
+    type: string,
+    players: PlayerState[],
+    playerId: number,
+    timeout: number
+  }) =>
+  {
+    console.log("DISCONNECT RECEIVED: ", data);
+    // data.players.filter(p => )
+  }
+
+  private _onPlayerConnect = (data: {
+    type: string,
+    players: PlayerState[],
+    playerId: number,
+  }) => {
+    console.log("connect received:", data)
+  }
 
   private _onKeyDown = (e: KeyboardEvent) => {
     let keys;

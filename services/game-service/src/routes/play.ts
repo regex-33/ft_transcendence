@@ -14,6 +14,7 @@ import { GameStatus, type Player, type PrismaClient } from '../../generated/pris
 const BALL_SPEED = 1.2;
 const SPEED_BALL_SPEED = 1.8;
 const MAX_SCORE = 10;
+const DISCONNECT_TIMEOUT = 5000;
 
 function isColliding(ball: Ball, paddle: Paddle) {
 	const ballLeft = ball.x - gameConfig.ballRadius;
@@ -120,6 +121,12 @@ function sendPlayerUpdate(socket: WebSocket, session: GameSession) {
 
 function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	const game = gameSession.game;
+	const now = Date.now();
+	let duration;
+	if (now < gameSession.startAt)
+		duration = 0;	
+	else
+		duration = gameSession.startAt - now;
 	prismaClient.$transaction([
 		prismaClient.game.update({
 			where: { id: game.id },
@@ -258,18 +265,47 @@ async function playRoutes(fastify: FastifyInstance) {
 
 			//socket.addEventListener('open', onOpen);
 
+			socket.onopen = () => {
+				session.state.playersSockets.forEach((s) => {
+					if (s === socket) return;
+					s.send(
+						JSON.stringify({
+							type: 'PLAYER_CONNECT',
+							players: session.state.players,
+							playerId: playerId,
+							timeout: DISCONNECT_TIMEOUT,
+						})
+					);
+				});
+			}
 			socket.onclose = () => {
 				console.log('[WEBSOCKET] player ' + playerId + ' closed connection');
 				connections.delete(socket);
 				session.state.players = session.state.players.filter((p) => p.id !== playerId);
 				session.state.spectators = session.state.spectators.filter((s) => s !== socket);
-				session.state.playersSockets = session.state.playersSockets.filter((s) => s !== socket);
+				session.state.playersSockets = session.state.playersSockets.filter((s) => {
+					if (s === socket) return false;
+					s.send(
+						JSON.stringify({
+							type: 'PLAYER_DISCONNECT',
+							players: session.state.players,
+							playerId: playerId,
+							timeout: DISCONNECT_TIMEOUT,
+						})
+					);
+					return true;
+				});
+				setTimeout(() => {
+					if (session.state.players.length === 0) {
+						endGame(session, fastify.prisma);
+					}
+				}, DISCONNECT_TIMEOUT);
 				if (session.intervalId) clearInterval(session.intervalId);
 				// Delete all game ??? and set winner ??
 				socket.removeAllListeners();
 			};
 
-			socket.onmessage = async (messageEvent) => {
+			socket.onmessage = async (messageEvent: WebSocket.MessageEvent) => {
 				try {
 					const raw = messageEvent.data.toString();
 					const data = await JSON.parse(raw);

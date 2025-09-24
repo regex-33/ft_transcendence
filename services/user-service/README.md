@@ -93,6 +93,10 @@ Client must submit TOTP code from authenticator after scanning QR to activate.
 ---
 ## Notifications (`/api/notifications`)
 
+/api/notifications/create
+/api/notifications/delete
+
+
 Auth required.
 
 | Method | Endpoint | Body | Description |

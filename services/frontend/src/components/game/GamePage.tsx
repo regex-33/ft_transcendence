@@ -70,11 +70,16 @@ const getGame = async (gameId: string) => {
       credentials: "include",
     });
     if (!response.ok) {
-      window.history.pushState({}, "", "/home");
+      window.history.pushState({}, "", "/game");
       window.dispatchEvent(new PopStateEvent("popstate"));
       return null;
     }
     const data = await response.json();
+    if (!['LIVE', 'WAITING'].includes(data.status))
+    {
+      window.history.pushState({}, "", "/game");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    }
     console.log(data);
     return data;
   } catch (err) {
@@ -103,12 +108,13 @@ export const GamePage: ComponentFunction = (props) => {
   const [playerId, setPlayerId] = useState<number | null>(null);
   const [loading, isAuthenticated, user] = useAuth();
   useEffect(() => {
-    if (!isAuthenticated || !user) return;
+    if (!user) return;
+    console.log("user:", user);
     setPlayerId(user.id);
     getGame(props.gameId).then((data) => {
       setGame(data);
     });
-  }, [isAuthenticated, user]);
+  }, [user]);
 
   useEffect(() => {
     if (!game) return;
@@ -124,29 +130,20 @@ export const GamePage: ComponentFunction = (props) => {
         </div>
       );
 
-    return <GameCanvas playerId={playerId} game={game} />;
+    return (game && <GameCanvas playerId={playerId} game={game} />);
   };
 
   return (
     <div
       className="relative flex flex-col overflow-hidden h-screen w-screen"
-      style={{ backgroundColor: "rgba(94, 156, 171, 0.9)" }}
+      style={{ backgroundColor: "rgba(94, 156, 171, 0.3)" }}
     >
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          backgroundImage: "url(/images/bg-home1.png)",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "100% 100%",
-        }}
-      />
-
       <div className="relative z-10">
         <Header />
       </div>
-      <div className="z-10 flex items-center gap-10 my-10 flex-col md:flex-row md:justify-between mx-5">
+      <div className="flex min-h-[80vh] items-center gap-10 my-10 flex-col md:flex-row md:justify-between mx-5">
         <TeamCard players={players} />
-        <div className="w-[70%]">
+        <div className="w-[90%] md:w-[70%] md:max-w-[1200px]">
           <Canvas />
         </div>
         <TeamCard players={players} />

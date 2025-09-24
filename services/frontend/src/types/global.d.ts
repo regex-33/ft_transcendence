@@ -29,7 +29,7 @@ export interface VNodeProps {
   [key: string]: any;
   // children?: VNode[];
   key?: string | number;
-  // ref?: (element: HTMLElement | null) => void;
+  ref?: {current: HTMLElement | null};
 }
 
 export type ComponentFunction<P = VNodeProps> = (props: P) => VNode ;
