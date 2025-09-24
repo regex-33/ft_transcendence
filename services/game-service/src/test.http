@@ -55,3 +55,16 @@ GET http://localhost:9000/game/9fe89080-58d5-4d00-bbaa-415fde66c7c9
 
 ###
 GET http://localhost:9000/player/games
+###
+
+# @name createNotification
+@gameId = {{createGame.response.body.id}}
+POST http://localhost/api/notifications/create
+content-type: application/json
+Cookie: {{ register.response.headers.get('set-cookie') }} 
+
+{
+    "gameId": "{{gameId}}",
+    "userId": 9,
+    "type": "MATCH_NOTIFICATION"
+}

@@ -1,4 +1,5 @@
 const { type } = require("os");
+const { counter } = require("speakeasy");
 
 try {
 
@@ -14,24 +15,7 @@ try {
   const { log_infile } = require("./util/logger");
 
   fastify.addHook("onResponse", (req, res, done) => {
-    // console.log(req.object);
     req = logger(req, res);
-    // console.log(req.object);
-    // try {
-    //   const newLog = {
-    //     ...req.object,
-    //     request_id: `user-service-${uuidv4()}`,
-    //     service: "user-service",
-    //     response: {
-    //       statusCode: res.statusCode,
-    //       duration: Date.now() - req.object.startTime,
-    //     }
-    //   }
-    // } catch (err) {
-    //   console.log("Error in logging: ", err);
-    // }
-    // console.log("Logging to file: ");
-    // log_infile(newLog);
     done();
   });
   fastify.addHook("onRequest", (req, res, done) => {
@@ -92,20 +76,20 @@ try {
       .sync()
       .then(() => {
         console.log("Database connected successfully");
+        db.Session.update({ counter: 0 }, { where: { } });
         return fastify.listen({ port: PORT, host: HOST });
       })
       .then(() => {
         console.log(`Server is running on port ${PORT}`);
       })
       .catch((err) => {
-        console.error('unable to connect to database:', err);
-
+        require(`${process.env.PROJECT_PATH}/util/catch`)(err);
       });
   }
   connect();
 
 }
 catch (err) {
-  console.log(err)
+  require(`${process.env.PROJECT_PATH}/util/catch`)(err);
 }
 

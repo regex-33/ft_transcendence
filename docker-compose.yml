@@ -169,8 +169,6 @@ services:
       - PORT=${USER_SERVICE_PORT:-8001}
       - JWT_SECRET=${JWT_SECRET}
       - TIME_TOKEN_EXPIRATION=${TIME_TOKEN_EXPIRATION:-3600}
-      - INTRA_CALLBACK_URL=${INTRA_CALLBACK_URL:-http://localhost/api/oauth/intra/callback}
-      # - INTRA_CALLBACK_URL=${INTRA_CALLBACK_URL:-https://ft-transcendence.com/api/oauth/intra/callback}
       - HOME_PAGE=${HOME_PAGE:-/home}
       - DB_DIALECT=${DB_DIALECT:-sqlite}
       - DB_STORAGE=${DB_STORAGE:-./database.sqlite}

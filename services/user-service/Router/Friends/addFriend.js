@@ -43,7 +43,7 @@ const addFriend = async (request, reply) => {
       message: "Friend added successfully",
     });
   } catch (error) {
-    console.log("Error fetching user or friend:", error);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     return reply.status(500).send({ error: "Internal server error." });
   }
 };

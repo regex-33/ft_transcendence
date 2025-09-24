@@ -38,7 +38,7 @@ const getNotifications = async (req, reply) => {
         );
         return reply.status(200).send(notifications);
     } catch (error) {
-        console.log("Error fetching notifications:", error);
+        require(`${process.env.PROJECT_PATH}/util/catch`)(error);
         return reply.status(500).send({ error: 'Internal server error' });
     }
 }

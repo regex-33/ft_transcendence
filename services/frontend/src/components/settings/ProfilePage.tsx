@@ -13,6 +13,7 @@ interface ProfileData {
   name: string;
   email: string;
   aboutMe: string;
+  online: string;
   birthday: string;
   location: string;
   avatar: string;
@@ -22,6 +23,7 @@ const defaultProfile: ProfileData = {
     name: '',
     email: '',
     aboutMe: '',
+    online: '',
     birthday: '',
     location: '',
     avatar: '',
@@ -89,6 +91,7 @@ export const ProfilePage: ComponentFunction<ProfilePageProps> = (props) => {
           name: userData.username || '',
           email: userData.email || '',
           aboutMe: userData.bio || '',
+          online: userData.online ? 'online' : 'offline',
           birthday: userData.birthday || '',
           location: userData.location || '',
           avatar: userData.avatar || "",
@@ -193,7 +196,6 @@ export const ProfilePage: ComponentFunction<ProfilePageProps> = (props) => {
   );
 };
 
-// Custom sidebar component for profile viewing
 const ProfileSidebar: ComponentFunction<{profileData: ProfileData}> = ({profileData}) => {
   return (
     <aside className="w-[30%] h-full p-2">
@@ -206,7 +208,7 @@ const ProfileSidebar: ComponentFunction<{profileData: ProfileData}> = ({profileD
             {/* Avatar container */}
             <div className="relative w-[100px] h-[100px] flex-shrink-0">
               <img
-                src="/images/home-assests/cir-online.svg"
+                src={profileData?.online === 'online' ? "/images/home-assests/cir-online.svg" : "/images/home-assests/cir-offline.svg"}
                 className="absolute inset-0 w-full h-full z-0"
                 alt="Online circle"
               />

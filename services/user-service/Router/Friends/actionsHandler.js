@@ -45,7 +45,7 @@ const actionsHandler = async (req, reply) => {
         try {
           if (await acceptFriendRequest(req, reply, payload, userId, username)) return;
         } catch (error) {
-          console.log("Error accepting friend request:", error);
+          require(`${process.env.PROJECT_PATH}/util/catch`)(error);
           return reply
             .status(500)
             .send({ error: "An error occurred while processing the request." });
@@ -56,7 +56,7 @@ const actionsHandler = async (req, reply) => {
           const result = await cancelFriendRequest(req, reply, payload, username);
           if (result) return result;
         } catch (error) {
-          console.log("Error canceling friend request:", error);
+          require(`${process.env.PROJECT_PATH}/util/catch`)(error);
           return reply
             .status(500)
             .send({ error: "An error occurred while processing the request." });
@@ -67,7 +67,7 @@ const actionsHandler = async (req, reply) => {
           const result = await blockUser(req, reply, payload, userId, username);
           if (result) return result;
         } catch (error) {
-          console.log("Error blocking user:", error);
+          require(`${process.env.PROJECT_PATH}/util/catch`)(error);
           return reply
             .status(500)
             .send({ error: "An error occurred while processing the request." });
@@ -78,7 +78,7 @@ const actionsHandler = async (req, reply) => {
           const result = await unblockAction(req, reply, payload, userId, username);
           if (result) return result;
         } catch (error) {
-          console.log("Error unblocking user:", error);
+          require(`${process.env.PROJECT_PATH}/util/catch`)(error);
           return reply
             .status(500)
             .send({ error: "An error occurred while processing the request." });
@@ -88,7 +88,7 @@ const actionsHandler = async (req, reply) => {
         return reply.status(400).send({ error: "Invalid action." });
     }
   } catch (error) {
-    console.log("Error processing friend action:", error);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     return reply
       .status(500)
       .send({ error: "An error occurred while processing the request." });

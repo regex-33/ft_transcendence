@@ -40,6 +40,7 @@ const setOnline = async (req, res) => {
 
         return res.status(201).send();
     } catch (error) {
+        require(`${process.env.PROJECT_PATH}/util/catch`)(error);
         return res.status(500).send({ "message": "Internal server error" });
     }
 };
@@ -64,7 +65,6 @@ async function onlineTracker(ws, req) {
             where: { id: session.id }
         });
         if (!session || !payload) {
-            console.log("No session or payload");
             return;
         };
         const internalPing = setInterval(async () => {
@@ -78,6 +78,7 @@ async function onlineTracker(ws, req) {
                 await session.reload();
             }
             catch (err) {
+                require(`${process.env.PROJECT_PATH}/util/catch`)(err);
                 ws.terminate();
                 return;
             }
@@ -89,7 +90,7 @@ async function onlineTracker(ws, req) {
                 active = false;
                 ws.ping();
             } catch (err) {
-                console.log("WebSocket ping error:", err);
+                require(`${process.env.PROJECT_PATH}/util/catch`)(err);
             }
         }, 500);
         ws.on("pong", () => {
@@ -106,10 +107,10 @@ async function onlineTracker(ws, req) {
         ws.on("error", (err) => {
             internalPing && clearInterval(internalPing);
             active = false;
-            console.log("WebSocket error:", err);
+            require(`${process.env.PROJECT_PATH}/util/catch`)("ws closed because: " + err);
         });
     } catch (err) {
-        console.log("JWT verify error:", err);
+        require(`${process.env.PROJECT_PATH}/util/catch`)(err);
         ws.close();
         return;
     }

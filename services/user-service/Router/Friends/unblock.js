@@ -16,7 +16,7 @@ const unblockAction = async (req, reply, payload, ...inputs) => {
     }
     return reply.status(404).send({ message: 'not found' });
   } catch (error) {
-    console.log(error.message);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     return reply.status(500).send('internal server error');
   }
 };

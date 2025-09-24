@@ -107,7 +107,7 @@ export const ChatPanel: ComponentFunction = () => {
             </div>
           </div>
         </div>
-        <Xo />
+        <Xo mode='ai' />
       </aside>
     );
   }
@@ -152,7 +152,7 @@ export const ChatPanel: ComponentFunction = () => {
           </div>
         </div>
       </div>
-      <Xo />
+      <Xo mode='ai' />
     </aside>
   );
 }

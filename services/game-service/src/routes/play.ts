@@ -132,7 +132,7 @@ function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
 			where: { id: game.id },
 			data: {
 				status: GameStatus.ENDED,
-				duration: Date.now() - gameSession.startAt,
+				duration: duration,
 				gamePlayers: {
 					createMany: {
 						data: gameSession.state.players.map((p) => ({

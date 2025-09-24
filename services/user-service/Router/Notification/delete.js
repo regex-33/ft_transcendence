@@ -19,7 +19,7 @@ module.exports = async (req, reply) => {
         await notification.destroy();
         return reply.status(204).send();
     } catch (error) {
-        console.error("Error deleting notification:", error);
+        require(`${process.env.PROJECT_PATH}/util/catch`)(error);
         return reply.status(500).send({ error: "An error occurred while deleting the notification." });
     }
 }

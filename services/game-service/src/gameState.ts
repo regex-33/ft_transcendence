@@ -55,7 +55,7 @@ export function initSession(game: GameMetadata) {
 		session = {
 			game,
 			state,
-			startAt: 0,
+			startAt: Date.now(),
 		};
 		games.set(game.id, session);
 	}

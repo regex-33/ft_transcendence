@@ -8,6 +8,7 @@ module.exports = (reply, token, userId) => {
     logger(null, "INFO", "createSession", userId, true, null, token);
   } catch (error) {
     logger(null, "ERROR", "createSession", userId, false, "SessionCreationFailed", token);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     return reply.status(500).send({ error: "Internal server error." });
   }
   reply.setCookie("session_id", session_id, {

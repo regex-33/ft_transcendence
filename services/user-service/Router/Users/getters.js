@@ -58,7 +58,7 @@ const getbyusername = async (request, reply) => {
     return reply.send(n);
   }
   catch (err) {
-    console.error("Error fetching user by username:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     reply.status(500).send({ error: "Internal server error." });
   };
 };
@@ -96,7 +96,7 @@ const getbyId = async (request, reply) => {
     });
   }
   catch (err) {
-    console.error("Error fetching user by ID:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     reply.status(500).send({ error: "Internal server error." });
   };
 };
@@ -125,7 +125,7 @@ const getme = async (request, reply) => {
     });
   }
   catch (err) {
-    console.error("Error fetching user by ID:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     reply.status(500).send({ error: "Internal server error." });
   };
 };
@@ -177,7 +177,7 @@ const getUsers = async (request, reply) => {
     return reply.send(userList.filter(u => u));
   }
   catch (err) {
-    console.error("Error fetching users:", err);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(err);
     reply.status(500).send({ error: "Internal server error." });
   };
 };

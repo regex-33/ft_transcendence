@@ -33,7 +33,7 @@ const create2fa = async (req, res) => {
 
         res.send({ qrCodeUrl, secret: secret.base32 });
     } catch (error) {
-        console.error("Error in create2fa:", error);
+        require(`${process.env.PROJECT_PATH}/util/catch`)(error);
         return res.status(500).send({ msg: "Internal server error" });
     }
 };
@@ -51,6 +51,7 @@ const disable2fa = async (req, res) => {
         logger(req, "INFO", "disable2fa", payload.username, true, null, req.cookies?.token || null);
         res.status(200).send({ msg: "2FA disabled successfully" });
     } catch (error) {
+        require(`${process.env.PROJECT_PATH}/util/catch`)(error);
         return res.status(500).send({ msg: "Internal server error" });
     }
 };
@@ -69,7 +70,6 @@ const active2fa = async (req, res) => {
         if (!_2fa) {
             return res.status(400).send({ msg: "2FA not set up for this user" });
         }
-        console.log("Verifying code:", code, "with secret:", _2fa.secret);
         const verified = speakeasy.totp.verify({
             secret: _2fa.secret,
             encoding: "base32",
@@ -85,7 +85,7 @@ const active2fa = async (req, res) => {
         logger(req, "INFO", "create2fa", payload.username, true, null, req.cookies?.token || null);
         return res.status(200).send({ msg: "2FA activated successfully" });
     } catch (error) {
-        console.error("Error in active2fa:", error);
+        require(`${process.env.PROJECT_PATH}/util/catch`)(error);
         return res.status(500).send({ msg: "Internal server error" });
     }
 };
@@ -101,6 +101,7 @@ const check2faStatus = async (req, res) => {
         }
         return res.status(200).send({ isActive: twoFA.isActive });
     } catch (error) {
+        require(`${process.env.PROJECT_PATH}/util/catch`)(error);
         return res.status(500).send({ msg: "Internal server error" });
     }
 }

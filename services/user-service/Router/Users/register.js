@@ -25,7 +25,7 @@ const register = async (request, reply) => {
     });
 
   } catch (error) {
-    console.error("Error in register handler:", error.message);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     return reply.status(500).send({ message: "Internal server error" });
   }
 };
@@ -47,6 +47,7 @@ async function createUser(request, reply, userInfo) {
     return Cookies(reply, token, user.id).redirect(process.env.HOME_PAGE);
   } catch (error) {
     logger(request, "ERROR", "register", userInfo.username, false, "UserCreationFailed", reply.cookies?.token || null);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     return reply.status(500).send({ message: "Internal server error" });
   }
 }
@@ -67,6 +68,7 @@ async function checkUserExisting(reply, username, email, request) {
     }
     return;
   } catch (error) {
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     return reply.status(500).send({ message: "Internal server error" });
   }
 }

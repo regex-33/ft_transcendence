@@ -25,12 +25,11 @@ const createNotification = async (req, reply) => {
                 type
             });
         } catch (error) {
-            console.log("Error creating notification:", error.message);
+            require(`${process.env.PROJECT_PATH}/util/catch`)(error);
             return reply.status(500).send({ error: 'Internal server error.' });
         }
     }
     else {
-        console.log("Invalid notification type:", type);
         return reply.status(400).send({ error: 'Invalid notification type' });
     }
 }

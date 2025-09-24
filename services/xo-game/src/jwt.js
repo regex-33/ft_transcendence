@@ -22,6 +22,7 @@ const verify = async (token, secret, callback) => {
         }
         return await callback(null, payload);
     } catch (err) {
+        require(`${process.env.PROJECT_PATH}/src/catch`)(err);
         return await callback(err.message, null);
     }
 }

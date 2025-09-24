@@ -58,7 +58,7 @@ const login = async (request, reply) => {
           }
         }
       } catch (error) {
-        console.log("Error fetching 2FA status:", error);
+        require(`${process.env.PROJECT_PATH}/util/catch`)(error);
         return reply
           .status(500)
           .send({ error: "Internal server error " });
@@ -77,11 +77,11 @@ const login = async (request, reply) => {
       return Cookies(reply, token, user.id).redirect(process.env.HOME_PAGE);
     } catch (err) {
       logger(request, "ERROR", "login", username, false, "LoginFailed", request.cookies?.token || null);
-      console.error("Error during login:", err);
+      require(`${process.env.PROJECT_PATH}/util/catch`)(err);
       reply.status(500).send({ error: "Internal server error." });
     }
   } catch (error) {
-    console.error("Unexpected error during login:", error);
+    require(`${process.env.PROJECT_PATH}/util/catch`)(error);
     return reply.status(500).send({ error: "Internal server error." });
   }
 };
