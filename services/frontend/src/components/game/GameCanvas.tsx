@@ -30,11 +30,10 @@ let handleCanvasResize = (canvasEl: HTMLCanvasElement) => {
 	GameConfig.onResize(canvasEl.width, canvasEl.height);
 };
 
-const initCanvas = async (gameId: string, resizeHandler: () => void) => {
+const initCanvas = async (gameId: string, resizeHandler: () => void, setScores: Function) => {
 	const canvasEl = document.getElementById("game-canvas") as HTMLCanvasElement | null;
 	if (!(canvasEl instanceof HTMLCanvasElement))
 		throw new Error("canvas element not found");
-
 	canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width;
 	canvasEl.height = canvasEl.width * GameConfig.canvasRatio;
 	console.log(canvasEl.width)
@@ -50,11 +49,11 @@ const initCanvas = async (gameId: string, resizeHandler: () => void) => {
 		type: GameType.SOLO,
 		mode: GameMode.CLASSIC
 	};
-	startGame(context, new Game(canvasEl.getContext("2d")!, gameData));
+	startGame(context, new Game(canvasEl.getContext("2d")!, gameData, setScores));
 }
 
 
-export const GameCanvas = (props: { playerId: number, gameId: string }) => {
+export const GameCanvas = (props: { setScores: Function, playerId: number, gameId: string }) => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	useEffect(() => {
 		if (!props.gameId)
@@ -65,7 +64,7 @@ export const GameCanvas = (props: { playerId: number, gameId: string }) => {
 		if (!(canvasEl instanceof HTMLCanvasElement))
 			throw new Error("canvas element not found");
 		const resizeHandler = handleCanvasResize.bind(this, canvasEl);
-		initCanvas(props.gameId, resizeHandler);
+		initCanvas(props.gameId, resizeHandler, props.setScores);
 		return () => {
 			console.log("canvas unmounted");
 			window.removeEventListener('resize', resizeHandler);

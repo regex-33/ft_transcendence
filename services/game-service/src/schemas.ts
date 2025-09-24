@@ -26,21 +26,21 @@ const createGameSchema = {
 					items: {
 						type: 'object',
 						properties: {
-							userId: { type: 'integer' }
-						}
-					}
-				}
+							userId: { type: 'integer' },
+						},
+					},
+				},
 			},
-			required: ['id', 'createdAt', 'updatedAt', 'status', 'type', 'players']
+			required: ['id', 'createdAt', 'updatedAt', 'status', 'type', 'players'],
 		},
 		401: {
-			$ref: 'Error#'
+			$ref: 'Error#',
 		},
 		400: {
-			$ref: 'Error#'
-		}
-	}
-}
+			$ref: 'Error#',
+		},
+	},
+};
 
 const joinGameSchema = {
 	tags: ['Game'],
@@ -58,16 +58,16 @@ const joinGameSchema = {
 			properties: {
 				id: { type: 'integer' },
 			},
-			required: ['id']
+			required: ['id'],
 		},
 		404: {
-			$ref: 'Error#'
+			$ref: 'Error#',
 		},
 		400: {
-			$ref: 'Error#'
-		}
-	}
-}
+			$ref: 'Error#',
+		},
+	},
+};
 
 const inviteGameSchema = {
 	body: {
@@ -82,14 +82,13 @@ const inviteGameSchema = {
 	response: {
 		204: { type: 'null' },
 		404: {
-			$ref: 'Error#'
+			$ref: 'Error#',
 		},
 		403: {
-			$ref: 'Error#'
-		}
+			$ref: 'Error#',
+		},
 	},
 };
-
 
 const getGameSchema = {
 	tags: ['Game'],
@@ -97,8 +96,8 @@ const getGameSchema = {
 		type: 'object',
 		required: ['id'],
 		properties: {
-			id: { type: 'string' }
-		}
+			id: { type: 'string' },
+		},
 	},
 	response: {
 		200: {
@@ -115,17 +114,70 @@ const getGameSchema = {
 					items: {
 						type: 'object',
 						properties: {
-							userId: { type: 'integer' }
-						}
-					}
-				}
+							userId: { type: 'integer' },
+						},
+					},
+				},
 			},
-			required: ['createdAt', 'updatedAt', 'status', 'type', 'players']
+			required: ['createdAt', 'updatedAt', 'status', 'type', 'players'],
 		},
 		404: {
-			$ref: 'Error#'
-		}
-	}
-}
+			$ref: 'Error#',
+		},
+	},
+};
 
-export { joinGameSchema, inviteGameSchema, createGameSchema, getGameSchema }
+const getPlayerGamesSchema = {
+	tags: ['Game'],
+	response: {
+		200: {
+			type: 'array',
+			items: {
+				type: 'object',
+				properties: {
+					id: { type: 'string' },
+					createdAt: { type: 'string', format: 'date-time' },
+					updatedAt: { type: 'string', format: 'date-time' },
+					status: { $ref: 'GameStatus#' },
+					type: { $ref: 'GameType#' },
+					mode: { $ref: 'GameMode#' },
+					tournamentId: { type: 'string' },
+					duration: { type: 'number' },
+					players: {
+						type: 'array',
+						items: {
+							type: 'object',
+							properties: {
+								userId: { type: 'integer' },
+							},
+						},
+					},
+				},
+				required: ['createdAt', 'updatedAt', 'status', 'type', 'players'],
+			},
+		},
+		404: {
+			$ref: 'Error#',
+		},
+	},
+};
+
+const getPlayerIdGamesSchema = {
+	params: {
+		type: 'object',
+		required: ['id'],
+		properties: {
+			id: { type: 'number' },
+		},
+	},
+	...getPlayerGamesSchema,
+};
+
+export {
+	joinGameSchema,
+	getPlayerGamesSchema,
+	getPlayerIdGamesSchema,
+	inviteGameSchema,
+	createGameSchema,
+	getGameSchema,
+};

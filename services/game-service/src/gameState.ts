@@ -4,9 +4,12 @@ import type WebSocket from 'ws';
 export interface Paddle {
 	x: number;
 	y: number;
+	dir: Direction;
 }
 
 export type GameMetadata = Prisma.GameGetPayload<{ include: { players: true } }>;
+
+export type Direction = 'LEFT' | 'RIGHT';
 
 export interface Ball {
 	x: number;
@@ -33,8 +36,10 @@ export interface GameState {
 export interface GameSession {
 	game: GameMetadata;
 	state: GameState;
+	startAt: number;
 	runner?: () => void;
 	intervalId?: NodeJS.Timeout;
+	onEnd?: Function;
 }
 
 export function initSession(game: GameMetadata) {
@@ -50,6 +55,7 @@ export function initSession(game: GameMetadata) {
 		session = {
 			game,
 			state,
+			startAt: 0,
 		};
 		games.set(game.id, session);
 	}

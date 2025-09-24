@@ -3,16 +3,17 @@ import fastifyWebsocket from '@fastify/websocket';
 import redis from '../redis';
 import { checkAuth } from '../controllers/checkAuth';
 import { getGame } from '../controllers/gameController';
-import type { Ball, GameMetadata, GameSession, Paddle, PlayerState } from '../gameState';
+import type { Ball, Direction, GameMetadata, GameSession, Paddle, PlayerState } from '../gameState';
 import type WebSocket from 'ws';
 import { games, connections, gameConfig, initSession } from '../gameState';
-import type { PrismaClient } from '../../generated/prisma';
+import { GameStatus, type Player, type PrismaClient } from '../../generated/prisma';
 
 // INIT: { type: init, data: gameId} response: {type: init_ack, players: [], spectator: bool }
 //
 //
 const BALL_SPEED = 1.2;
-//const PADDLE_SPEED = 10;
+const SPEED_BALL_SPEED = 1.8;
+const MAX_SCORE = 10;
 
 function isColliding(ball: Ball, paddle: Paddle) {
 	const ballLeft = ball.x - gameConfig.ballRadius;
@@ -32,25 +33,50 @@ function isColliding(ball: Ball, paddle: Paddle) {
 	);
 }
 
+function goal(players: PlayerState[], dir: Direction) {
+	for (let i = 0; i < players.length; i++) {
+		const player = players[i]!;
+		if (player.paddle.dir !== dir) {
+			player.score++;
+			if (player.score === MAX_SCORE) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 function simPong(gameSession: GameSession, dt: number) {
 	const ball = gameSession.state.ball;
 	const players = gameSession.state.players;
-	ball.x += ball.vx * BALL_SPEED;
-	ball.y += ball.vy * BALL_SPEED;
-	if (ball.x > gameConfig.gameWidth) {
-		ball.x = gameConfig.gameWidth;
+	const ballSpeed = gameSession.game.mode === 'SPEED' ? SPEED_BALL_SPEED : BALL_SPEED;
+	let terminateGame = false;
+	ball.x += ball.vx * ballSpeed;
+	ball.y += ball.vy * ballSpeed;
+	if (ball.x + gameConfig.ballRadius > gameConfig.gameWidth) {
+		terminateGame = goal(players, 'RIGHT');
+		ball.x = gameConfig.gameWidth / 2;
+		ball.y = gameConfig.gameHeight / 2;
 		ball.vx *= -1;
+		ball.vy = 1;
 	}
-	if (ball.x < 0) {
-		ball.x = 0;
+	if (ball.x - gameConfig.ballRadius < 0) {
+		terminateGame = goal(players, 'LEFT');
+		ball.x = gameConfig.gameWidth / 2;
+		ball.y = gameConfig.gameHeight / 2;
 		ball.vx *= -1;
+		ball.vy = -1;
 	}
-	if (ball.y > gameConfig.gameHeight) {
-		ball.y = gameConfig.gameHeight;
+	if (terminateGame) {
+		gameSession.game.status = 'ENDED';
+		gameSession.onEnd?.();
+	}
+	if (ball.y + gameConfig.ballRadius > gameConfig.gameHeight) {
+		ball.y = gameConfig.gameHeight - gameConfig.ballRadius;
 		ball.vy *= -1;
 	}
-	if (ball.y < 0) {
-		ball.y = 0;
+	if (ball.y - gameConfig.ballRadius < 0) {
+		ball.y = gameConfig.ballRadius;
 		ball.vy *= -1;
 	}
 	gameSession.state.players.forEach((player) => {
@@ -92,13 +118,58 @@ function sendPlayerUpdate(socket: WebSocket, session: GameSession) {
 	socket.send(JSON.stringify({ type: 'PLAYERS_UPDATE', players: session.state.players }));
 }
 
-function startGame(gameSession: GameSession) {
+function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
+	const game = gameSession.game;
+	prismaClient.$transaction([
+		prismaClient.game.update({
+			where: { id: game.id },
+			data: {
+				status: GameStatus.ENDED,
+				duration: Date.now() - gameSession.startAt,
+				gamePlayers: {
+					createMany: {
+						data: gameSession.state.players.map((p) => ({
+							playerId: p.id,
+							score: p.score,
+							team: p.paddle.dir === 'LEFT' ? 'TEAM_A' : 'TEAM_B',
+						})),
+					},
+				},
+			},
+		}),
+		prismaClient.player.updateMany({
+			where: { activeGameId: game.id },
+			data: {
+				points: { increment: 100 },
+				activeGameId: null,
+			},
+		}),
+	]);
+}
+function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	// TODO: notify players about game start
 	// TODO: run game loop
 	const runner = createGameRunner(gameSession);
+	gameSession.game.status = 'LIVE';
+	const promise = prismaClient.game.update({
+		where: { id: gameSession.game.id },
+		data: {
+			status: 'LIVE',
+		},
+	});
 	gameSession.runner = runner;
 	gameSession.state.lastTick = Date.now();
 	gameSession.intervalId = setInterval(runner, gameConfig.tick);
+	gameSession.onEnd = () => {
+		console.log('ENDING GAME');
+		gameSession.state.playersSockets.forEach((s) => s.close());
+		endGame(gameSession, prismaClient);
+		games.delete(gameSession.game.id);
+	};
+	gameSession.startAt = Date.now();
+	promise.catch((err) => {
+		console.error('[ERROR]: game update failed:', err);
+	});
 }
 
 function gameFull(gameSession: GameSession) {
@@ -106,10 +177,11 @@ function gameFull(gameSession: GameSession) {
 	return gameSession.state.players.length === maxPlayers;
 }
 
-function createPaddle(dir: 'LEFT' | 'RIGHT'): Paddle {
+function createPaddle(dir: Direction): Paddle {
 	return {
 		x: dir === 'LEFT' ? 5 : gameConfig.gameWidth - 5 - gameConfig.paddleWidth,
 		y: gameConfig.gameHeight / 2 - gameConfig.paddleHeight / 2,
+		dir,
 	};
 }
 
@@ -226,7 +298,7 @@ async function playRoutes(fastify: FastifyInstance) {
 						console.log('connections:', connections.size);
 						if (gameFull(session)) {
 							console.log('game is full');
-							startGame(session);
+							startGame(session, fastify.prisma);
 						}
 					} else if (data.type === 'UPDATE') {
 						console.log('UPDATE RECEIVED');

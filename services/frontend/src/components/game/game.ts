@@ -119,15 +119,20 @@ export class Game {
   id: string;
   ctx: CanvasRenderingContext2D;
   _connection: Connection;
+  _setScores: Function;
+  _scores: number[];
   private _activeKeys: Set<string>;
 
   constructor(
     ctx: CanvasRenderingContext2D,
     { id, type, mode }: { id: string; type: GameType; mode: GameMode },
+    setScores: Function,
   ) {
     this._activeKeys = new Set();
+    this._setScores = setScores;
     this.ctx = ctx;
     this.id = id;
+    this._scores = [0, 0];
     const p1 = new Paddle(10, GameConfig.canvasHeight / 2, leftPaddleOptions);
     const p2 = new Paddle(
       GameConfig.canvasWidth - GameConfig.paddleWidth - 10,
@@ -164,6 +169,7 @@ export class Game {
       paddle: {
         x: number;
         y: number;
+        dir: "LEFT" | "RIGHT";
       };
     }[];
   }) => {
@@ -172,6 +178,16 @@ export class Game {
     this.ball.y = data.ball.y * (GameConfig.canvasHeight / serverHeight);
     const paddles = data.players.map((p) => p.paddle);
 
+    const leftScore =
+      data.players.find((p) => p.paddle.dir === "LEFT")?.score ||
+      this._scores[0];
+    const rightScore =
+      data.players.find((p) => p.paddle.dir === "RIGHT")?.score ||
+      this._scores[1];
+    if (leftScore !== this._scores[0] || rightScore !== this._scores[1]) {
+      this._setScores([leftScore, rightScore]);
+      this._scores = [leftScore, rightScore];
+    }
     this.paddles[0].x = paddles[0].x * (GameConfig.canvasWidth / 200);
     this.paddles[0].y = paddles[0].y * (GameConfig.canvasHeight / serverHeight);
 

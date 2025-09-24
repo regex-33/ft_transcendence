@@ -70,6 +70,7 @@ const TeamCard = ({ players }: { players: Player[] }) => {
 }
 
 export const GamePage: ComponentFunction = (props) => {
+	const [scores, setScores] = useState([0, 0]);
 	const [players, setPlayers] = useState([
 		{
 			name: "player1",
@@ -82,6 +83,7 @@ export const GamePage: ComponentFunction = (props) => {
 			avatarImage: Avatar1
 		}
 	]);
+
 	const [game, setGame] = useState<{ id: string, players: { userId: number }[] } | null>(null);
 	const [playerId, setPlayerId] = useState<number | null>(null);
 	const [loading, isAuthenticated, user] = useAuth();
@@ -120,10 +122,17 @@ export const GamePage: ComponentFunction = (props) => {
 			<div className="z-10 flex items-center gap-10 my-10 flex-col md:flex-row md:justify-between mx-5">
 				<TeamCard players={players} />
 				<div className="w-[70%]">
-					<div className="flex justify-between"><TeamBadge reverse={false} player={players[0]} />
-						<TeamBadge reverse={true} player={players[1]} /></div>
+					<div className="flex justify-between items-center">
+						<TeamBadge reverse={false} player={players[0]} />
+						<div className="flex">
+							<span>{scores[0]}</span>
+							<div>|</div>
+							<span>{scores[1]}</span>
+						</div>
+						<TeamBadge reverse={true} player={players[1]} />
+					</div>
 					<div className="flex justify-center my-2 bg-[#91BFBF] shadow-xs shadow-gray-400 rounded-xl">
-						<GameCanvas playerId={playerId} gameId={props.gameId} />
+						<GameCanvas setScores={setScores} playerId={playerId} gameId={props.gameId} />
 					</div>
 				</div>
 				<TeamCard players={players} />
