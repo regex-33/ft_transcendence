@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Badge Test</title>
+<style>
+.badge {
+  display: inline-block;
+  padding: 6px 18px;          /* tighter spacing */
+  font-size: 18px;
+  font-weight: bold;
+  color: #003366;
+  text-align: center;
+  white-space: nowrap;
+
+  border-width: 20px;         /* reduce thickness */
+  border-style: solid;
+  border-image: url('bg-team.png') 20 fill stretch; 
+  /* 20 = slice size (try 15–25 until it looks good) */
+}</style>
+</head>
+<body>
+<div class="badge">Short</div>
+<div class="badge">Some longer badge text adjusts automatically</div>
+</body>
+</html>

@@ -89,6 +89,11 @@ export const Header: ComponentFunction = () => {
     window.history.pushState({}, '', '/Leaderboard');
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
+   const handleNewGameClick = (e: Event) => {
+    e.preventDefault();
+    window.history.pushState({}, '', '/game');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
   
   return (
     <header
@@ -140,7 +145,7 @@ export const Header: ComponentFunction = () => {
         <Search modalManager={modalManager} />
         
         <div className="min-w-0">
-          <button className="flex items-center gap-2   md:px-3 py-1    overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95">
+          <button onClick={handleNewGameClick} className="flex items-center gap-2   md:px-3 py-1    overflow-hidden whitespace-nowrap transition-transform duration-200 hover:scale-95">
             <img src="/images/home-assests/game-icon.svg" alt="game" className="w-6 h-6 md:w-10 md:h-10" />
           </button>
         </div>

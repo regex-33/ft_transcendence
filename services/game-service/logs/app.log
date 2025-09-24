@@ -1,0 +1,110 @@
+[0] 
+[0] > game-service@1.0.0 build:watch
+[0] > tsc --watch
+[0] 
+[1] 
+[1] > game-service@1.0.0 start
+[1] > nodemon
+[1] 
+[1] [33m[nodemon] 3.1.10[39m
+[1] [33m[nodemon] to restart at any time, enter `rs`[39m
+[1] [33m[nodemon] watching path(s): *.*[39m
+[1] [33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[1] [32m[nodemon] starting `node ./dist/app.js`[39m
+[0] [2J[3J[H1:51:28 PM - Starting compilation in watch mode...
+[0] 
+[1] {"level":30,"time":1757940688258,"pid":22082,"hostname":"thagoat-BC","msg":"Server listening at http://[::]:3000"}
+[1] [32m[nodemon] restarting due to changes...[39m
+[1] [32m[nodemon] restarting due to changes...[39m
+[0] 
+[0] 1:51:30 PM - Found 0 errors. Watching for file changes.
+[1] [32m[nodemon] starting `node ./dist/app.js`[39m
+[1] {"level":30,"time":1757940691045,"pid":22100,"hostname":"thagoat-BC","msg":"Server listening at http://[::]:3000"}
+[0] [2J[3J[H1:51:47 PM - File change detected. Starting incremental compilation...
+[0] 
+[0] 
+[0] 1:51:47 PM - Found 0 errors. Watching for file changes.
+[0] [2J[3J[H1:51:51 PM - File change detected. Starting incremental compilation...
+[0] 
+[1] [32m[nodemon] restarting due to changes...[39m
+[0] src/routes/hello.ts(7,24): error TS1002: Unterminated string literal.
+[0] src/routes/hello.ts(8,4): error TS1005: ';' expected.
+[0] 
+[0] 1:51:53 PM - Found 2 errors. Watching for file changes.
+[1] [32m[nodemon] starting `node ./dist/app.js`[39m
+[1] file:///home/thagoat/Desktop/transcendence/services/game-service/dist/routes/hello.js:4
+[1]             "hello": "world333};
+[1]                      ^^^^^^^^^^^
+[1] 
+[1] SyntaxError: Invalid or unexpected token
+[1]     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+[1]     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:107:18)
+[1]     at #translate (node:internal/modules/esm/loader:540:12)
+[1]     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:587:27)
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[1]     at async ModuleJob._link (node:internal/modules/esm/module_job:162:19)
+[1] 
+[1] Node.js v22.19.0
+[1] [31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[0] [2J[3J[H1:51:58 PM - File change detected. Starting incremental compilation...
+[0] 
+[1] [32m[nodemon] restarting due to changes...[39m
+[1] [32m[nodemon] starting `node ./dist/app.js`[39m
+[0] 
+[0] 1:51:58 PM - Found 0 errors. Watching for file changes.
+[1] {"level":30,"time":1757940719221,"pid":22205,"hostname":"thagoat-BC","msg":"Server listening at http://[::]:3000"}
+[1] {"level":30,"time":1757940721281,"pid":22205,"hostname":"thagoat-BC","reqId":"req-1","req":{"method":"GET","url":"/","host":"localhost:3000","remoteAddress":"::1","remotePort":44862},"msg":"incoming request"}
+[1] {"level":30,"time":1757940721292,"pid":22205,"hostname":"thagoat-BC","reqId":"req-1","res":{"statusCode":200},"responseTime":9.964049994945526,"msg":"request completed"}
+[1] {"level":30,"time":1757940754544,"pid":22205,"hostname":"thagoat-BC","reqId":"req-2","req":{"method":"GET","url":"/","host":"localhost:3000","remoteAddress":"::1","remotePort":44862},"msg":"incoming request"}
+[1] {"level":30,"time":1757940754549,"pid":22205,"hostname":"thagoat-BC","reqId":"req-2","res":{"statusCode":200},"responseTime":4.522773005068302,"msg":"request completed"}
+[0] [2J[3J[H2:12:01 PM - File change detected. Starting incremental compilation...
+[0] 
+[1] [32m[nodemon] restarting due to changes...[39m
+[0] 
+[0] 2:12:02 PM - Found 0 errors. Watching for file changes.
+[1] [32m[nodemon] starting `node ./dist/app.js`[39m
+[1] {"level":30,"time":1757941922536,"pid":23288,"hostname":"thagoat-BC","msg":"Server listening at http://[::]:3000"}
+[0] [2J[3J[H2:12:19 PM - File change detected. Starting incremental compilation...
+[0] 
+[1] [32m[nodemon] restarting due to changes...[39m
+[1] [32m[nodemon] starting `node ./dist/app.js`[39m
+[1] [32m[nodemon] restarting due to changes...[39m
+[1] [32m[nodemon] starting `node ./dist/app.js`[39m
+[0] 
+[0] 2:12:20 PM - Found 0 errors. Watching for file changes.
+[1] {"level":30,"time":1757941940602,"pid":23348,"hostname":"thagoat-BC","msg":"Server listening at http://[::]:3000"}
+[0] [2J[3J[H2:12:20 PM - File change detected. Starting incremental compilation...
+[0] 
+[0] 
+[0] 2:12:21 PM - Found 0 errors. Watching for file changes.
+[0] [2J[3J[H2:12:22 PM - File change detected. Starting incremental compilation...
+[0] 
+[0] 
+[0] 2:12:22 PM - Found 0 errors. Watching for file changes.
+[1] [32m[nodemon] restarting due to changes...[39m
+[1] [32m[nodemon] starting `node ./dist/app.js`[39m
+[1] {"level":30,"time":1757941967922,"pid":23391,"hostname":"thagoat-BC","msg":"Server listening at http://[::]:3000"}
+[0] [2J[3J[H2:12:48 PM - File change detected. Starting incremental compilation...
+[0] 
+[0] 
+[0] 2:12:48 PM - Found 0 errors. Watching for file changes.
+[0] [2J[3J[H2:12:50 PM - File change detected. Starting incremental compilation...
+[0] 
+[0] 
+[0] 2:12:50 PM - Found 0 errors. Watching for file changes.
+[1] [32m[nodemon] restarting due to changes...[39m
+[1] [32m[nodemon] starting `node ./dist/app.js`[39m
+[0] [2J[3J[H2:12:53 PM - File change detected. Starting incremental compilation...
+[0] 
+[1] {"level":30,"time":1757941974058,"pid":23442,"hostname":"thagoat-BC","msg":"Server listening at http://[::]:3000"}
+[0] 
+[0] 2:12:54 PM - Found 0 errors. Watching for file changes.
+[1] [32m[nodemon] restarting due to changes...[39m
+[1] [32m[nodemon] starting `node ./dist/app.js`[39m
+[1] {"level":30,"time":1757941978696,"pid":23493,"hostname":"thagoat-BC","msg":"Server listening at http://[::]:3000"}
+[0] [2J[3J[H2:12:58 PM - File change detected. Starting incremental compilation...
+[0] 
+[0] 
+[0] 2:12:58 PM - Found 0 errors. Watching for file changes.
+[0] npm run build:watch exited with code SIGINT
+[1] npm run start exited with code SIGINT

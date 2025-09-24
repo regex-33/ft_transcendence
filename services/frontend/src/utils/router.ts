@@ -133,14 +133,14 @@ export class Router {
     }
     if (!matched) {
       console.warn(`No route found for path: ${this.currentRoute}`);
-      if (Router.NotFoundComponent) {
-        this.render(Router.NotFoundComponent);
-      } else {
+      // if (Router.NotFoundComponent) {
+      //   this.render(Router.NotFoundComponent);
+      // } else {
         if (this.currentComponent && this.currentComponent.isMountedComponent()) {
           this.currentComponent.unmount();
           this.currentComponent = null;
         }
-      }
+      // }
     }
   }
 

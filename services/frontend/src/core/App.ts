@@ -27,6 +27,9 @@ import { ProfilePage } from "../components/settings/ProfilePage";
 import { Leaderboard } from "../components/home/LeaderboardPage";
 
 import { NotFound } from "../components/settings/security/404";
+import { GamePage } from "../components/game/GamePage";
+import { CreateGamePage } from "../components/game/CreateGamePage";
+import { TournamentPage } from "../components/game/TournamentPage";
 
 
 
@@ -254,6 +257,19 @@ private setupRoutes(): void {
     console.log("Routing to profile of:", params?.username);
     return this.createFunctionalComponent(ProfilePage, { username: params?.username });
   });
+ 
+  this.router.addRoute('/game/:gameId', (params) => 
+    this.createFunctionalComponent(GamePage, { gameId: params?.gameId })
+  ); 
+  
+  this.router.addRoute("/game", () => 
+    this.createFunctionalComponent(CreateGamePage)
+  );
+  
+  this.router.addRoute("/tournament", () => 
+    this.createFunctionalComponent(TournamentPage)
+  );
+
   this.router.addRoute("/Leaderboard", () => 
     this.createFunctionalComponent(Leaderboard)
   );

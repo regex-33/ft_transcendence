@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum GameType {
+  SOLO
+  TEAM
+}
+
+enum GameMode {
+  CLASSIC
+  SPEED
+}
+
+enum GameStatus {
+  WAITING
+  LIVE
+  ENDED
+}
+
+enum GameTeam {
+   TEAM_A
+   TEAM_B
+}
+
+model Game {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  duration Int?
+  status   GameStatus @default(WAITING)
+  mode     GameMode   @default(CLASSIC)
+  type     GameType   @default(SOLO)
+
+  gamePlayers  GamePlayer[]
+  players      Player[]
+
+  tournament   Tournament?  @relation(fields: [tournamentId], references: [id])
+  tournamentId String?
+
+  @@index([tournamentId])
+}
+
+model GamePlayer {
+  id Int @id @default(autoincrement())
+
+  player   Player @relation(fields: [playerId], references: [userId])
+  playerId Int
+
+  game   Game   @relation(fields: [gameId], references: [id])
+  gameId String
+
+  team       GameTeam
+  score      Int          @default(0)
+
+  @@unique([gameId, playerId])
+  @@index([playerId])
+}
+
+model Player {
+  userId    Int      @id
+  updatedAt DateTime @updatedAt
+
+  avatar String
+  username String
+  
+  points        Int     @default(150)
+
+  games GamePlayer[]
+
+  activeGameId String?
+  activeGame Game? @relation(fields: [activeGameId], references: [id])
+  wonTournaments Tournament[]
+
+  @@index([activeGameId])
+}
+
+enum TournamentStatus {
+  ONGOING
+  ENDED
+}
+
+model Tournament {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  games    Game[]
+  status   TournamentStatus @default(ONGOING)
+  winner   Player?      @relation(fields: [winnerId], references: [userId])
+  winnerId Int?
+
+  @@index([winnerId])
+}

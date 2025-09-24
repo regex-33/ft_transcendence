@@ -1,0 +1,27 @@
+
+.tournament-game1-card::after
+{
+    position: relative;
+    border-top: 2px solid white;
+    border-right: 2px solid white;
+    content: "";
+    display: block;
+    width: 100%;
+    min-width: 10px;
+    top: 5%;
+    height: 10%;
+}
+
+.tournament-game2-card::before
+{
+    position: relative;
+    border-top: 2px solid white;
+    border-left: 2px solid white;
+    content: "";
+    display: block;
+    width: 110%;
+    min-width: 10px;
+    top: 5%;
+    height: 10%;
+}
+

@@ -40,21 +40,12 @@ export const Home: ComponentFunction = () => {
     checkAuth();
   }, []);
 
-  if (isAuthenticated)
-  {
+  if (isAuthenticated) {
     return (
       <div
-        className="relative flex flex-col overflow-hidden h-screen w-screen"
-        style={{ backgroundColor: "rgba(94, 156, 171, 0.9)" }}
+        className="relative flex flex-col h-screen w-screen"
+        style={{ backgroundColor: "rgba(94, 156, 171, 0.4)" }}
       >
-        <div
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage: "url(/images/bg-home1.png)",
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "100% 100%",
-          }}
-        />
         <div className="relative z-10">
           <Header />
           <MainLayout />
@@ -63,7 +54,7 @@ export const Home: ComponentFunction = () => {
     );
   }
 
-  return <div></div>;
+  return <div className=""></div>;
 };
 
 {/* <App />

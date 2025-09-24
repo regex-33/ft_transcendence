@@ -17,6 +17,8 @@ node_modules/
 **/node_modules/
 services/devops/traefik/certs/ft-transcendence.key
 services/frontend/.vite
+services/frontend/node_modules
+services/user-service/database.sqlite
 debugging-scripts/nots.md
 node_modules
 secrets/vault-certs

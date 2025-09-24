@@ -1,0 +1,57 @@
+# @name register
+POST http://localhost/api/users/register
+content-type: application/json
+
+{
+    "username": "testuser{{$randomInt 0 500}}",
+    "email": "game-service@test{{$randomInt 0 500}}.com",
+    "password": "password1234"
+}
+
+### 
+
+# @name getMe
+GET http://localhost/api/users/get/me
+Cookie: {{ register.response.headers.get('set-cookie') }} 
+
+###
+
+# @name createGame
+POST http://localhost:9000/game/create
+content-type: application/json
+Cookie: {{ register.response.headers.get('set-cookie') }} 
+
+{
+    "gameMode": "CLASSIC",
+    "gameType": "SOLO"
+}
+
+### 
+
+# @name inviteToGame
+@gameId = {{createGame.response.body.id}}
+POST http://localhost:9000/game/invite
+content-type: application/json
+Cookie: {{ register.response.headers.get('set-cookie') }} 
+
+{
+    "gameId": "{{gameId}}",
+    "playerId": {{$randomInt 1 10000}}
+}
+
+### 
+ 
+# @name joinGame
+@gameId = {{createGame.response.body.id}}
+POST http://localhost:9000/game/join
+content-type: application/json
+
+{
+    "gameId": "b9f4fb32-4166-467c-bb5c-514caa79e985"
+}
+
+###
+GET http://localhost:9000/game/9fe89080-58d5-4d00-bbaa-415fde66c7c9
+
+###
+GET http://localhost:9000/player/games

@@ -7,6 +7,13 @@ SCRIPTS_DIR := ./services/devops/scripts
 STACKS_DIR := ./stacks
 
 # ELK setup Scripts directory
+
+ifdef DC
+	DOCKER_COMPOSE := docker compose
+else
+	DOCKER_COMPOSE := docker-compose
+endif
+
 ELK_SCRIPTS_DIR := ./services/devops/logging/setup
 # ELK Directory
 ELK_DIR := ./services/devops/logging
@@ -41,7 +48,7 @@ all: test-up
 .PHONY: test-up
 test-up:
 	@echo "Starting test environment..."
-	docker-compose -f docker-compose.yml --profile dev up 
+	$(DOCKER_COMPOSE) -f docker-compose.yml --profile dev up -d
 	@echo "Waiting for services to start..."
 	sleep 10
 	@echo "Services should be running on:"
@@ -53,33 +60,35 @@ test-up:
 .PHONY: test-down
 test-down:
 	@echo "Stopping test environment..."
-	docker-compose -f docker-compose.yml --profile dev down
+	$(DOCKER_COMPOSE) -f docker-compose.yml --profile dev down
 
 .PHONY: test-logs
 test-logs:
-	docker-compose -f docker-compose.yml --profile dev logs -f
+	$(DOCKER_COMPOSE) -f docker-compose.yml --profile dev logs -f
 
 .PHONY: test-status
 test-status:
 	@echo "Checking service status..."
-	docker-compose -f docker-compose.yml --profile dev ps
+	$(DOCKER_COMPOSE) -f docker-compose.yml --profile dev ps
 
 .PHONY: rebuild-test
 rebuild-test:
 	@echo "Rebuilding test services..."
-	docker-compose -f docker-compose.yml --profile dev build --no-cache
-	docker-compose -f docker-compose.yml --profile dev up
+	$(DOCKER_COMPOSE) -f docker-compose.yml --profile dev build --no-cache
+	$(DOCKER_COMPOSE) -f docker-compose.yml --profile dev up
 
 rebuild-service:
 	@echo "Rebuilding specific service..."
 	@read -p "Enter service name to rebuild: " service; \
 	if [ ! -z "$$service" ]; then \
-		docker-compose -f docker-compose.yml --profile dev build --no-cache $$service; \
-		docker-compose -f docker-compose.yml --profile dev up -d $$service; \
+		$(DOCKER_COMPOSE) -f docker-compose.yml --profile dev build --no-cache $$service; \
+		$(DOCKER_COMPOSE) -f docker-compose.yml --profile dev up -d $$service; \
 	else \
 		echo "No service name provided. Aborting."; \
 	fi
 
+sir: bundle-frontend rebuild-service
+	@echo "hello Wss"
 # #check if kibana is running befor run import_dashboards.sh
 # if curl -k -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "https://logging.ft-transcendence.com" | grep -q "200\|401\|302"; then
 #     ssh_exec_logging "sudo docker container ls --format '{{.ID}} {{.Image}}' | grep 'ft_transcendence/kibana' | awk '{print \$1}' | xargs -I {} sudo docker exec --user root  {} /scripts/import_dashboards.sh"
@@ -158,17 +167,17 @@ help:
 
 .PHONY: keystore
 keystore:		## Setup Elasticsearch Keystore, by initializing passwords, and add credentials defined in `keystore.sh`.
-	docker-compose -f ${STACKS_DIR}/docker-compose.setup.yml run --rm keystore
+	$(DOCKER_COMPOSE) -f ${STACKS_DIR}/docker-compose.setup.yml run --rm keystore
 
 .PHONY: certs
 certs:		    ## Generate Elasticsearch SSL Certs.
-	docker-compose -f ${STACKS_DIR}/docker-compose.setup.yml run --rm certs
+	$(DOCKER_COMPOSE) -f ${STACKS_DIR}/docker-compose.setup.yml run --rm certs
 
 .PHONY: bundle-frontend
 bundle-frontend:	## Bundle Frontend with production settings.
 	@sudo rm -rf ./services/frontend/dist
-	@docker-compose -f ./stacks/docker-compose.setup.yml build --no-cache bundle-frontend
-	@docker-compose -f ./stacks/docker-compose.setup.yml run --rm bundle-frontend
+	@$(DOCKER_COMPOSE) -f ./stacks/docker-compose.setup.yml build --no-cache bundle-frontend
+	@$(DOCKER_COMPOSE) -f ./stacks/docker-compose.setup.yml run --rm bundle-frontend
 	@sudo cp -r ./services/frontend/images ./services/frontend/dist
 	@sudo cp ./services/frontend/403.html ./services/frontend/dist
 
@@ -210,10 +219,10 @@ push-images: check-env
 	@$(SCRIPTS_DIR)/push-images.sh $(MANAGER_IP)
 	@echo "$(GREEN)✓ Images pushed to registry successfully$(NC)"
 
-# List all docker-compose and stack files in stacks directory
+# List all $(DOCKER_COMPOSE) and stack files in stacks directory
 .PHONY: list-stacks
 list-stacks:
-	@echo "$(BLUE)Docker Compose & Stack files in stacks directory:$(NC)"
+	@echo "$(BLUE)$(DOCKER_COMPOSE) & Stack files in stacks directory:$(NC)"
 	@find stacks -type f -name 'docker-compose*.yml' -exec echo "  - {}" \;
 
 #=======================================================================================================================================================

@@ -60,16 +60,8 @@ export const SettingsPage: ComponentFunction<SettingsPageProps> = (props) => {
   return (
     <div
       className="relative flex flex-col overflow-hidden h-screen w-screen"
-      style={{ backgroundColor: 'rgba(94, 156, 171, 0.9)' }}
+      style={{ backgroundColor: 'rgba(94, 156, 171, 0.4)' }}
     >
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          backgroundImage: 'url(/images/bg-home1.png)',
-          backgroundRepeat: 'no-repeat',
-          backgroundSize: '100% 100%',
-        }}
-      />
       
       <div className="relative z-10">
         <Header />
@@ -79,7 +71,7 @@ export const SettingsPage: ComponentFunction<SettingsPageProps> = (props) => {
   );
 }
 
-return <div></div>;
+  return <div className="h-[100vh] w-[100vw] bg-red-600 z-[9999]"></div>;
 };
 
 {/* 
