@@ -107,6 +107,8 @@ services:
       - frontend
     networks:
       - transcendence-network
+    # volumes:
+    #   - ./services/frontend/dist:/usr/share/nginx/html:ro
     profiles: ["nginx", "dev"]
     restart: unless-stopped
 

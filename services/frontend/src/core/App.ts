@@ -26,6 +26,10 @@ import { OverviewSettings } from "../components/settings/OverviewSettings";
 import { ProfilePage } from "../components/settings/ProfilePage";
 import { Leaderboard } from "../components/home/LeaderboardPage";
 
+import { NotFound } from "../components/settings/security/404";
+
+
+
 
 
 interface AppConfig {
@@ -201,7 +205,6 @@ private createFunctionalComponent<P = any>(
         // Return the VNode directly - this triggers Virtual DOM path in Component.ts
         return vnode;
       } finally {
-        // Component.ts will handle clearing the component context
         hooksManager.clearCurrentComponent();
       }
     }
@@ -247,60 +250,57 @@ private cleanupActiveComponents(): void {
  *  ENHANCED: Updated setupRoutes method with Virtual DOM for functional components
  */
 private setupRoutes(): void {
+  this.router.addRoute('/profile/:username', (params) => {
+    console.log("Routing to profile of:", params?.username);
+    return this.createFunctionalComponent(ProfilePage, { username: params?.username });
+  });
+  this.router.addRoute("/Leaderboard", () => 
+    this.createFunctionalComponent(Leaderboard)
+  );
+  this.router.addRoute("/Chat-Friend", () => 
+    this.createFunctionalComponent(ChatService)
+  );
+  this.router.addRoute('/settings', () => 
+    this.createFunctionalComponent(SettingsPage, { defaultTab: 'profile' })
+  ); 
 
-this.router.addRoute('/profile/:username', (params) => {
-  console.log("Routing to profile of:", params?.username);
-  return this.createFunctionalComponent(ProfilePage, { username: params?.username });
-});
-this.router.addRoute("/Leaderboard", () => 
-  this.createFunctionalComponent(Leaderboard)
-);
-this.router.addRoute("/Chat-Friend", () => 
-  this.createFunctionalComponent(ChatService)
-);
-this.router.addRoute('/settings', () => 
-  this.createFunctionalComponent(SettingsPage, { defaultTab: 'profile' })
-); 
+  this.router.addRoute('/settings/profile', () => 
+    this.createFunctionalComponent(SettingsPage, { defaultTab: 'profile' })
+  );
 
-this.router.addRoute('/settings/profile', () => 
-  this.createFunctionalComponent(SettingsPage, { defaultTab: 'profile' })
-);
+  this.router.addRoute('/settings/friends', () => 
+    this.createFunctionalComponent(SettingsPage, { defaultTab: 'friends' })
+  );
 
-this.router.addRoute('/settings/friends', () => 
-  this.createFunctionalComponent(SettingsPage, { defaultTab: 'friends' })
-);
+  this.router.addRoute('/settings/matchHistory', () => 
+    this.createFunctionalComponent(SettingsPage, { defaultTab: 'matchHistory' })
+  );
 
-this.router.addRoute('/settings/matchHistory', () => 
-  this.createFunctionalComponent(SettingsPage, { defaultTab: 'matchHistory' })
-);
+  this.router.addRoute('/settings/overview', () => 
+    this.createFunctionalComponent(SettingsPage, { defaultTab: 'overview' })
+  );
 
-this.router.addRoute('/settings/overview', () => 
-  this.createFunctionalComponent(SettingsPage, { defaultTab: 'overview' })
-);
+  this.router.addRoute('/settings/security', () => 
+    this.createFunctionalComponent(SettingsPage, { defaultTab: 'security' })
+  );
 
-//Type '{}' is missing the following properties from type '{ profileData: any; setUpdateAll: (val: boolean) => void; }': profileData, setUpdateAllts(2739)
+  this.router.addRoute('/settings/achievements', () => 
+    this.createFunctionalComponent(SettingsPage, { defaultTab: 'achievements' })
+  );
 
-this.router.addRoute('/settings/security', () => 
-  this.createFunctionalComponent(SettingsPage, { defaultTab: 'security' })
-);
+  this.router.addRoute("/login", () => 
+    this.createFunctionalComponent(AuthForm)
+  );
+  this.router.addRoute("/", () => 
+    this.createFunctionalComponent(Welcome)
+  );
 
-///AchievementSettings
-this.router.addRoute('/settings/achievements', () => 
-  this.createFunctionalComponent(SettingsPage, { defaultTab: 'achievements' })
-);
+  this.router.addRoute("/home", () => 
+    this.createFunctionalComponent(Home)
+  );
 
- this.router.addRoute("/login", () => 
-  this.createFunctionalComponent(AuthForm)
-);
-   this.router.addRoute("/", () => 
-  this.createFunctionalComponent(Welcome)
-);
-    
-
-   this.router.addRoute("/home", () => 
-  this.createFunctionalComponent(Home)
-);
-  
+  // Set static 404 component for Router
+  (Router as any).NotFoundComponent = this.createFunctionalComponent(NotFound);
 }
 
   private createPlaceholderComponent(name: string): Component {

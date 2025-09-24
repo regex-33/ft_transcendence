@@ -14,6 +14,8 @@ import { Component } from '../main';
  * ```
  */
 export class Router {
+  /** Static 404 component to render for unmatched routes */
+  static NotFoundComponent: Component | null = null;
   /** Array storing route patterns, regex, param names, and their corresponding component factory functions */
   private routes: Array<{
     pattern: string;
@@ -131,9 +133,13 @@ export class Router {
     }
     if (!matched) {
       console.warn(`No route found for path: ${this.currentRoute}`);
-      if (this.currentComponent && this.currentComponent.isMountedComponent()) {
-        this.currentComponent.unmount();
-        this.currentComponent = null;
+      if (Router.NotFoundComponent) {
+        this.render(Router.NotFoundComponent);
+      } else {
+        if (this.currentComponent && this.currentComponent.isMountedComponent()) {
+          this.currentComponent.unmount();
+          this.currentComponent = null;
+        }
       }
     }
   }

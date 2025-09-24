@@ -23,3 +23,6 @@
 {"timestamp":"2025-09-24T11:48:52.832Z","level":"INFO","message":"send_message: ddd","service":"chat-service","action":"send_message","user_id":3,"username":"regex_4445","to":"ahmed1234"}
 {"timestamp":"2025-09-24T11:49:05.640Z","level":"INFO","message":"send_message: hi","service":"chat-service","action":"send_message","user_id":1,"username":"ahmed1234","to":"regex_4445"}
 {"timestamp":"2025-09-24T11:49:05.641Z","level":"INFO","message":"send_message: hi","service":"chat-service","action":"send_message","user_id":1,"username":"ahmed1234","to":"regex_4445"}
+{"timestamp":"2025-09-24T14:55:09.951Z","level":"INFO","message":"send_message: ddd","service":"chat-service","action":"send_message","user_id":3,"username":"regex_4445","to":"ahmed1234"}
+{"timestamp":"2025-09-24T14:55:09.972Z","level":"INFO","message":"send_message: ddd","service":"chat-service","action":"send_message","user_id":3,"username":"regex_4445","to":"ahmed1234"}
+{"timestamp":"2025-09-24T14:55:47.254Z","level":"INFO","message":"send_message: hi youssef","service":"chat-service","action":"send_message","user_id":3,"username":"regex_4445","to":"youssef1234"}

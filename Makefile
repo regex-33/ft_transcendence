@@ -170,6 +170,7 @@ bundle-frontend:	## Bundle Frontend with production settings.
 	@docker-compose -f ./stacks/docker-compose.setup.yml build --no-cache bundle-frontend
 	@docker-compose -f ./stacks/docker-compose.setup.yml run --rm bundle-frontend
 	@sudo cp -r ./services/frontend/images ./services/frontend/dist
+	@sudo cp ./services/frontend/403.html ./services/frontend/dist
 
 .PHONY: setup
 setup:		    ## Generate Elasticsearch SSL Certs and Keystore.
