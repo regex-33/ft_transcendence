@@ -85,7 +85,9 @@ export const CreateGamePage: ComponentFunction = () => {
 			content: content,
 			type
 		});
-		setTimeout(() => setToast({ show: false, content: "", type }), 5000);
+		setTimeout(() => {
+			setToast({ show: false, content: "", type });
+		}, 2000);
 	}
 
 	const handleClickRemote = async (type: GameType, e: Event) => {
@@ -105,11 +107,16 @@ export const CreateGamePage: ComponentFunction = () => {
 				credentials: 'include'
 			});
 			if (!response.ok) {
-				showToast("Failed to create game: " + response.status, "error");
+				const data = await response.json();
+				showToast("Failed to create game: " + data.error, "error");
 				return;
 			}
 			const data = await response.json();
 			showToast("Game created successfully: " + data.id);
+			setTimeout(() => {
+				window.history.pushState({}, "", "/game");
+				window.dispatchEvent(new PopStateEvent("popstate"));
+			}, 2000);
 		}
 		catch (err) {
 			showToast("Failed to create game: " + err, "error");

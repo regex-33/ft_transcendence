@@ -5,9 +5,16 @@ services:
     build:
       context: ./services/game-service
       dockerfile: Dockerfile
+      args:
+        DATABASE_URL: ${DATABASE_URL:-file:./sqlite.db}
     restart: unless-stopped
     image: game-service
     pull_policy: build
+    environment:
+      # - DATABASE_URL=file:./sqlite.db
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-regex-33}
+      - REDIS_PORT=${REDIS_PORT:-6379}
     ports:
       - "9000:3000"
     volumes:
