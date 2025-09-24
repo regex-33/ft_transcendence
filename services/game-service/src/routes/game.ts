@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyReply } from 'fastify';
 import { createGameSchema, getGameSchema, inviteGameSchema, joinGameSchema } from '../schemas';
 import { createGame, getGame, joinGame } from '../controllers/gameController';
 import { checkAuth } from '../controllers/checkAuth';
-import { invites } from '../gameState';
+import { games, invites } from '../gameState';
 
 async function gameRoutes(fastify: FastifyInstance) {
 	fastify.addHook('preHandler', checkAuth);
@@ -41,8 +41,7 @@ async function gameRoutes(fastify: FastifyInstance) {
 		async (request, reply) => {
 			const user = (request as any).user;
 			const { gameId, playerId } = request.body;
-			if (user.id === playerId)
-				return reply.code(403).send({ error: 'cannot invite this player' });
+			if (user.id === playerId) return reply.code(403).send({ error: 'cannot invite this player' });
 			const game = await getGame(fastify.prisma, gameId);
 			if (!game) return reply.code(404).send({ error: 'game not found' });
 			console.log('userId:', user.id);
@@ -74,6 +73,9 @@ async function gameRoutes(fastify: FastifyInstance) {
 			// const player = await createPlayer(db, { id: 10 });
 			const game = await joinGame(db, { gameId, userId: userId });
 			if (!game) return reply.code(404).send({ error: 'game is full or does not exist' });
+			const gameSession = games.get(gameId);
+			if (gameSession)
+				gameSession.game = game;
 			//notify game players
 			reply.code(201).send(game);
 		}

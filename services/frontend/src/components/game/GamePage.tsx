@@ -19,7 +19,9 @@ const AvatarCircle = ({ avatarImage, key }: { avatarImage: string, key: string }
 	</div>
 );
 
-const TeamBadge = ({ player, reverse = false }: { player: Player, reverse: boolean }) => {
+const TeamBadge = ({ player, reverse = false }: { player: Player | undefined, reverse: boolean }) => {
+	if (!player)
+		return;
 	let nameBadge =
 		<div className="uppercase flex items-center font-inria text-[0.5em] md:text-[1em] text-nowrap py-1 px-5 md:px-10 text-[#166181]" style={{
 			borderImageSource: `url(${bgTeam})`,
@@ -37,6 +39,25 @@ type Player = {
 	id: string,
 	avatarImage: string,
 };
+
+
+const getGame = async (gameId: string) => {
+	try {
+		const response = await fetch("http://localhost/api/game/" + gameId, {
+			method: "GET",
+			credentials: 'include',
+		});
+		if (!response.ok)
+			return null;
+		const data = await response.json();
+		console.log(data);
+		return data;
+	}
+	catch (err) {
+		console.error("getGame", err);
+	}
+	return null;
+}
 
 const TeamCard = ({ players }: { players: Player[] }) => {
 	return (
@@ -61,13 +82,24 @@ export const GamePage: ComponentFunction = (props) => {
 			avatarImage: Avatar1
 		}
 	]);
+	const [game, setGame] = useState<{ id: string, players: { userId: number }[] } | null>(null);
 	const [playerId, setPlayerId] = useState<number | null>(null);
 	const [loading, isAuthenticated, user] = useAuth();
 	useEffect(() => {
 		if (!isAuthenticated || !user)
 			return;
 		setPlayerId(user.id);
+		getGame(props.gameId).then((data) => {
+			setGame(data)
+		});
 	}, [isAuthenticated, user])
+
+	useEffect(() => {
+		if (!game)
+			return;
+		const players = game?.players.map(p => ({ id: "" + p.userId, avatarImage: Avatar1, name: "" + p.userId }));
+		setPlayers(players);
+	}, [game]);
 	return (
 		<div
 			className="relative flex flex-col overflow-hidden h-screen w-screen"
@@ -89,7 +121,7 @@ export const GamePage: ComponentFunction = (props) => {
 				<TeamCard players={players} />
 				<div className="w-[70%]">
 					<div className="flex justify-between"><TeamBadge reverse={false} player={players[0]} />
-						<TeamBadge reverse={true} player={players[0]} /></div>
+						<TeamBadge reverse={true} player={players[1]} /></div>
 					<div className="flex justify-center my-2 bg-[#91BFBF] shadow-xs shadow-gray-400 rounded-xl">
 						<GameCanvas playerId={playerId} gameId={props.gameId} />
 					</div>

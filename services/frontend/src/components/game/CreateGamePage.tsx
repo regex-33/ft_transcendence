@@ -10,9 +10,19 @@ import GameTournamentImg from '../../../images/game-tournament.png';
 import TournamentButtonImg from '../../../images/tournament-button.svg';
 import Avatar1 from '../../../images/home-assests/avatar1.svg';
 import { TeamCard } from './TeamCard';
+import { useAuth } from '../../hooks/useAuth';
+import { GameMode, GameType } from './game';
 
-const Badge = (props: {text: string}) =>
-{
+const Toast = (props: { con: string, show: boolean }) => {
+	return (
+		<div
+			id="notification"
+			class={(props.show ? "fixed" : "hidden") + " z-[99999] bottom-10 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded shadow-lg translate-y-4 transition-all duration-300 pointer-events-none"}
+		>{props.con}
+		</div>);
+}
+
+const Badge = (props: { text: string }) => {
 	return (
 		<div className="flex justify-center items-center object-fit leading-none">
 			<img src={BadgeBg} className="block max-w-[200px]" />
@@ -22,24 +32,76 @@ const Badge = (props: {text: string}) =>
 }
 const CardContainer = (props: any) => {
 	return (
-			<div className="bg-[#58D7DFAD]/70 flex flex-col justify-center py-20 my-2 px-10 rounded-2xl border-white-100 border-2">
-				{props.children}
-			</div>
+		<div className="bg-[#58D7DFAD]/70 flex flex-col justify-center py-20 my-2 px-10 rounded-2xl border-white-100 border-2">
+			{props.children}
+		</div>
 	);
 }
 
-const CardButton = () =>
-{
+const CardButton = (props: { onClick?: CallableFunction }) => {
 	return (
-				<div className="flex my-3 font-luckiest flex-row justify-center items-center">
-					<div className="bg-white pt-4 pb-3 px-8 text-[#5FDBE3] text-xs">One</div>
-					<div className="bg-[#5FDBE3] px-4 pt-5 pb-4 text-2xl text-white">VS</div>
-					<div className="bg-white pt-4 pb-3 px-8 text-[#5FDBE3] text-xs">One</div>
-				</div>
+		<button onClick={props.onClick}>
+			<div className="pointer flex my-3 font-luckiest flex-row justify-center items-center">
+				<div className="bg-white pt-4 pb-3 px-8 text-[#5FDBE3] text-xs">One</div>
+				<div className="bg-[#5FDBE3] px-4 pt-5 pb-4 text-2xl text-white">VS</div>
+				<div className="bg-white pt-4 pb-3 px-8 text-[#5FDBE3] text-xs">One</div>
+			</div>
+		</button>
 	)
 }
 
 export const CreateGamePage: ComponentFunction = () => {
+	const [loading, isAuthenticated, user] = useAuth();
+	const [toast, setToast] = useState({
+		show: false,
+		con: ""
+	});
+	useEffect(() => {
+		if (!isAuthenticated || !user)
+			return;
+	}, [isAuthenticated, user])
+
+	useEffect(() => {
+
+	}, [user]);
+
+	const showToast = (content: string) => {
+		setToast({
+			show: true,
+			con: content
+		});
+		setTimeout(() => setToast({ show: false, con: "" }), 5000);
+	}
+
+	const handleClickRemote = async (type: GameType, e: Event) => {
+		console.log(e);
+		console.log(type);
+		try {
+			const response = await fetch("http://localhost/api/game/create", {
+				method: 'POST',
+				headers:
+				{
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					gameType: type,
+					gameMode: GameMode.CLASSIC,
+				}),
+				credentials: 'include'
+			});
+			if (!response.ok) {
+				showToast("Create game failed! status??: " + response.status);
+				return;
+			}
+			const data = await response.json();
+			showToast("Create game success: " + data);
+		}
+		catch (err) {
+			showToast("Create game failed: " + err);
+		}
+
+	}
+
 	const [players, setPlayers] = useState([
 		{
 			name: "player1",
@@ -57,6 +119,7 @@ export const CreateGamePage: ComponentFunction = () => {
 			className="relative flex flex-col overflow-hidden h-screen w-screen"
 			style={{ backgroundColor: 'rgba(94, 156, 171, 0.9)' }}
 		>
+			<Toast con={toast.con} show={toast.show} />
 			<div
 				className="absolute inset-0 z-0"
 				style={{
@@ -71,38 +134,38 @@ export const CreateGamePage: ComponentFunction = () => {
 			</div>
 			<div className="z-10 flex items-center gap-10 my-10 flex-col md:flex-row md:justify-between mx-5">
 				<TeamCard players={players} />
-			<div className="z-10 gap-10 my-10 m-auto grid md:grid-rows-1 md:grid-cols-3 w-[80%] md:w-full items-center md:justify-between ">
-				<div>
-					<Badge text="local" />
-					<CardContainer>
-						<div className="flex justify-center">
-						<img src={GameLocalImg} className="max-w-[100px]" />
-						</div>
-						<CardButton />
-					</CardContainer>
+				<div className="z-10 gap-10 my-10 m-auto grid md:grid-rows-1 md:grid-cols-3 w-[80%] md:w-full items-center md:justify-between ">
+					<div>
+						<Badge text="local" />
+						<CardContainer>
+							<div className="flex justify-center">
+								<img src={GameLocalImg} className="max-w-[100px]" />
+							</div>
+							<CardButton />
+						</CardContainer>
+					</div>
+					<div className="justify-center">
+						<Badge text="remote" />
+						<CardContainer>
+							<div className="flex justify-center">
+								<img src={GameRemoteImg} className="max-w-[100px]" />
+							</div>
+							<CardButton onClick={handleClickRemote.bind(null, GameType.SOLO)} />
+							<CardButton />
+						</CardContainer>
+					</div>
+					<div>
+						<Badge text="tournament" />
+						<CardContainer>
+							<div className="flex justify-center">
+								<img src={GameTournamentImg} className="max-w-[150px]" />
+							</div>
+							<div className="flex justify-center">
+								<object type="image/svg+xml" data={TournamentButtonImg} className="max-w-[150px]"></object>
+							</div>
+						</CardContainer>
+					</div>
 				</div>
-				<div className="justify-center">
-					<Badge text="remote" />
-					<CardContainer>
-						<div className="flex justify-center">
-						<img src={GameRemoteImg} className="max-w-[100px]" />
-						</div>
-						<CardButton />
-						<CardButton />
-					</CardContainer>
-				</div>
-				<div>
-					<Badge text="tournament" />
-					<CardContainer>
-						<div className="flex justify-center">
-						<img src={GameTournamentImg} className="max-w-[150px]" />
-						</div>
-						<div className="flex justify-center">
-						<object type="image/svg+xml" data={TournamentButtonImg} className="max-w-[150px]"></object>
-						</div>
-					</CardContainer>
-				</div>
-			</div>
 				<TeamCard players={players} />
 			</div>
 		</div>

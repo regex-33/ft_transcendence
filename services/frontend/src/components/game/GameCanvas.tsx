@@ -7,70 +7,70 @@ import { Connection } from './connection';
 
 const startGame = (ctx: CanvasRenderingContext2D, game: Game) => {
 	ctx;
-	game.start();
+	const connection = new Connection('ws://localhost:9000/play/' + game.id)
+	connection.connect().then(() => {
+		console.log("then connect");
+		game.start(connection);
+		connection.send({
+			type: 'INIT'
+		});
+		connection.send({
+			type: 'FETCH_PLAYERS'
+		});
+		console.log("sent fetch");
+	});
 }
 
-const initCanvas = async (gameId: string) => {
+let handleCanvasResize = (canvasEl: HTMLCanvasElement) => {
+	canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width;
+	canvasEl.height = canvasEl.width * GameConfig.canvasRatio;
+	console.log(canvasEl.width)
+	console.log(canvasEl.height)
+	console.log(canvasEl.clientWidth, canvasEl.clientHeight);
+	GameConfig.onResize(canvasEl.width, canvasEl.height);
+};
+
+const initCanvas = async (gameId: string, resizeHandler: () => void) => {
 	const canvasEl = document.getElementById("game-canvas") as HTMLCanvasElement | null;
 	if (!(canvasEl instanceof HTMLCanvasElement))
 		throw new Error("canvas element not found");
-	const connection = new Connection('ws://localhost:9000/play/' + gameId)
-	await connection.connect();
-	connection.connect().then(() => {
-		console.log("then connect");
-	});
 
 	canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width;
+	canvasEl.height = canvasEl.width * GameConfig.canvasRatio;
+	console.log(canvasEl.width)
+	console.log(canvasEl.height)
+	console.log(canvasEl.clientWidth, canvasEl.clientHeight);
 	GameConfig.onResize(canvasEl.width, canvasEl.height);
 	const context = canvasEl.getContext("2d");
 	if (!context)
 		throw new Error("could not get canvas context");
-	const handleCanvasResize = () => {
-		canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width;
-		GameConfig.onResize(canvasEl.width, canvasEl.height);
-	};
-	window.addEventListener('resize', handleCanvasResize);
+	window.addEventListener('resize', resizeHandler);
 	const gameData = {
-		id: "",
+		id: gameId,
 		type: GameType.SOLO,
 		mode: GameMode.CLASSIC
 	};
 	startGame(context, new Game(canvasEl.getContext("2d")!, gameData));
-	return () => {
-		console.log("canvas unmounted");
-		window.removeEventListener('resize', handleCanvasResize);
-	}
 }
 
-const getGame = async (gameId: string) => {
-	try {
-		const response = await fetch("http://localhost/api/game/" + gameId, {
-			method: "GET",
-			credentials: 'include',
-		});
-		if (!response.ok)
-			return null;
-		const data = await response.json();
-		console.log(data);
-		return data;
-	}
-	catch (err) {
-		console.error("getGame", err);
-	}
-	return null;
-}
 
 export const GameCanvas = (props: { playerId: number, gameId: string }) => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
-	const [game, setGame] = useState(null);
 	useEffect(() => {
+		if (!props.gameId)
+			return;
 		console.log("gameId:", props.gameId);
 		console.log("ref is", canvasRef.current);
-		getGame(props.gameId).then((data) => {
-			setGame(data)
-		});
-		return initCanvas();
-	}, [canvasRef]);
+		const canvasEl = document.getElementById("game-canvas") as HTMLCanvasElement | null;
+		if (!(canvasEl instanceof HTMLCanvasElement))
+			throw new Error("canvas element not found");
+		const resizeHandler = handleCanvasResize.bind(this, canvasEl);
+		initCanvas(props.gameId, resizeHandler);
+		return () => {
+			console.log("canvas unmounted");
+			window.removeEventListener('resize', resizeHandler);
+		}
+	}, [props.gameId]);
 	const handleClick = () => {
 		console.log("ref is", canvasRef.current);
 	};
