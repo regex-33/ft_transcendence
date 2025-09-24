@@ -21,7 +21,7 @@ async function gameRoutes(fastify: FastifyInstance) {
 			const game = await createGame(db, {
 				type: gameType,
 				mode: gameMode,
-				playerId: userId,
+				player: user
 			});
 			if (!game) return reply.code(401).send({ error: 'failed to create game' });
 			const gameId = game.id;
@@ -68,10 +68,9 @@ async function gameRoutes(fastify: FastifyInstance) {
 		async (request, reply) => {
 			const user = (request as any).user;
 			const { gameId } = request.body;
-			let userId = user.id;
 			const db = fastify.prisma;
 			// const player = await createPlayer(db, { id: 10 });
-			const game = await joinGame(db, { gameId, userId: userId });
+			const game = await joinGame(db, { gameId, player: user });
 			if (!game) return reply.code(404).send({ error: 'game is full or does not exist' });
 			const gameSession = games.get(gameId);
 			if (gameSession)

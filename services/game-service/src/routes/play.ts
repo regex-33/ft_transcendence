@@ -279,7 +279,7 @@ async function playRoutes(fastify: FastifyInstance) {
 					//const isSpec = !(playerId in session.state.players);
 					//console.log('isSpec:', isSpec);
 					if (isSpec) {
-						console.log('spec msg');
+						console.log('spec msg', playerId, session);
 						socket.close(1008, 'Unauthorized');
 						return;
 					}

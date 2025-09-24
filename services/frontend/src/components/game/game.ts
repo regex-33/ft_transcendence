@@ -110,8 +110,8 @@ const drawBall = (ctx: CanvasRenderingContext2D, ball: Ball) => {
 export class Game {
   paddles: Paddle[];
   ball: Ball = {
-    x: 0,
-    y: 0,
+    x: -999,
+    y: -999,
     color: "red",
   };
   type: GameType;

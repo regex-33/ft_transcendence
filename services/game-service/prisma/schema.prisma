@@ -68,6 +68,9 @@ model Player {
   userId    Int      @id
   updatedAt DateTime @updatedAt
 
+  avatar String
+  username String
+  
   points        Int     @default(150)
 
   games GamePlayer[]

@@ -23,7 +23,7 @@ Cookie: {{ register.response.headers.get('set-cookie') }}
 
 {
     "gameMode": "CLASSIC",
-    "gameType": "TEAM"
+    "gameType": "SOLO"
 }
 
 ### 
@@ -47,8 +47,11 @@ POST http://localhost:9000/game/join
 content-type: application/json
 
 {
-    "gameId": "bb788ba2-a5d3-4caa-a402-0ba6cf1c3929"
+    "gameId": "b9f4fb32-4166-467c-bb5c-514caa79e985"
 }
 
 ###
-GET http://localhost:9000/game/{{createGame.response.body.id}}
+GET http://localhost:9000/game/9fe89080-58d5-4d00-bbaa-415fde66c7c9
+
+###
+GET http://localhost:9000/player/games

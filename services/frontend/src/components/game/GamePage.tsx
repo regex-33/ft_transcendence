@@ -27,17 +27,17 @@ const TeamBadge = ({ player, reverse = false }: { player: Player | undefined, re
 			borderImageSource: `url(${bgTeam})`,
 			borderImageSlice: 60,
 			borderImageWidth: "auto",
-		}}>{player.name}</div>;
+		}}>{player.username}</div>;
 
 	return (<div className={reverse ? "flex gap-1 flex-row-reverse" : "flex gap-1"}>
-		<AvatarCircle avatarImage={player.avatarImage} key={player.id} /> {nameBadge}
+		<AvatarCircle avatarImage={player.avatar} key={player.userId} /> {nameBadge}
 	</div>)
 };
 
-type Player = {
-	name: string,
-	id: string,
-	avatarImage: string,
+export type Player = {
+	username: string,
+	userId: number,
+	avatar: string,
 };
 
 
@@ -63,27 +63,15 @@ const TeamCard = ({ players }: { players: Player[] }) => {
 	return (
 		<div className="landscape:hidden md:landscape:inline-flex flex-row gap-x-2 md:flex-col h-full md:gap-y-3 px-2 py-2 md:py-4 bg-blue-200 bg-opacity-20 rounded-lg">
 			{players.map(player => (
-				<AvatarCircle avatarImage={player.avatarImage} key={player.id} />
+				<AvatarCircle avatarImage={player.avatar} key={player.userId} />
 			))}
 		</div>
 	);
 }
 
 export const GamePage: ComponentFunction = (props) => {
-	const [scores, setScores] = useState([0, 0]);
-	const [players, setPlayers] = useState([
-		{
-			name: "player1",
-			id: "player1-id",
-			avatarImage: Avatar1
-		},
-		{
-			name: "player2",
-			id: "player2-id",
-			avatarImage: Avatar1
-		}
-	]);
-	const [game, setGame] = useState<{ id: string, players: { userId: number }[] } | null>(null);
+	const [players, setPlayers] = useState<Player[]>([]);
+	const [game, setGame] = useState<{ id: string, players: Player[] } | null>(null);
 	const [playerId, setPlayerId] = useState<number | null>(null);
 	const [loading, isAuthenticated, user] = useAuth();
 	useEffect(() => {
@@ -98,7 +86,7 @@ export const GamePage: ComponentFunction = (props) => {
 	useEffect(() => {
 		if (!game)
 			return;
-		const players = game?.players.map(p => ({ id: "" + p.userId, avatarImage: Avatar1, name: "" + p.userId }));
+		const players = game.players;
 		setPlayers(players);
 	}, [game]);
 
@@ -107,20 +95,9 @@ export const GamePage: ComponentFunction = (props) => {
 		if(!game || !playerId)
 			return (<div>no game</div>);
 
-			return (<div>
-					<div className="flex justify-between items-center">
-						<TeamBadge reverse={false} player={players[0]} />
-						<div className="flex">
-							<span>{scores[0]}</span>
-							<div>|</div>
-							<span>{scores[1]}</span>
-						</div>
-						<TeamBadge reverse={true} player={players[1]} />
-					</div>
-					<div className="flex justify-center my-2 bg-[#91BFBF] shadow-xs shadow-gray-400 rounded-xl">
-						<GameCanvas setScores={setScores} playerId={playerId} gameId={props.gameId} />
-					</div>
-			</div>)
+			return (
+						<GameCanvas playerId={playerId} game={game} />
+			)	
 
 	}
 

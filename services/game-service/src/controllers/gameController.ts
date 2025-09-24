@@ -1,18 +1,18 @@
 import type { PrismaClient, Prisma } from '../../generated/prisma';
 import { GameStatus, GameType, GameMode } from '../../generated/prisma';
 import { invites } from '../gameState';
-import { createPlayer } from './playerController';
+import { createPlayer, type UserData } from './playerController';
 
 type GameData = {
 	type: GameType;
 	mode: GameMode;
-	playerId: number;
+	player: UserData;
 };
 
 const createGame = async (db: PrismaClient | Prisma.TransactionClient, data: GameData) => {
 	try {
-		const player = await createPlayer(db, { id: data.playerId });
-		console.log('player:', player);
+		//const player = await createPlayer(db, { id: data.player.id, avatar: data.player.avatar, username: data.player.username });
+		//console.log('player:', player);
 
 		const game = await db.game.create({
 			data: {
@@ -20,8 +20,8 @@ const createGame = async (db: PrismaClient | Prisma.TransactionClient, data: Gam
 				mode: data.mode,
 				players: {
 					connectOrCreate: {
-						where: { userId: data.playerId, activeGameId: { equals: null } },
-						create: { userId: data.playerId },
+						where: { userId: data.player.id, activeGameId: { equals: null } },
+						create: { userId: data.player.id, avatar: data.player.avatar, username: data.player.username},
 					},
 				},
 			},
@@ -29,11 +29,12 @@ const createGame = async (db: PrismaClient | Prisma.TransactionClient, data: Gam
 		});
 		return game;
 	} catch (err) {
+		console.log("error", err)
 		return null;
 	}
 };
 
-const joinGame = async (db: PrismaClient, data: { gameId: string; userId: number }) => {
+const joinGame = async (db: PrismaClient, data: { gameId: string; player: UserData }) => {
 	try {
 		//		const gameInvitedPlayers = invites.get(data.gameId);
 		//		if (!gameInvitedPlayers || !gameInvitedPlayers.includes(data.userId)) {
@@ -41,7 +42,7 @@ const joinGame = async (db: PrismaClient, data: { gameId: string; userId: number
 		//			return null;
 		//		}
 		const game = await db.$transaction(async (tx) => {
-			const player = await createPlayer(tx, { id: data.userId });
+			const player = await createPlayer(tx, { id: data.player.id, avatar: data.player.avatar, username: data.player.username });
 			if (!player || player.activeGameId) {
 				console.log('player error:', player);
 				return null;
@@ -65,7 +66,7 @@ const joinGame = async (db: PrismaClient, data: { gameId: string; userId: number
 				data: {
 					players: {
 						connect: {
-							userId: data.userId,
+							userId: data.player.id,
 						},
 					},
 				},
@@ -75,6 +76,7 @@ const joinGame = async (db: PrismaClient, data: { gameId: string; userId: number
 		});
 		return game;
 	} catch (err) {
+		console.log("error:", err)
 		return null;
 	}
 };
@@ -83,6 +85,7 @@ const getGame = async (db: PrismaClient, id: string) => {
 	const game = await db.game.findUnique({
 		where: { id: id },
 		include: {
+			gamePlayers: true,
 			players: true,
 		},
 	});
