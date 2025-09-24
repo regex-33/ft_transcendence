@@ -13,11 +13,23 @@ import { TeamCard } from './TeamCard';
 import { useAuth } from '../../hooks/useAuth';
 import { GameMode, GameType } from './game';
 
-const Toast = (props: { con: string, show: boolean }) => {
+const Toast = (props: { con: string, show: boolean, type: string }) => {
+	let bgColor: string;
+	switch (props.type)
+	{
+		case "primary":
+			bgColor = "bg-blue-400";
+			break;
+		case "error":
+			bgColor = "bg-red-400";
+			break;
+		default:
+			bgColor = "bg-blue-400";
+			break;
+	}
 	return (
 		<div
-			id="notification"
-			class={(props.show ? "fixed" : "hidden") + " z-[99999] bottom-10 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded shadow-lg translate-y-4 transition-all duration-300 pointer-events-none"}
+			id="notification" class={(props.show ? "fixed" : "hidden") + " z-[99999] bottom-10 left-1/2 transform -translate-x-1/2 " + bgColor + " text-white px-6 py-3 rounded shadow-lg translate-y-4 pointer-events-none"}
 		>{props.con}
 		</div>);
 }
@@ -54,7 +66,8 @@ export const CreateGamePage: ComponentFunction = () => {
 	const [loading, isAuthenticated, user] = useAuth();
 	const [toast, setToast] = useState({
 		show: false,
-		con: ""
+		content: "",
+		type: 'primary'
 	});
 	useEffect(() => {
 		if (!isAuthenticated || !user)
@@ -65,12 +78,13 @@ export const CreateGamePage: ComponentFunction = () => {
 
 	}, [user]);
 
-	const showToast = (content: string) => {
+	const showToast = (content: string, type='primary') => {
 		setToast({
 			show: true,
-			con: content
+			content: content,
+			type
 		});
-		setTimeout(() => setToast({ show: false, con: "" }), 5000);
+		setTimeout(() => setToast({ show: false, content: "", type }), 5000);
 	}
 
 	const handleClickRemote = async (type: GameType, e: Event) => {
@@ -90,16 +104,15 @@ export const CreateGamePage: ComponentFunction = () => {
 				credentials: 'include'
 			});
 			if (!response.ok) {
-				showToast("Create game failed! status??: " + response.status);
+				showToast("Failed to create game: " + response.status, "error");
 				return;
 			}
 			const data = await response.json();
-			showToast("Create game success: " + data);
+			showToast("Game created successfully: " + data.id);
 		}
 		catch (err) {
-			showToast("Create game failed: " + err);
+			showToast("Failed to create game: " + err, "error");
 		}
-
 	}
 
 	const [players, setPlayers] = useState([
@@ -119,7 +132,7 @@ export const CreateGamePage: ComponentFunction = () => {
 			className="relative flex flex-col overflow-hidden h-screen w-screen"
 			style={{ backgroundColor: 'rgba(94, 156, 171, 0.9)' }}
 		>
-			<Toast con={toast.con} show={toast.show} />
+			<Toast con={toast.content} type={toast.type} show={toast.show} />
 			<div
 				className="absolute inset-0 z-0"
 				style={{
@@ -128,7 +141,6 @@ export const CreateGamePage: ComponentFunction = () => {
 					backgroundSize: '100% 100%',
 				}}
 			/>
-
 			<div className="relative z-10">
 				<Header />
 			</div>
@@ -151,7 +163,7 @@ export const CreateGamePage: ComponentFunction = () => {
 								<img src={GameRemoteImg} className="max-w-[100px]" />
 							</div>
 							<CardButton onClick={handleClickRemote.bind(null, GameType.SOLO)} />
-							<CardButton />
+							<CardButton onClick={handleClickRemote.bind(null, GameType.TEAM)}/>
 						</CardContainer>
 					</div>
 					<div>
