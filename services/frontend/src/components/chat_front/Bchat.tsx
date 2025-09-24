@@ -116,7 +116,7 @@ export const Bchat: ComponentFunction = () => {
     if (socket.current && message.trim() !== '') 
     {
       const data = JSON.stringify({ type: 'message', username : name,message: message, from: info.from, to: info.to , username_to: nameFriend?.name});
-      const resBlocked = await fetch(`http://localhost:8002/api/chat/blocked/${info.to}`, {
+      const resBlocked = await fetch(`${import.meta.env.VITE_CHAT_SERVICE_HOST}/api/chat/blocked/${info.to}`, {
         method: 'GET',
         credentials: 'include',
       });

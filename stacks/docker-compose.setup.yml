@@ -56,6 +56,7 @@ services:
       - WATCHPACK_POLLING=true
       - UV_THREADPOOL_SIZE=128
       - VITE_USER_SERVICE_HOST=https://ft-transcendence.com
+      - VITE_CHAT_SERVICE_HOST=https://ft-transcendence.com
       - VITE_USER_SERVICE_PORT=443
       - VITE_WS_USER_SERVICE_HOST=wss://ft-transcendence.com
       - VITE_WS_CHAT_SERVICE_HOST=wss://ft-transcendence.com
