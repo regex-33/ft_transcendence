@@ -123,7 +123,8 @@ export const Online: ComponentFunction<OnlineProps> = ({ friends, position = 'ri
 					}}
 					onMouseEnter={(e: MouseEvent) => {
 						if (position === 'right') return;
-						if (showinfo === true) return;
+						if (nameFriend?.id === friend.id)
+							return;
 						const target = e.currentTarget as HTMLElement;
 						const rect = target.getBoundingClientRect();
 						setPopupPosition({
