@@ -1,7 +1,7 @@
 const db = require('../models');
 const { ifWin, solve } = require('./ai');
 const jwt = require('./jwt');
-
+const { Op } = require('sequelize');
 const validateMap = (oldmap, cell) => {
     if (!(cell && typeof cell.x == "number" &&
         typeof cell.y == "number" &&
@@ -142,22 +142,26 @@ const AiRouter = (fastify) => {
             if (typeof nid != "number") {
                 return res.status(400).send({ 'msg': 'bad request' });
             }
-            const History = await db.History.findOne({
+            const History = await db.History.findAll({
                 where: {
                     [Op.or]: [
                         { player: payload.id },
                         { opponent: payload.id }
                     ],
-                    opponent: { [Op.ne]: null },
                     finished: true
-                }
-                , attributes: ['player', 'map_', 'win', 'updatedAt']
+                },
+                attributes: ['win', 'player', 'opponent']
             });
-            const edited = History.map(game => ({
-                win: game.win == id,
-                map: JSON.parse(game.map_),
-                date: game.updatedAt
-            }));
+            const edited = {
+                ai:{
+                    win: History.filter(g => g.opponent == null && g.win).length,
+                    total: History.filter(g => g.opponent == null).length
+                },
+                pvp:{
+                    win: History.filter(g => g.opponent != null && nid == g.win).length,
+                    total: History.filter(g => g.opponent != null ).length
+                }
+            };
             return res.send(edited);
         } catch (error) {
             require(`${process.env.PROJECT_PATH}/src/catch`)(error);

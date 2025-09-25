@@ -41,17 +41,18 @@ const rev = (c) => {
 
 const sendMap = (History) => {
     const map = JSON.parse(History.map_);
+    console.log(History.turn, History.player, History.opponent);
     players.get(History.player)?.send(JSON.stringify({ type: 'update', map, turn: History.player === History.turn }));
     players.get(History.opponent)?.send(JSON.stringify({
         type: 'update',
         map: map.map(row => row.map(c => rev(c))),
-        turn: History.turn == History.opponent
+        turn: History.turn === History.opponent
     }));
 }
 
 const sendMSG = (History, winner) => {
-    players.get(History.player)?.send(JSON.stringify({ type: 'end', winner: winner.winner == 'X' ? "you win" : "you lose" }));
-    players.get(History.opponent)?.send(JSON.stringify({ type: 'end', winner: winner.winner == 'O' ? "you win" : "you lose" }));
+    players.get(History.player)?.send(JSON.stringify({ type: 'end', winner: winner.winner === 'X' ? "you win" : "you lose" }));
+    players.get(History.opponent)?.send(JSON.stringify({ type: 'end', winner: winner.winner === 'O' ? "you win" : "you lose" }));
 }
 
 const handler = async (ws, req) => {
@@ -135,10 +136,10 @@ const onmessage = async (payload, message) => {
         }
         map[data.cell.y][data.cell.x] = History.player == payload.id ? 'X' : 'O';
         History.turn = History.turn == History.player ? History.opponent : History.player;
+        sendMap(History, payload);
         const winner = ifWin(map);
         History.map_ = JSON.stringify(map);
         await History.save();
-        sendMap(History, payload);
         if (winner.winner) {
             sendMSG(History, winner);
             History.finished = true;

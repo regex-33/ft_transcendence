@@ -1,0 +1,21 @@
+
+body{
+    overflow: hidden;
+}
+.human {
+    background-image:
+    url('/images/xo/human.png'),
+    url('/images/xo/dwara.png');
+    background-size: 70px 70px,cover;
+    background-repeat: no-repeat;
+    background-position: center, -5px -5px;
+    width: 100px;
+    height: 100px;
+}
+.bg {
+    background-image: url('/images/xo/ai2.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 100px;
+    height: 100px;
+}
