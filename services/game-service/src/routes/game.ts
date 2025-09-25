@@ -162,7 +162,6 @@ async function gameRoutes(fastify: FastifyInstance) {
 			const game = await getGame(fastify.prisma, id);
 			fastify.log.info('game get');
 			if (!game) return reply.code(404).send({ error: 'game not found' });
-			console.log('game:', game);
 			reply.code(200).send(game);
 		}
 	);

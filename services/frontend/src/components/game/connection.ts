@@ -1,17 +1,36 @@
 type MessageHandler = (data: any) => void;
 
+type CloseHandler = (e: CloseEvent) => any;
+
 export class Connection {
   private _socket!: WebSocket;
   private _handlers = new Map<string, MessageHandler[]>();
   private _url: string;
+  private _onClose: CloseHandler | null;
   public initialized: boolean;
+  static connecting: boolean = false;
 
-  constructor(url: string) {
+  constructor(url: string, onClose: CloseHandler | null = null) {
     this._url = url;
+    this._onClose = onClose;
     this.initialized = false;
   }
 
+  onClose (callback: CloseHandler) {
+    this._onClose = callback;
+    if (!this._socket.OPEN)
+      return;
+    this._socket.onclose = callback;
+  }
+
   connect(timeoutMs = 15000): Promise<void> {
+    if (Connection.connecting)
+    {
+      console.log("already connecting");
+      
+      return Promise.reject();
+    }
+    Connection.connecting = true;
     console.log("connecting to websocket");
     return new Promise((resolve, reject) => {
       this._socket = new WebSocket(this._url);
@@ -23,6 +42,8 @@ export class Connection {
 
       this._socket.onopen = () => {
         console.log("connected!!");
+        if (this._onClose)
+          this._socket.onclose = this._onClose;
         clearTimeout(timeout);
         resolve();
       };
@@ -78,6 +99,8 @@ export class Connection {
   close() {
     if (!this._socket) return;
     this._socket.onmessage = null;
+    this._socket.onerror = null;
+    this._socket.onopen = null;
     this._socket.close();
   }
 }

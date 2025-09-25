@@ -6,12 +6,15 @@ import { Game, GameConfig, GameType, GameMode } from "./game";
 import { Connection } from "./connection";
 import { Player } from "./GamePage";
 import bgTeam from "../../../images/game-assets/bg-team.png";
+import { useToast } from "./toast";
 
-const startGame = (ctx: CanvasRenderingContext2D, game: Game) => {
+const startGame = (ctx: CanvasRenderingContext2D, game: Game, onConnect: Function): Connection => {
 	ctx;
 	const connection = new Connection("ws://localhost:9000/play/" + game.id);
+	console.log("calling connect");
 	connection.connect().then(() => {
 		console.log("then connect");
+		onConnect();
 		game.start(connection);
 		connection.send({
 			type: "INIT",
@@ -21,6 +24,7 @@ const startGame = (ctx: CanvasRenderingContext2D, game: Game) => {
 		});
 		console.log("sent fetch");
 	});
+	return connection;
 };
 
 let handleCanvasResize = (canvasEl: HTMLCanvasElement) => {
@@ -32,7 +36,7 @@ let handleCanvasResize = (canvasEl: HTMLCanvasElement) => {
 	GameConfig.onResize(canvasEl.width, canvasEl.height);
 };
 
-const initCanvas = async (
+const initCanvas = (
 	gameId: string,
 	resizeHandler: () => void,
 	setScores: Function
@@ -51,12 +55,7 @@ const initCanvas = async (
 	const context = canvasEl.getContext("2d");
 	if (!context) throw new Error("could not get canvas context");
 	window.addEventListener("resize", resizeHandler);
-	const gameData = {
-		id: gameId,
-		type: GameType.SOLO,
-		mode: GameMode.CLASSIC,
-	};
-	startGame(context, new Game(canvasEl.getContext("2d")!, gameData, setScores));
+	return context;
 };
 
 const AvatarCircle = ({
@@ -110,12 +109,13 @@ const TeamBadge = ({
 
 export const GameCanvas = (props: { playerId: number; game: any }) => {
 	const [scores, setScores] = useState([0, 0]);
-
 	const [players, setPlayers] = useState<Player[]>([]);
 	const canvasRef = useRef(null);
+	const [showToast, Toast] = useToast();
+	// console.log("Toast", Toast);
 
 	useEffect(() => {
-		console.log("ref", canvasRef);
+		console.log("useffect called ref", canvasRef);
 		if (!props.game?.id) return;
 		console.log("gameId:", props.game.id);
 		const players = props.game.players;
@@ -126,20 +126,38 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 		if (!(canvasEl instanceof HTMLCanvasElement))
 			throw new Error("canvas element not found");
 		const resizeHandler = handleCanvasResize.bind(this, canvasEl);
-		initCanvas(props.game.id, resizeHandler, setScores);
+		const context: CanvasRenderingContext2D = initCanvas(props.game.id, resizeHandler, setScores);
+		const gameData = {
+			id: props.game.id,
+			type: GameType.SOLO,
+			mode: GameMode.CLASSIC,
+		};
+		const connection: Connection = startGame(context, new Game(canvasEl.getContext("2d")!, gameData, setScores), () => {
+			//onConnect
+			console.log("onConnect called");
+			showToast("Connected");
+		});
+		connection.onClose((e: CloseEvent) => {
+			console.log('socket closed:', e.reason);
+			showToast("Connection closed", "error");
+		})
 		return () => {
-			console.log("canvas unmounted");
+			console.log("Clean up called: canvas unmounted");
+			connection.close();
 			window.removeEventListener("resize", resizeHandler);
 		};
 	}, [props.game]);
+
+
 	useEffect(() => {
-		console.log("ref", canvasRef);
-		console.log("game", props.game);
+		console.log("second useEffect called", canvasRef);
+		// console.log("game", props.game);
 	});
 	const handleClick = () => { };
 	return (
 		<div>
 			<div className="flex justify-center">
+				{Toast}
 				<div className="flex justify-between items-center">
 					{
 						players?.length > 1 ? (

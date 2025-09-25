@@ -1,10 +1,6 @@
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import {
-	createGameSchema,
-	getGameSchema,
 	getPlayerIdGamesSchema,
-	inviteGameSchema,
-	joinGameSchema,
 } from '../schemas';
 import { createGame, getGame, joinGame } from '../controllers/gameController';
 import { checkAuth } from '../controllers/checkAuth';

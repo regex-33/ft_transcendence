@@ -48,7 +48,6 @@ export class Paddle {
     const paddle = this;
     const width = GameConfig.paddleWidth;
     const height = width * GameConfig.paddleRatio;
-    console.log("paddle width:", width);
     const radius = (width * 1) / 2;
 
     const { x, y, options } = paddle;
@@ -176,6 +175,7 @@ export class Game {
     ball: { x: number; y: number };
     players: PlayerState[];
   }) => {
+    console.log('serverUpdate');
     this.ball.x = data.ball.x * (GameConfig.canvasWidth / 200);
     const serverHeight = 200 * GameConfig.canvasRatio;
     this.ball.y = data.ball.y * (GameConfig.canvasHeight / serverHeight);
@@ -217,7 +217,7 @@ export class Game {
     });
     connection.on("GAME_UPDATE", this.onServerUpdate);
     connection.on("PLAYER_DISCONNECT", this._onPlayerDisconnect);
-    connection.on("PLAYER_CONNECT", this._onPlayerDisconnect);
+    connection.on("PLAYER_CONNECT", this._onPlayerConnect);
     this._connection = connection;
   };
 

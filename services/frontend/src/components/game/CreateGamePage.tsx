@@ -13,32 +13,14 @@ import { TeamCard } from './TeamCard';
 import { useAuth } from '../../hooks/useAuth';
 import { GameMode, GameType } from './game';
 import { createNewGame, redirectToActiveGame } from './utils';
-
-const Toast = (props: { con: string, show: boolean, type: string }) => {
-	let bgColor: string;
-	switch (props.type) {
-		case "primary":
-			bgColor = "bg-blue-400";
-			break;
-		case "error":
-			bgColor = "bg-red-400";
-			break;
-		default:
-			bgColor = "bg-blue-400";
-			break;
-	}
-	return (
-		<div
-			class={(props.show ? "fixed" : "hidden") + " z-[99999] bottom-10 left-1/2 transform -translate-x-1/2 " + bgColor + " text-white px-6 py-3 rounded shadow-lg translate-y-4 pointer-events-none"}
-		>{props.con}
-		</div>);
-}
+import { useToast } from './toast';
 
 const Badge = (props: { text: string }) => {
 	return (
 		<div className="flex justify-center items-center object-fit leading-none">
-			<img src={BadgeBg} className="block max-w-[200px]" />
-			<span className="absolute text-white font-luckiest">{props.text}</span>
+			<div className={"bg-[url(/images/game-badge-bg.png)] font-luckiest min-w-[200px] text-center text-white p-10 bg-center bg-no-repeat bg-contain"}>
+			{props.text}
+			</div>
 		</div>
 	)
 }
@@ -65,12 +47,8 @@ const CardButton = (props: { onClick?: CallableFunction }) => {
 
 export const CreateGamePage: ComponentFunction = () => {
 	const [loading, isAuthenticated, user] = useAuth();
+	const [showToast, Toast] = useToast();
 
-	const [toast, setToast] = useState({
-		show: false,
-		content: "",
-		type: 'primary'
-	});
 	useEffect(() => {
 		if (!user)
 			return;
@@ -80,17 +58,6 @@ export const CreateGamePage: ComponentFunction = () => {
 	useEffect(() => {
 
 	}, [user]);
-
-	const showToast = (content: string, type = 'primary') => {
-		setToast({
-			show: true,
-			content: content,
-			type
-		});
-		setTimeout(() => {
-			setToast({ show: false, content: "", type });
-		}, 2000);
-	}
 
 	const handleClickRemote = async (type: GameType, e: Event) => {
 		console.log(e);
@@ -105,29 +72,16 @@ export const CreateGamePage: ComponentFunction = () => {
 		}, 2000);
 	}
 
-	const [players, setPlayers] = useState([
-		{
-			name: "player1",
-			id: "player1-id",
-			avatarImage: Avatar1
-		},
-		{
-			name: "player2",
-			id: "player2-id",
-			avatarImage: Avatar1
-		}
-	]);
 	return (
 		<div
 			className="relative flex flex-col overflow-hidden h-screen w-screen"
 			style={{ backgroundColor: 'rgba(94, 156, 171, 0.4)' }}
 		>
-			<Toast con={toast.content} type={toast.type} show={toast.show} />
+		{Toast}	
 			<div className="relative z-10">
 				<Header />
 			</div>
-			<div className="flex items-center gap-10 my-10 flex-col md:flex-row md:justify-between mx-5">
-				<TeamCard players={players} />
+			<div className="flex items-center gap-10 mt-10 md:mx-5 flex-col md:flex-row md:justify-between overflow-auto">
 				<div className="gap-10 my-10 m-auto grid md:grid-rows-1 md:grid-cols-3 w-[80%] md:w-full items-center md:justify-between ">
 					<div>
 						<Badge text="local" />
@@ -160,7 +114,6 @@ export const CreateGamePage: ComponentFunction = () => {
 						</CardContainer>
 					</div>
 				</div>
-				<TeamCard players={players} />
 			</div>
 		</div>
 	);

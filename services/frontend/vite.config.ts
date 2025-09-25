@@ -11,6 +11,7 @@ export default defineConfig({
   server: {
     // open: "index.html",
     host: '0.0.0.0',
+    hmr: false,
     port: 3000,
     // strictPort: true,
     watch: {

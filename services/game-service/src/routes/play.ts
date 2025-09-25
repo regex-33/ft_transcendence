@@ -19,7 +19,7 @@ import {
 //
 const BALL_SPEED = 1.2;
 const SPEED_BALL_SPEED = 1.8;
-const MAX_SCORE = 10;
+const MAX_SCORE = 4;
 const DISCONNECT_TIMEOUT = 5000;
 
 const getPlayerTeam = (gameSession: GameSession) => {
@@ -167,6 +167,8 @@ function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
 			},
 		}),
 	]);
+	gameSession.game.status = GameStatus.ENDED;
+	games.delete(gameSession.game.id);
 }
 function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	// TODO: notify players about game start
@@ -185,8 +187,8 @@ function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	gameSession.onEnd = () => {
 		console.log('ENDING GAME');
 		gameSession.state.playersSockets.forEach((s) => s.close());
+		gameSession.state.spectators.forEach((s) => s.close());
 		endGame(gameSession, prismaClient);
-		games.delete(gameSession.game.id);
 	};
 	gameSession.startAt = Date.now();
 	promise.catch((err) => {
@@ -253,15 +255,17 @@ async function playRoutes(fastify: FastifyInstance) {
 		{ websocket: true },
 		async (socket, request) => {
 			const playerId = (request as any)?.user?.id;
-			console.log('playerId is:', playerId);
 			if (!request.params?.gameId) {
 				console.log('no param gameId');
 			}
-			const currentGame = await getPlayerGame(fastify.prisma, playerId);
-			console.log(playerId, ' currentGame', currentGame);
+			console.log('[NEW CONNECTION] playerId:', playerId);
+			// const currentGame = await getPlayerGame(fastify.prisma, playerId);
+			// console.log(playerId, ' currentGame', currentGame);
 			const game = await getGame(fastify.prisma, request.params.gameId);
-			if (!game) {
+			if (!game || game.status === GameStatus.ENDED) {
 				//socket.send(JSON.stringify({ error: 'Invalid gameId' }));
+				if (game)
+					console.log("Game has ended");
 				console.log('invalid game');
 				socket.close(1008, 'Invalid game');
 				return;
@@ -311,7 +315,8 @@ async function playRoutes(fastify: FastifyInstance) {
 					return true;
 				});
 				setTimeout(() => {
-					if (session.state.players.length === 0) {
+					if (session.game.status !== GameStatus.ENDED && session.state.players.length === 0) {
+						console.log("[TIMEOUT] Clearing game", session.game.id);
 						endGame(session, fastify.prisma);
 					}
 				}, DISCONNECT_TIMEOUT);
@@ -330,11 +335,11 @@ async function playRoutes(fastify: FastifyInstance) {
 					//const isSpec = !(playerId in session.state.players);
 					//console.log('isSpec:', isSpec);
 					if (isSpec) {
-						console.log('spec msg', playerId, session);
+						console.log('New Spectator:', playerId);
 						socket.close(1008, 'Unauthorized');
 						return;
 					}
-					console.log('data:', data);
+					console.log('[RECV] data:', data);
 					if (data.type == 'INIT') {
 						const playerState: PlayerState = {
 							id: playerId,
@@ -345,9 +350,11 @@ async function playRoutes(fastify: FastifyInstance) {
 						if (session.state.players.find((p) => p.id === playerId))
 							console.log('already initialized');
 						else session.state.players.push(playerState);
-						console.log(session.state);
+						// console.log(session.state);
 						console.log('games:', games.size);
+						const connectedPlayers = Array.from(connections.values()).map(s => s.state.players);
 						console.log('connections:', connections.size);
+						console.log('connectedPlayers:', connectedPlayers);
 						if (gameFull(session)) {
 							console.log('game is full');
 							startGame(session, fastify.prisma);

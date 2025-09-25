@@ -16,8 +16,12 @@ export function useEffect(effect: () => void | (() => void), dependencies?: any[
     dependencies.length !== currentEffect.dependencies.length ||
     dependencies.some((dep, i) => !Object.is(dep, currentEffect.dependencies![i]));
 
+  console.log("--------------------------");
+  console.log("hasChanged: ", hasChanged);
+  console.log("--------------------------");
   if (hasChanged) {
     if (currentEffect.cleanup) {
+      console.log("hasChanged: ", hasChanged);
       currentEffect.cleanup();
     }
 
