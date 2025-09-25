@@ -37,15 +37,9 @@ let handleCanvasResize = (canvasEl: HTMLCanvasElement) => {
 };
 
 const initCanvas = (
-	gameId: string,
+	canvasEl: HTMLCanvasElement,
 	resizeHandler: () => void,
-	setScores: Function
 ) => {
-	const canvasEl = document.getElementById(
-		"game-canvas"
-	) as HTMLCanvasElement | null;
-	if (!(canvasEl instanceof HTMLCanvasElement))
-		throw new Error("canvas element not found");
 	canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width;
 	canvasEl.height = canvasEl.width * GameConfig.canvasRatio;
 	console.log(canvasEl.width);
@@ -110,46 +104,46 @@ const TeamBadge = ({
 export const GameCanvas = (props: { playerId: number; game: any }) => {
 	const [scores, setScores] = useState([0, 0]);
 	const [players, setPlayers] = useState<Player[]>([]);
-	const canvasRef = useRef(null);
-	const [connection, setConnection] = useState<Connection | null>(null);
+	const canvasRef = useRef<HTMLCanvasElement | null>(null);
+	// const [connection, setConnection] = useState<Connection | null>(null);
+	const connectionRef = useRef<Connection | null>(null);
 	const [showToast, Toast] = useToast();
-	// console.log("Toast", Toast);
 
 	useEffect(() => {
-		console.log("useEffect is called ref", canvasRef);
 		if (!props.game?.id) return;
 		console.log("gameId:", props.game.id);
 		const players = props.game.players;
 		setPlayers(players);
-		const resizeHandler = handleCanvasResize.bind(this, canvasEl);
+		const connection = connectionRef.current;
 		if (!connection)
 		{
 			const conn = new Connection(`${import.meta.env.VITE_WS_GAME_SERVICE_HOST}/play/${props.game.id}`);
-			// const connection: Connection = startGame(context, game, () => {
-				//onConnect
-			setConnection(conn);
+			connectionRef.current = conn;
+			return () => {
+				console.log("close conn on unmount:", conn);
+				conn.close();
+			}
+		}
+		return () => {
+			console.log("close connection on unmount:", connection);
+			connection.close();
 		}
 	}, [props.game]);
 
-	useEffect(() => {
+	useEffect(() =>
+	{
+		const connection = connectionRef.current;
 		if (!connection) return;
-		const canvasEl = document.getElementById(
-			"game-canvas"
-		) as HTMLCanvasElement | null;
-		if (!(canvasEl instanceof HTMLCanvasElement))
-		{
-			console.error("canvas element not found");
-			return;
-		}
-		const resizeHandler = handleCanvasResize.bind(this, canvasEl);
-		const context: CanvasRenderingContext2D = initCanvas(props.game.id, resizeHandler, setScores);
+		if (!canvasRef.current) return;
+
+		const resizeHandler = handleCanvasResize.bind(this, canvasRef.current);
+		const context = initCanvas(canvasRef.current, resizeHandler);
 		const gameData = {
 			id: props.game.id,
 			type: GameType.SOLO,
 			mode: GameMode.CLASSIC,
 		};
-		const game = new Game(context, gameData, setScores);
-		console.log("calling connect");
+		const game = new Game(context, gameData, setScores, setPlayers);
 		connection.connect().then(() => {
 			console.log("then connect");
 			game.start(connection);
@@ -172,30 +166,29 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 			console.log("Cleanup called");
 			window.removeEventListener("resize", resizeHandler);
 		};
-	}, [connection]);
+	}, [canvasRef, connectionRef])
 
 	const handleClick = () => { };
 	return (
 		<div>
 			<div className="flex justify-center">
 				{Toast}
-				<div className="flex justify-between items-center">
 					{
 						players?.length > 1 ? (
-							<div>
-								<TeamBadge reverse={false} player={players[0]} />
-								<div className="flex">
-									<span>{scores[0]}</span>
-									<div>||</div>
-									<span>{scores[1]}</span>
-								</div>
-								<TeamBadge reverse={true} player={players[1]} />
-							</div>
+						<div className="flex justify-between items-center">
+										<TeamBadge reverse={false} player={players[0]} />
+										<div className="flex">
+											<span>{scores[0]}</span>
+											<div>||</div>
+											<span>{scores[1]}</span>
+										</div>
+										<TeamBadge reverse={true} player={players[1]} />
+						</div>
 						) : <div className="m-auto text-gray-800 text:sm md:text-xl font-luckiest">waiting for players</div>
 					}
-				</div>
 				<div className="flex justify-center my-2 bg-[#91BFBF] shadow-xs shadow-gray-400 rounded-xl">
 					<canvas
+						ref={canvasRef}
 						height="400px"
 						width="800px"
 						id="game-canvas"

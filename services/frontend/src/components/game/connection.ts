@@ -8,7 +8,6 @@ export class Connection {
   private _url: string;
   private _onClose: CloseHandler | null;
   public initialized: boolean;
-  static connecting: boolean = false;
 
   constructor(url: string, onClose: CloseHandler | null = null) {
     this._url = url;
@@ -24,12 +23,6 @@ export class Connection {
   }
 
   connect(timeoutMs = 15000): Promise<void> {
-    if (Connection.connecting)
-    {
-      console.log("already connecting");
-      return Promise.reject();
-    }
-    Connection.connecting = true;
     console.log("connecting to websocket");
     return new Promise((resolve, reject) => {
       this._socket = new WebSocket(this._url);
@@ -96,10 +89,14 @@ export class Connection {
   }
 
   close() {
-    if (!this._socket) return;
+    if (!this._socket) {
+      console.log("socket is null");
+      return;
+    }
+    this._socket.close();
+    console.log("socket closed");
     this._socket.onmessage = null;
     this._socket.onerror = null;
     this._socket.onopen = null;
-    this._socket.close();
   }
 }

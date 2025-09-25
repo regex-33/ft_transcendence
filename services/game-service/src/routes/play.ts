@@ -284,20 +284,17 @@ async function playRoutes(fastify: FastifyInstance) {
 			//};
 
 			//socket.addEventListener('open', onOpen);
+			session.state.playersSockets.forEach((s) => {
+				if (s === socket) return;
+				s.send(
+					JSON.stringify({
+						type: 'PLAYER_CONNECT',
+						players: session.game.players,
+						playerId: playerId,
+					})
+				);
+			});
 
-			socket.onopen = () => {
-				console.log('new opened connection from player ' + playerId);
-				session.state.playersSockets.forEach((s) => {
-					if (s === socket) return;
-					s.send(
-						JSON.stringify({
-							type: 'PLAYER_CONNECT',
-							players: session.state.players,
-							playerId: playerId,
-						})
-					);
-				});
-			};
 			socket.onclose = () => {
 				console.log('[WEBSOCKET] player ' + playerId + ' closed connection');
 				connections.delete(socket);
@@ -348,14 +345,14 @@ async function playRoutes(fastify: FastifyInstance) {
 							paddle: createPaddle(session.state.players.length === 0 ? 'LEFT' : 'RIGHT'),
 							team: getPlayerTeam(session),
 						};
-						if (session.state.players.find((p) => p.id === playerId))
+						if (session.state.players.find((p) => p.id === playerId) !== undefined)
 							console.log('already initialized');
 						else session.state.players.push(playerState);
 						// console.log(session.state);
-						console.log('games:', games.size);
-						const connectedPlayers = Array.from(connections.values()).map((s) => s.state.players);
-						console.log('connections:', connections.size);
+						const connectedPlayers = session.state.players.map(p => p.id);
 						console.log('connectedPlayers:', connectedPlayers);
+						console.log('games:', games.size);
+						console.log('connections:', connections.size);
 						if (gameFull(session)) {
 							console.log('game is full');
 							startGame(session, fastify.prisma);

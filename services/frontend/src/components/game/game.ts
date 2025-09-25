@@ -1,4 +1,5 @@
 import { Connection } from "./connection";
+import { Player } from "./GamePage";
 import { UpdateMessage } from "./types";
 
 export class GameConfig {
@@ -62,7 +63,7 @@ export class Paddle {
         x + width,
         y + height,
         x + width - radius,
-        y + height,
+        y + height
       );
       ctx.lineTo(x, y + height);
     } else {
@@ -106,8 +107,7 @@ const drawBall = (ctx: CanvasRenderingContext2D, ball: Ball) => {
   ctx.stroke();
 };
 
-export type PlayerState = 
-{
+export type PlayerState = {
   id: number;
   score: number;
   paddle: {
@@ -115,7 +115,7 @@ export type PlayerState =
     y: number;
     dir: "LEFT" | "RIGHT";
   };
-}
+};
 
 export class Game {
   paddles: Paddle[];
@@ -130,6 +130,7 @@ export class Game {
   ctx: CanvasRenderingContext2D;
   _connection: Connection;
   _setScores: Function;
+  _setPlayers: Function;
   _scores: number[];
   private _activeKeys: Set<string>;
 
@@ -137,9 +138,11 @@ export class Game {
     ctx: CanvasRenderingContext2D,
     { id, type, mode }: { id: string; type: GameType; mode: GameMode },
     setScores: Function,
+    setPlayers: Function
   ) {
     this._activeKeys = new Set();
     this._setScores = setScores;
+    this._setPlayers = setPlayers;
     this.ctx = ctx;
     this.id = id;
     this._scores = [0, 0];
@@ -147,10 +150,12 @@ export class Game {
     const p2 = new Paddle(
       GameConfig.canvasWidth - GameConfig.paddleWidth - 10,
       GameConfig.canvasHeight / 2,
-      rightPaddleOptions,
+      rightPaddleOptions
     );
     this.paddles = [p1, p2];
-    this._connection = new Connection(`${import.meta.env.VITE_WS_GAME_SERVICE_HOST}/play/efpep`);
+    this._connection = new Connection(
+      `${import.meta.env.VITE_WS_GAME_SERVICE_HOST}/play/efpep`
+    );
     this.type = type;
     this.mode = mode;
   }
@@ -175,7 +180,7 @@ export class Game {
     ball: { x: number; y: number };
     players: PlayerState[];
   }) => {
-    console.log('serverUpdate');
+    console.log("serverUpdate");
     this.ball.x = data.ball.x * (GameConfig.canvasWidth / 200);
     const serverHeight = 200 * GameConfig.canvasRatio;
     this.ball.y = data.ball.y * (GameConfig.canvasHeight / serverHeight);
@@ -222,23 +227,27 @@ export class Game {
   };
 
   private _onPlayerDisconnect = (data: {
-    type: string,
-    players: PlayerState[],
-    playerId: number,
-    timeout: number
-  }) =>
-  {
+    type: string;
+    players: PlayerState[];
+    playerId: number;
+    timeout: number;
+  }) => {
     console.log("DISCONNECT RECEIVED: ", data);
     // data.players.filter(p => )
-  }
+  };
 
   private _onPlayerConnect = (data: {
-    type: string,
-    players: PlayerState[],
-    playerId: number,
+    type: string;
+    players: Player[];
+    playerId: number;
   }) => {
-    console.log("connect received:", data)
-  }
+    const players = data.players.map(
+      ({ userId, username, avatar, ...rest }) => ({ userId, username, avatar })
+    );
+    console.log("players:", players);
+    this._setPlayers(players);
+    console.log("connect received:", data);
+  };
 
   private _onKeyDown = (e: KeyboardEvent) => {
     let keys;
