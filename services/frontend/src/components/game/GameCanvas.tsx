@@ -10,6 +10,20 @@ import { useToast } from "./toast";
 
 const startGame = (ctx: CanvasRenderingContext2D, game: Game, onConnect: Function): Connection => {
 	ctx;
+	const connection = new Connection(`${import.meta.env.VITE_WS_GAME_SERVICE_HOST}/play/${game.id}`);
+	console.log("calling connect");
+	connection.connect().then(() => {
+		console.log("then connect");
+		onConnect();
+		game.start(connection);
+		connection.send({
+			type: "INIT",
+		});
+		connection.send({
+			type: "FETCH_PLAYERS",
+		});
+		console.log("sent fetch");
+	});
 	return connection;
 };
 
@@ -110,7 +124,7 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 		const resizeHandler = handleCanvasResize.bind(this, canvasEl);
 		if (!connection)
 		{
-			const conn = new Connection("ws://localhost:9000/play/" + props.game.id);
+			const conn = new Connection(`${import.meta.env.VITE_WS_GAME_SERVICE_HOST}/play/${props.game.id}`);
 			// const connection: Connection = startGame(context, game, () => {
 				//onConnect
 			setConnection(conn);

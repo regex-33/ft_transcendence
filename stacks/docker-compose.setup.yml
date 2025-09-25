@@ -60,6 +60,7 @@ services:
       - VITE_CHAT_SERVICE_HOST=https://ft-transcendence.com
       - VITE_WS_USER_SERVICE_HOST=wss://ft-transcendence.com
       - VITE_WS_CHAT_SERVICE_HOST=wss://ft-transcendence.com
+      - VITE_WS_GAME_SERVICE_HOST=wss://ft-transcendence.com
       - VITE_USER_SERVICE_PORT=443
       - VITE_GAME_SERVICE_HOST=https://ft-transcendence.com
       - VITE_GAME_SERVICE_PORT=443

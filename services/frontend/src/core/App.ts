@@ -254,6 +254,8 @@ export class App {
    *  ENHANCED: Updated setupRoutes method with Virtual DOM for functional components
    */
   private setupRoutes(): void {
+
+
     this.router.addRoute('/profile/:username', (params) => {
       console.log("Routing to profile of:", params?.username);
       return this.createFunctionalComponent(ProfilePage, { username: params?.username });
