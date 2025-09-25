@@ -38,7 +38,7 @@ export interface GameSession {
 	game: GameMetadata;
 	state: GameState;
 	startAt: number;
-	runner?: () => void;
+	runner?: (() => void) | null;
 	intervalId?: NodeJS.Timeout;
 	onEnd?: Function;
 }
@@ -47,7 +47,7 @@ export function initSession(game: GameMetadata) {
 	let session = games.get(game.id);
 	if (!session) {
 		const state = {
-			ball: { x: 0, y: 0, vx: 1, vy: 1 },
+			ball: { x: gameConfig.gameWidth / 2, y: gameConfig.gameHeight / 2, vx: 1, vy: 1 },
 			players: [],
 			spectators: [],
 			playersSockets: [],
@@ -57,6 +57,7 @@ export function initSession(game: GameMetadata) {
 			game,
 			state,
 			startAt: Date.now(),
+			runner: null
 		};
 		games.set(game.id, session);
 	}

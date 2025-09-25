@@ -298,7 +298,6 @@ async function playRoutes(fastify: FastifyInstance) {
 			socket.onclose = () => {
 				console.log('[WEBSOCKET] player ' + playerId + ' closed connection');
 				connections.delete(socket);
-				session.state.players = session.state.players.filter((p) => p.id !== playerId);
 				session.state.spectators = session.state.spectators.filter((s) => s !== socket);
 				session.state.playersSockets = session.state.playersSockets.filter((s) => {
 					if (s === socket) return false;
@@ -314,11 +313,13 @@ async function playRoutes(fastify: FastifyInstance) {
 				});
 				setTimeout(() => {
 					if (session.game.status !== GameStatus.ENDED && session.state.players.length === 0) {
+						if (session.intervalId) clearInterval(session.intervalId);
+						session.runner = undefined;
 						console.log('[TIMEOUT] Clearing game', session.game.id);
 						endGame(session, fastify.prisma);
+						session.state.players = session.state.players.filter((p) => p.id !== playerId);
 					}
 				}, DISCONNECT_TIMEOUT);
-				if (session.intervalId) clearInterval(session.intervalId);
 				// Delete all game ??? and set winner ??
 				socket.removeAllListeners();
 			};
@@ -339,10 +340,11 @@ async function playRoutes(fastify: FastifyInstance) {
 					}
 					console.log('[RECV] data:', data);
 					if (data.type == 'INIT') {
+						const paddleDir: Direction = session.state.players.filter(p => (p.paddle.dir === 'LEFT')).length % 2 ?  'RIGHT' : 'LEFT';
 						const playerState: PlayerState = {
 							id: playerId,
 							score: 0,
-							paddle: createPaddle(session.state.players.length === 0 ? 'LEFT' : 'RIGHT'),
+							paddle: createPaddle(paddleDir),
 							team: getPlayerTeam(session),
 						};
 						if (session.state.players.find((p) => p.id === playerId) !== undefined)
@@ -353,7 +355,7 @@ async function playRoutes(fastify: FastifyInstance) {
 						console.log('connectedPlayers:', connectedPlayers);
 						console.log('games:', games.size);
 						console.log('connections:', connections.size);
-						if (gameFull(session)) {
+						if (!session.runner && gameFull(session)) {
 							console.log('game is full');
 							startGame(session, fastify.prisma);
 						}

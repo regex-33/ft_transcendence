@@ -6,6 +6,7 @@ import { Game, GameConfig, GameType, GameMode } from "./game";
 import { Connection } from "./connection";
 import { Player } from "./GamePage";
 import bgTeam from "../../../images/game-assets/bg-team.png";
+import ScoreSepImg from '../../../images/game-assets/score-separator.png';
 import { useToast } from "./toast";
 
 const startGame = (ctx: CanvasRenderingContext2D, game: Game, onConnect: Function): Connection => {
@@ -177,10 +178,14 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 						players?.length > 1 ? (
 						<div className="flex justify-between items-center">
 										<TeamBadge reverse={false} player={players[0]} />
-										<div className="flex">
-											<span>{scores[0]}</span>
-											<div>||</div>
-											<span>{scores[1]}</span>
+										<div className="flex gap-2 items-center">
+											<span className="text-white text-lg font-luckiest">
+												{scores[0]}
+											</span>
+											<img src={ScoreSepImg} className="mb-2 max-w-[30px]" />
+											<span className="text-white text-lg font-luckiest">
+												{scores[1]}
+											</span>
 										</div>
 										<TeamBadge reverse={true} player={players[1]} />
 						</div>

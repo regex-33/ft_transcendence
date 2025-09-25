@@ -8,7 +8,6 @@ import GameRemoteImg from '../../../images/game-remote.png';
 import GameLocalImg from '../../../images/game-local.png';
 import GameTournamentImg from '../../../images/game-tournament.png';
 import TournamentButtonImg from '../../../images/tournament-button.svg';
-import Avatar1 from '../../../images/home-assests/avatar1.svg';
 import { TeamCard } from './TeamCard';
 import { useAuth } from '../../hooks/useAuth';
 import { GameMode, GameType } from './game';
