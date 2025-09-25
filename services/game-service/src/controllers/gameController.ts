@@ -21,7 +21,11 @@ const createGame = async (db: PrismaClient | Prisma.TransactionClient, data: Gam
 				players: {
 					connectOrCreate: {
 						where: { userId: data.player.id, activeGameId: { equals: null } },
-						create: { userId: data.player.id, avatar: data.player.avatar, username: data.player.username},
+						create: {
+							userId: data.player.id,
+							avatar: data.player.avatar,
+							username: data.player.username,
+						},
 					},
 				},
 			},
@@ -29,20 +33,24 @@ const createGame = async (db: PrismaClient | Prisma.TransactionClient, data: Gam
 		});
 		return game;
 	} catch (err) {
-		console.log("error", err)
+		console.log('error', err);
 		return null;
 	}
 };
 
 const joinGame = async (db: PrismaClient, data: { gameId: string; player: UserData }) => {
 	try {
-		//		const gameInvitedPlayers = invites.get(data.gameId);
-		//		if (!gameInvitedPlayers || !gameInvitedPlayers.includes(data.userId)) {
-		//			console.log('player is not invited 22');
-		//			return null;
-		//		}
+		const gameInvitedPlayers = invites.get(data.gameId);
+		if (!gameInvitedPlayers || !gameInvitedPlayers.includes(data.player.id)) {
+			console.log('player is not invited 22', gameInvitedPlayers);
+			return null;
+		}
 		const game = await db.$transaction(async (tx) => {
-			const player = await createPlayer(tx, { id: data.player.id, avatar: data.player.avatar, username: data.player.username });
+			const player = await createPlayer(tx, {
+				id: data.player.id,
+				avatar: data.player.avatar,
+				username: data.player.username,
+			});
 			if (!player || player.activeGameId) {
 				console.log('player error:', player);
 				return null;
@@ -74,9 +82,13 @@ const joinGame = async (db: PrismaClient, data: { gameId: string; player: UserDa
 			});
 			return updatedGame;
 		});
+		invites.set(
+			data.gameId,
+			gameInvitedPlayers.filter((id) => id !== data.player.id)
+		);
 		return game;
 	} catch (err) {
-		console.log("error:", err)
+		console.log('error:', err);
 		return null;
 	}
 };

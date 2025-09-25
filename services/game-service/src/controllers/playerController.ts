@@ -1,10 +1,10 @@
-import type { PrismaClient, Prisma } from '../../generated/prisma';
+import { type PrismaClient, type Prisma, GameStatus } from '../../generated/prisma';
 
 export type UserData = {
 	id: number;
 	avatar: string;
 	username: string;
-}
+};
 
 const createPlayer = async (db: PrismaClient | Prisma.TransactionClient, data: UserData) => {
 	const player = await db.player.upsert({
@@ -13,6 +13,35 @@ const createPlayer = async (db: PrismaClient | Prisma.TransactionClient, data: U
 		create: { userId: data.id, avatar: data.avatar, username: data.username },
 	});
 	return player;
+};
+
+export interface PlayerStats {
+	rank: number;
+	wins: number;
+	losses: number;
+	points: number;
+}
+
+const getPlayerStats = async (db: PrismaClient | Prisma.TransactionClient, playerId: number) => {
+	const playerGames = await db.player.findUnique({
+		where: { userId: playerId },
+		include: {
+			games: {
+				include:{
+				game: true
+				}
+			}
+		},
+	});
+
+	const games = await db.gamePlayer.findMany({
+		where: { playerId: playerId },
+	});
+	console.log('playergames', games);
+	console.log(playerGames);
+
+	if (!playerGames) return null;
+	return playerGames;
 };
 
 const getPlayerGames = async (
@@ -29,4 +58,4 @@ const getPlayerGames = async (
 	return games;
 };
 
-export { createPlayer, getPlayerGames };
+export { createPlayer, getPlayerGames, getPlayerStats };

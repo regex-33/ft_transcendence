@@ -9,7 +9,7 @@ import {
 import { createGame, getGame, joinGame } from '../controllers/gameController';
 import { checkAuth } from '../controllers/checkAuth';
 import { games, invites } from '../gameState';
-import { getPlayerGames } from '../controllers/playerController';
+import { getPlayerGames, getPlayerStats } from '../controllers/playerController';
 
 async function playerRoutes(fastify: FastifyInstance) {
 	fastify.addHook('preHandler', checkAuth);
@@ -20,6 +20,14 @@ async function playerRoutes(fastify: FastifyInstance) {
 		const playerGames = await getPlayerGames(fastify.prisma, { id: user.id });
 		reply.code(200).send(playerGames);
 	});
+
+	fastify.get('/stats', async (request, reply) => {
+		const user = (request as any).user;
+		console.log('userid', user.id);
+		const playerGames = await getPlayerStats(fastify.prisma, user.id);
+		reply.code(200).send(playerGames);
+	});
+
 	fastify.get<{ Params: { id: number } }>(
 		'/:id/games',
 		{ schema: getPlayerIdGamesSchema },

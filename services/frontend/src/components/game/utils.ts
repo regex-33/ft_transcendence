@@ -1,0 +1,48 @@
+import { GameMode, GameType } from "./game";
+
+export const redirectToActiveGame = async () => {
+  const response = await fetch("http://localhost/api/player/games", {
+    method: "GET",
+    credentials: "include",
+  });
+  if (!response.ok) return;
+  const games = await response.json();
+  if (!(typeof games === typeof [])) return;
+  for (let i = 0; i < games.length; i++) {
+    if (["WAITING", "LIVE"].includes(games[i].status)) {
+      window.history.pushState({}, "", "/game/" + games[i].id);
+      window.dispatchEvent(new PopStateEvent("popstate"));
+      return;
+    }
+  }
+};
+
+export const createNewGame = async (
+  type: GameType,
+  mode: GameMode = GameMode.CLASSIC,
+  redirectOnError = true,
+) => {
+  try {
+    const response = await fetch("http://localhost/api/game/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        gameType: type,
+        gameMode: mode,
+      }),
+      credentials: "include",
+    });
+    if (!response.ok) {
+      //const data = await response.json();
+      if (response.status === 401) {
+        if (redirectOnError) redirectToActiveGame();
+      }
+      return null;
+    }
+    return await response.json();
+  } catch (err) {
+    return null;
+  }
+};

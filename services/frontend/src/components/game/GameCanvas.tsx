@@ -8,164 +8,164 @@ import { Player } from "./GamePage";
 import bgTeam from "../../../images/game-assets/bg-team.png";
 
 const startGame = (ctx: CanvasRenderingContext2D, game: Game) => {
-  ctx;
-  const connection = new Connection("ws://localhost:9000/play/" + game.id);
-  connection.connect().then(() => {
-    console.log("then connect");
-    game.start(connection);
-    connection.send({
-      type: "INIT",
-    });
-    connection.send({
-      type: "FETCH_PLAYERS",
-    });
-    console.log("sent fetch");
-  });
+	ctx;
+	const connection = new Connection("ws://localhost:9000/play/" + game.id);
+	connection.connect().then(() => {
+		console.log("then connect");
+		game.start(connection);
+		connection.send({
+			type: "INIT",
+		});
+		connection.send({
+			type: "FETCH_PLAYERS",
+		});
+		console.log("sent fetch");
+	});
 };
 
 let handleCanvasResize = (canvasEl: HTMLCanvasElement) => {
-  canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width;
-  canvasEl.height = canvasEl.width * GameConfig.canvasRatio;
-  console.log(canvasEl.width);
-  console.log(canvasEl.height);
-  console.log(canvasEl.clientWidth, canvasEl.clientHeight);
-  GameConfig.onResize(canvasEl.width, canvasEl.height);
+	canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width;
+	canvasEl.height = canvasEl.width * GameConfig.canvasRatio;
+	console.log(canvasEl.width);
+	console.log(canvasEl.height);
+	console.log(canvasEl.clientWidth, canvasEl.clientHeight);
+	GameConfig.onResize(canvasEl.width, canvasEl.height);
 };
 
 const initCanvas = async (
-  gameId: string,
-  resizeHandler: () => void,
-  setScores: Function
+	gameId: string,
+	resizeHandler: () => void,
+	setScores: Function
 ) => {
-  const canvasEl = document.getElementById(
-    "game-canvas"
-  ) as HTMLCanvasElement | null;
-  if (!(canvasEl instanceof HTMLCanvasElement))
-    throw new Error("canvas element not found");
-  canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width;
-  canvasEl.height = canvasEl.width * GameConfig.canvasRatio;
-  console.log(canvasEl.width);
-  console.log(canvasEl.height);
-  console.log(canvasEl.clientWidth, canvasEl.clientHeight);
-  GameConfig.onResize(canvasEl.width, canvasEl.height);
-  const context = canvasEl.getContext("2d");
-  if (!context) throw new Error("could not get canvas context");
-  window.addEventListener("resize", resizeHandler);
-  const gameData = {
-    id: gameId,
-    type: GameType.SOLO,
-    mode: GameMode.CLASSIC,
-  };
-  startGame(context, new Game(canvasEl.getContext("2d")!, gameData, setScores));
+	const canvasEl = document.getElementById(
+		"game-canvas"
+	) as HTMLCanvasElement | null;
+	if (!(canvasEl instanceof HTMLCanvasElement))
+		throw new Error("canvas element not found");
+	canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width;
+	canvasEl.height = canvasEl.width * GameConfig.canvasRatio;
+	console.log(canvasEl.width);
+	console.log(canvasEl.height);
+	console.log(canvasEl.clientWidth, canvasEl.clientHeight);
+	GameConfig.onResize(canvasEl.width, canvasEl.height);
+	const context = canvasEl.getContext("2d");
+	if (!context) throw new Error("could not get canvas context");
+	window.addEventListener("resize", resizeHandler);
+	const gameData = {
+		id: gameId,
+		type: GameType.SOLO,
+		mode: GameMode.CLASSIC,
+	};
+	startGame(context, new Game(canvasEl.getContext("2d")!, gameData, setScores));
 };
 
 const AvatarCircle = ({
-  avatarImage,
-  key,
+	avatarImage,
+	key,
 }: {
-  avatarImage: string;
-  key: string;
+	avatarImage: string;
+	key: string;
 }) => (
-  <div className="relative w-6 h-6 md:w-11 md:h-11" key={key}>
-    <img
-      src="/images/home-assests/cir-offline.svg"
-      className="absolute rounded-full shadow-[inset_0_0_0.4em_0.1em_#434146] inset-0 w-full h-full z-0"
-    />
-    <img
-      src={avatarImage}
-      className="w-[90%] mx-auto rounded-full object-cover z-10"
-      alt={`${key}`}
-    />
-  </div>
+	<div className="relative w-6 h-6 md:w-11 md:h-11" key={key}>
+		<img
+			src="/images/home-assests/cir-offline.svg"
+			className="absolute rounded-full shadow-[inset_0_0_0.4em_0.1em_#434146] inset-0 w-full h-full z-0"
+		/>
+		<img
+			src={avatarImage}
+			className="w-[90%] mx-auto rounded-full object-cover z-10"
+			alt={`${key}`}
+		/>
+	</div>
 );
 
 const TeamBadge = ({
-  player,
-  reverse = false,
+	player,
+	reverse = false,
 }: {
-  player: Player | undefined;
-  reverse: boolean;
+	player: Player | undefined;
+	reverse: boolean;
 }) => {
-  if (!player) return <div></div>;
-  let nameBadge = (
-    <div
-      className="uppercase flex items-center font-inria text-[0.8em] lg:text-[1vw] text-nowrap py-1 px-5 md:px-10 text-[#166181]"
-      style={{
-        borderImageSource: `url(${bgTeam})`,
-        borderImageSlice: 60,
-        borderImageWidth: "auto",
-      }}
-    >
-      {player.username}
-    </div>
-  );
+	if (!player) return <div></div>;
+	let nameBadge = (
+		<div
+			className="uppercase flex items-center font-inria text-[0.8em] lg:text-[1vw] text-nowrap py-1 px-5 md:px-10 text-[#166181]"
+			style={{
+				borderImageSource: `url(${bgTeam})`,
+				borderImageSlice: 60,
+				borderImageWidth: "auto",
+			}}
+		>
+			{player.username}
+		</div>
+	);
 
-  return (
-    <div className={reverse ? "flex gap-1 flex-row-reverse" : "flex gap-1"}>
-      <AvatarCircle avatarImage={player.avatar} key={"" + player.userId} />{" "}
-      {nameBadge}
-    </div>
-  );
+	return (
+		<div className={reverse ? "flex gap-1 flex-row-reverse" : "flex gap-1"}>
+			<AvatarCircle avatarImage={player.avatar} key={"" + player.userId} />{" "}
+			{nameBadge}
+		</div>
+	);
 };
 
 export const GameCanvas = (props: { playerId: number; game: any }) => {
-  const [scores, setScores] = useState([0, 0]);
+	const [scores, setScores] = useState([0, 0]);
 
-  const [players, setPlayers] = useState<Player[]>([]);
-  const canvasRef = useRef(null);
+	const [players, setPlayers] = useState<Player[]>([]);
+	const canvasRef = useRef(null);
 
-  useEffect(() => {
-    console.log("ref", canvasRef);
-    if (!props.game?.id) return;
-    console.log("gameId:", props.game.id);
-    const players = props.game.players;
-    setPlayers(players);
-    const canvasEl = document.getElementById(
-      "game-canvas"
-    ) as HTMLCanvasElement | null;
-    if (!(canvasEl instanceof HTMLCanvasElement))
-      throw new Error("canvas element not found");
-    const resizeHandler = handleCanvasResize.bind(this, canvasEl);
-    initCanvas(props.game.id, resizeHandler, setScores);
-    return () => {
-      console.log("canvas unmounted");
-      window.removeEventListener("resize", resizeHandler);
-    };
-  }, [props.game]);
-  useEffect(() => {
-    console.log("ref", canvasRef);
-    console.log("game", props.game);
-  });
-  const handleClick = () => {};
-  return (
-    <div>
-      <div className="flex justify-center">
-        <div className="flex justify-between items-center">
-          {
-            players.length > 1 ? (
-              <div>
-          <TeamBadge reverse={false} player={players[0]} />
-          <div className="flex">
-            <span>{scores[0]}</span>
-            <div>||</div>
-            <span>{scores[1]}</span>
-          </div>
-          <TeamBadge reverse={true} player={players[1]} />
-            </div>
-            ) : <div className="m-auto text-gray-800 text:sm md:text-xl font-luckiest">waiting for players</div>
-          }
-        </div>
-        <div className="flex justify-center my-2 bg-[#91BFBF] shadow-xs shadow-gray-400 rounded-xl">
-          <canvas
-            ref={canvasRef}
-            height="400px"
-            width="800px"
-            id="game-canvas"
-            onClick={handleClick}
-            className="rounded-lg bg-[#91BFBF] border-2 border-solid "
-          ></canvas>
-        </div>
-      </div>
-    </div>
-  );
+	useEffect(() => {
+		console.log("ref", canvasRef);
+		if (!props.game?.id) return;
+		console.log("gameId:", props.game.id);
+		const players = props.game.players;
+		setPlayers(players);
+		const canvasEl = document.getElementById(
+			"game-canvas"
+		) as HTMLCanvasElement | null;
+		if (!(canvasEl instanceof HTMLCanvasElement))
+			throw new Error("canvas element not found");
+		const resizeHandler = handleCanvasResize.bind(this, canvasEl);
+		initCanvas(props.game.id, resizeHandler, setScores);
+		return () => {
+			console.log("canvas unmounted");
+			window.removeEventListener("resize", resizeHandler);
+		};
+	}, [props.game]);
+	useEffect(() => {
+		console.log("ref", canvasRef);
+		console.log("game", props.game);
+	});
+	const handleClick = () => { };
+	return (
+		<div>
+			<div className="flex justify-center">
+				<div className="flex justify-between items-center">
+					{
+						players?.length > 1 ? (
+							<div>
+								<TeamBadge reverse={false} player={players[0]} />
+								<div className="flex">
+									<span>{scores[0]}</span>
+									<div>||</div>
+									<span>{scores[1]}</span>
+								</div>
+								<TeamBadge reverse={true} player={players[1]} />
+							</div>
+						) : <div className="m-auto text-gray-800 text:sm md:text-xl font-luckiest">waiting for players</div>
+					}
+				</div>
+				<div className="flex justify-center my-2 bg-[#91BFBF] shadow-xs shadow-gray-400 rounded-xl">
+					<canvas
+						ref={canvasRef}
+						height="400px"
+						width="800px"
+						id="game-canvas"
+						onClick={handleClick}
+						className="rounded-lg bg-[#91BFBF] border-2 border-solid "
+					></canvas>
+				</div>
+			</div>
+		</div>
+	);
 };

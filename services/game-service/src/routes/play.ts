@@ -6,7 +6,13 @@ import { getGame } from '../controllers/gameController';
 import type { Ball, Direction, GameMetadata, GameSession, Paddle, PlayerState } from '../gameState';
 import type WebSocket from 'ws';
 import { games, connections, gameConfig, initSession } from '../gameState';
-import { GameStatus, type Player, type PrismaClient } from '../../generated/prisma';
+import {
+	GameStatus,
+	GameTeam,
+	GameType,
+	type Player,
+	type PrismaClient,
+} from '../../generated/prisma';
 
 // INIT: { type: init, data: gameId} response: {type: init_ack, players: [], spectator: bool }
 //
@@ -15,6 +21,12 @@ const BALL_SPEED = 1.2;
 const SPEED_BALL_SPEED = 1.8;
 const MAX_SCORE = 10;
 const DISCONNECT_TIMEOUT = 5000;
+
+const getPlayerTeam = (gameSession: GameSession) => {
+	const maxPlayers = gameSession.game.type === GameType.SOLO ? 2 : 4;
+	if (gameSession.state.players.length < maxPlayers) return GameTeam.TEAM_A;
+	return GameTeam.TEAM_B;
+};
 
 function isColliding(ball: Ball, paddle: Paddle) {
 	const ballLeft = ball.x - gameConfig.ballRadius;
@@ -123,22 +135,25 @@ function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	const game = gameSession.game;
 	const now = Date.now();
 	let duration;
-	if (now < gameSession.startAt)
-		duration = 0;	
-	else
-		duration = gameSession.startAt - now;
+	if (now < gameSession.startAt) duration = 0;
+	else duration = gameSession.startAt - now;
+
+	const TeamAScore = gameSession.state.players.find((p) => p.team === GameTeam.TEAM_A)?.score || 0;
+	const TeamBScore = gameSession.state.players.find((p) => p.team === GameTeam.TEAM_B)?.score || 0;
+	const winningTeam = TeamAScore === TeamBScore ? null : TeamAScore > TeamBScore ? GameTeam.TEAM_A : GameTeam.TEAM_B;
 	prismaClient.$transaction([
 		prismaClient.game.update({
 			where: { id: game.id },
 			data: {
 				status: GameStatus.ENDED,
 				duration: duration,
+				winningTeam: winningTeam,
 				gamePlayers: {
 					createMany: {
 						data: gameSession.state.players.map((p) => ({
 							playerId: p.id,
 							score: p.score,
-							team: p.paddle.dir === 'LEFT' ? 'TEAM_A' : 'TEAM_B',
+							team: p.team,
 						})),
 					},
 				},
@@ -266,6 +281,7 @@ async function playRoutes(fastify: FastifyInstance) {
 			//socket.addEventListener('open', onOpen);
 
 			socket.onopen = () => {
+				console.log('new opened connection from player ' + playerId);
 				session.state.playersSockets.forEach((s) => {
 					if (s === socket) return;
 					s.send(
@@ -273,11 +289,10 @@ async function playRoutes(fastify: FastifyInstance) {
 							type: 'PLAYER_CONNECT',
 							players: session.state.players,
 							playerId: playerId,
-							timeout: DISCONNECT_TIMEOUT,
 						})
 					);
 				});
-			}
+			};
 			socket.onclose = () => {
 				console.log('[WEBSOCKET] player ' + playerId + ' closed connection');
 				connections.delete(socket);
@@ -325,6 +340,7 @@ async function playRoutes(fastify: FastifyInstance) {
 							id: playerId,
 							score: 0,
 							paddle: createPaddle(session.state.players.length === 0 ? 'LEFT' : 'RIGHT'),
+							team: getPlayerTeam(session),
 						};
 						if (session.state.players.find((p) => p.id === playerId))
 							console.log('already initialized');
