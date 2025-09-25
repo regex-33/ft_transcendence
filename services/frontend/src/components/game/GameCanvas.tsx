@@ -10,20 +10,6 @@ import { useToast } from "./toast";
 
 const startGame = (ctx: CanvasRenderingContext2D, game: Game, onConnect: Function): Connection => {
 	ctx;
-	const connection = new Connection("ws://localhost:9000/play/" + game.id);
-	console.log("calling connect");
-	connection.connect().then(() => {
-		console.log("then connect");
-		onConnect();
-		game.start(connection);
-		connection.send({
-			type: "INIT",
-		});
-		connection.send({
-			type: "FETCH_PLAYERS",
-		});
-		console.log("sent fetch");
-	});
 	return connection;
 };
 
@@ -111,6 +97,7 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 	const [scores, setScores] = useState([0, 0]);
 	const [players, setPlayers] = useState<Player[]>([]);
 	const canvasRef = useRef(null);
+	const [connection, setConnection] = useState<Connection | null>(null);
 	const [showToast, Toast] = useToast();
 	// console.log("Toast", Toast);
 
@@ -120,6 +107,18 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 		console.log("gameId:", props.game.id);
 		const players = props.game.players;
 		setPlayers(players);
+		const resizeHandler = handleCanvasResize.bind(this, canvasEl);
+		if (!connection)
+		{
+			const conn = new Connection("ws://localhost:9000/play/" + props.game.id);
+			// const connection: Connection = startGame(context, game, () => {
+				//onConnect
+			setConnection(conn);
+		}
+	}, [props.game]);
+
+	useEffect(() => {
+		if (!connection) return;
 		const canvasEl = document.getElementById(
 			"game-canvas"
 		) as HTMLCanvasElement | null;
@@ -135,10 +134,21 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 			type: GameType.SOLO,
 			mode: GameMode.CLASSIC,
 		};
-		const connection: Connection = startGame(context, new Game(canvasEl.getContext("2d")!, gameData, setScores), () => {
-			//onConnect
-			console.log("onConnect called");
-			showToast("Connected");
+		const game = new Game(context, gameData, setScores);
+		console.log("calling connect");
+		connection.connect().then(() => {
+			console.log("then connect");
+			game.start(connection);
+			connection.send({
+				type: "INIT",
+			});
+			connection.send({
+				type: "FETCH_PLAYERS",
+			});
+			console.log("sent fetch");
+		}).catch(err => {
+			console.log("connect error:", err);
+			connection.close();
 		});
 		connection.onClose((e: CloseEvent) => {
 			console.log('socket closed:', e.reason);
@@ -148,13 +158,8 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 			console.log("Cleanup called");
 			window.removeEventListener("resize", resizeHandler);
 		};
-	}, [props.game]);
+	}, [connection]);
 
-
-	useEffect(() => {
-		console.log("second useEffect called", canvasRef);
-		// console.log("game", props.game);
-	});
 	const handleClick = () => { };
 	return (
 		<div>

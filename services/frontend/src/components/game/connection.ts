@@ -27,7 +27,6 @@ export class Connection {
     if (Connection.connecting)
     {
       console.log("already connecting");
-      
       return Promise.reject();
     }
     Connection.connecting = true;

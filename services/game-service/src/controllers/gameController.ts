@@ -64,7 +64,8 @@ const joinGame = async (db: PrismaClient, data: { gameId: string; player: UserDa
 			if (
 				!game ||
 				(game.type === GameType.SOLO && game.players.length > 1) ||
-				(game.type === GameType.TEAM && game.players.length > 3)
+				(game.type === GameType.TEAM && game.players.length > 3) ||
+				game.status === GameStatus.ENDED
 			) {
 				console.log('game error:', game);
 				return null;

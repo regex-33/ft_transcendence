@@ -15,7 +15,7 @@ const createNotification = async (req, reply) => {
   )
     return reply.status(400).send({ error: "bad request" });
 
-  if (["MATCH_NOTIFICATION", "FRIEND_REQUEST"].includes(type)) {
+  if (["MATCH_NOTIFICATION","TOURNAMENT_NOTIFICATION", "FRIEND_REQUEST"].includes(type)) {
     try {
       await db.Notification.create({
         userId,

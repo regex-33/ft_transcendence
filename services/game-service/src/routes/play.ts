@@ -140,7 +140,8 @@ function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
 
 	const TeamAScore = gameSession.state.players.find((p) => p.team === GameTeam.TEAM_A)?.score || 0;
 	const TeamBScore = gameSession.state.players.find((p) => p.team === GameTeam.TEAM_B)?.score || 0;
-	const winningTeam = TeamAScore === TeamBScore ? null : TeamAScore > TeamBScore ? GameTeam.TEAM_A : GameTeam.TEAM_B;
+	const winningTeam =
+		TeamAScore === TeamBScore ? null : TeamAScore > TeamBScore ? GameTeam.TEAM_A : GameTeam.TEAM_B;
 	prismaClient.$transaction([
 		prismaClient.game.update({
 			where: { id: game.id },
@@ -175,12 +176,16 @@ function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	// TODO: run game loop
 	const runner = createGameRunner(gameSession);
 	gameSession.game.status = 'LIVE';
-	const promise = prismaClient.game.update({
-		where: { id: gameSession.game.id },
-		data: {
-			status: 'LIVE',
-		},
-	});
+	const promise = prismaClient.game
+		.update({
+			where: { id: gameSession.game.id },
+			data: {
+				status: 'LIVE',
+			},
+		})
+		.catch((err) => {
+			console.error('[ERROR]: game update failed:', err);
+		});
 	gameSession.runner = runner;
 	gameSession.state.lastTick = Date.now();
 	gameSession.intervalId = setInterval(runner, gameConfig.tick);
@@ -191,9 +196,6 @@ function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
 		endGame(gameSession, prismaClient);
 	};
 	gameSession.startAt = Date.now();
-	promise.catch((err) => {
-		console.error('[ERROR]: game update failed:', err);
-	});
 }
 
 function gameFull(gameSession: GameSession) {
@@ -264,8 +266,7 @@ async function playRoutes(fastify: FastifyInstance) {
 			const game = await getGame(fastify.prisma, request.params.gameId);
 			if (!game || game.status === GameStatus.ENDED) {
 				//socket.send(JSON.stringify({ error: 'Invalid gameId' }));
-				if (game)
-					console.log("Game has ended");
+				if (game) console.log('Game has ended');
 				console.log('invalid game');
 				socket.close(1008, 'Invalid game');
 				return;
@@ -316,7 +317,7 @@ async function playRoutes(fastify: FastifyInstance) {
 				});
 				setTimeout(() => {
 					if (session.game.status !== GameStatus.ENDED && session.state.players.length === 0) {
-						console.log("[TIMEOUT] Clearing game", session.game.id);
+						console.log('[TIMEOUT] Clearing game', session.game.id);
 						endGame(session, fastify.prisma);
 					}
 				}, DISCONNECT_TIMEOUT);
@@ -352,7 +353,7 @@ async function playRoutes(fastify: FastifyInstance) {
 						else session.state.players.push(playerState);
 						// console.log(session.state);
 						console.log('games:', games.size);
-						const connectedPlayers = Array.from(connections.values()).map(s => s.state.players);
+						const connectedPlayers = Array.from(connections.values()).map((s) => s.state.players);
 						console.log('connections:', connections.size);
 						console.log('connectedPlayers:', connectedPlayers);
 						if (gameFull(session)) {

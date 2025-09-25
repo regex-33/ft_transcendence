@@ -6,7 +6,7 @@ import { useRef } from '../../hooks/useRef';
 import { ws } from '../../main'
 import { redirectToActiveGame } from '../game/utils';
 
-type NotificationType = 'MATCH_NOTIFICATION' | 'FRIEND_REQUEST';
+type NotificationType = 'MATCH_NOTIFICATION' | 'FRIEND_REQUEST' | 'TOURNAMENT_NOTIFICATION';
 
 interface Notification {
 	userId: number;
@@ -172,6 +172,36 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 				</div>
 			);
 		}
+		if (notification.type === 'TOURNAMENT_NOTIFICATION' && notification.gameId) {
+			return (
+				<div className="flex gap-1 justify-end">
+					<button
+						onClick={() => notification.gameId && handleMatchAction(notification.gameId, 'accept')}
+						className="
+            flex items-center gap-1 px-2 h-[20px] min-w-[70px]
+            bg-[url('/images/setting-assests/bg-accept.svg')]
+            bg-no-repeat bg-center bg-contain
+            text-white font-semibold text-[10px]
+            transition-transform duration-200 hover:scale-95 
+          ">
+						<i className="fa-solid fa-table-tennis-paddle-ball text-red-500 text-[10px]"></i>
+						<span>Join tournament</span>
+					</button>
+					<button
+						onClick={() => notification.gameId && handleMatchAction(notification.gameId, 'refuse')}
+						className="
+            flex items-center gap-1 px-2 h-[20px] min-w-[50px]
+            bg-[url('/images/setting-assests/bg-decline.svg')]
+            bg-no-repeat bg-center bg-contain
+            text-white font-semibold text-[10px]
+            transition-transform duration-200 hover:scale-95 
+          ">
+						<i className="fa-solid fa-xmark text-[10px]"></i>
+						<span>refuse</span>
+					</button>
+				</div>
+			);
+		}
 
 		return null;
 	};
@@ -182,6 +212,9 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 		}
 		if (notification.type === 'MATCH_NOTIFICATION') {
 			return 'wants to play a match with you';
+		}
+		if (notification.type === 'TOURNAMENT_NOTIFICATION') {
+			return 'wants to play a tournament with you';
 		}
 		return '';
 	};
