@@ -40,6 +40,7 @@ const play = async (request, reply) => {
         const History = await db.History.findOne({
             where: {
                 player: payload.id,
+                opponent: null,
                 finished: false
             }
         });
@@ -101,7 +102,7 @@ const create = async (request, res) => {
 
         try {
             const [History, created] = await db.History.findOrCreate({
-                where: { player: payload.id, finished: false },
+                where: { player: payload.id, opponent: null, finished: false },
                 defaults: { player: payload.id }
             });
             return res.send({

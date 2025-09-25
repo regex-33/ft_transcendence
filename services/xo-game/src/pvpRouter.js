@@ -136,10 +136,10 @@ const onmessage = async (payload, message) => {
         }
         map[data.cell.y][data.cell.x] = History.player == payload.id ? 'X' : 'O';
         History.turn = History.turn == History.player ? History.opponent : History.player;
-        sendMap(History, payload);
         const winner = ifWin(map);
         History.map_ = JSON.stringify(map);
         await History.save();
+        sendMap(History, payload);
         if (winner.winner) {
             sendMSG(History, winner);
             History.finished = true;
