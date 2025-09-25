@@ -10,7 +10,7 @@ import { useToast } from "./toast";
 
 const startGame = (ctx: CanvasRenderingContext2D, game: Game, onConnect: Function): Connection => {
 	ctx;
-	const connection = new Connection("ws://localhost:9000/play/" + game.id);
+	const connection = new Connection(`${import.meta.env.VITE_WS_GAME_SERVICE_HOST}/play/${game.id}`);
 	console.log("calling connect");
 	connection.connect().then(() => {
 		console.log("then connect");

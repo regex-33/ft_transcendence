@@ -150,7 +150,7 @@ export class Game {
       rightPaddleOptions,
     );
     this.paddles = [p1, p2];
-    this._connection = new Connection("ws://localhost:9000/play/efpep");
+    this._connection = new Connection(`${import.meta.env.VITE_WS_GAME_SERVICE_HOST}/play/efpep`);
     this.type = type;
     this.mode = mode;
   }

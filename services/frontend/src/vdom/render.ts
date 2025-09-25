@@ -86,7 +86,6 @@ export class Renderer {
         case 'UPDATE':
           if (patch.element && patch.props) {
             if (patch.element instanceof Text) {
-              const oldText = patch.element.textContent;
               patch.element.textContent = patch.props.textContent;
             } else {
               this.setProps(patch.element as HTMLElement, patch.props);
@@ -125,10 +124,18 @@ export class Renderer {
 
       const value = props[key];
 
-      if (key === 'ref' && typeof value === 'function') {
-        value(element);
-        continue;
+      // ===== THIS BLOCK IS THE FIX =====
+      if (key === 'ref') {
+        if (typeof value === 'function') {
+          // Handles callback refs: ref={(el) => ...}
+          value(element);
+        } else if (value && typeof value === 'object' && 'current' in value) {
+          // Handles object refs from useRef: ref={myRef}
+          value.current = element;
+        }
+        continue; // Skip setting 'ref' as an HTML attribute
       }
+      // =================================
 
       if (key.startsWith('on') && typeof value === 'function') {
         const eventType = key.slice(2).toLowerCase();
@@ -156,7 +163,6 @@ export class Renderer {
       if (key === 'value' && (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)) {
         if (element.value !== value) {
           element.value = value || '';
-          // console.log(` Updated input value from "${element.value}" to "${value}"`);
         }
         continue;
       }
