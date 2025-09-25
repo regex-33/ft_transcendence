@@ -30,7 +30,7 @@ Cookie: {{ register.response.headers.get('set-cookie') }}
 
 # @name inviteToGame
 @gameId = {{createGame.response.body.id}}
-POST http://localhost:9000/game/invite
+POST http://localhost/api/game/invite
 content-type: application/json
 Cookie: {{ register.response.headers.get('set-cookie') }} 
 
@@ -59,7 +59,7 @@ GET http://localhost:9000/player/games
 
 # @name createNotification
 @gameId = {{createGame.response.body.id}}
-POST http://localhost/api/notifications/create
+POST http://localhost:8001/api/notifications/create
 content-type: application/json
 Cookie: {{ register.response.headers.get('set-cookie') }} 
 
@@ -68,3 +68,7 @@ Cookie: {{ register.response.headers.get('set-cookie') }}
     "userId": 9,
     "type": "MATCH_NOTIFICATION"
 }
+
+###
+GET http://localhost:9000/player/stats
+Cookie: {{ register.response.headers.get('set-cookie') }} 

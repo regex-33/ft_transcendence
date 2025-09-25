@@ -1,4 +1,4 @@
-import type { Prisma } from '../generated/prisma';
+import type { GameTeam, Prisma } from '../generated/prisma';
 import type WebSocket from 'ws';
 
 export interface Paddle {
@@ -21,6 +21,7 @@ export interface Ball {
 export interface PlayerState {
 	id: number;
 	score: number;
+	team: GameTeam;
 	paddle: Paddle;
 	//	socket: WebSocket;
 }

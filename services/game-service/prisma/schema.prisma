@@ -38,6 +38,7 @@ model Game {
   status   GameStatus @default(WAITING)
   mode     GameMode   @default(CLASSIC)
   type     GameType   @default(SOLO)
+  winningTeam GameTeam?
 
   gamePlayers  GamePlayer[]
   players      Player[]

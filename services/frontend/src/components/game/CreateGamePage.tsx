@@ -12,11 +12,11 @@ import Avatar1 from '../../../images/home-assests/avatar1.svg';
 import { TeamCard } from './TeamCard';
 import { useAuth } from '../../hooks/useAuth';
 import { GameMode, GameType } from './game';
+import { createNewGame, redirectToActiveGame } from './utils';
 
 const Toast = (props: { con: string, show: boolean, type: string }) => {
 	let bgColor: string;
-	switch (props.type)
-	{
+	switch (props.type) {
 		case "primary":
 			bgColor = "bg-blue-400";
 			break;
@@ -29,7 +29,7 @@ const Toast = (props: { con: string, show: boolean, type: string }) => {
 	}
 	return (
 		<div
-			id="notification" class={(props.show ? "fixed" : "hidden") + " z-[99999] bottom-10 left-1/2 transform -translate-x-1/2 " + bgColor + " text-white px-6 py-3 rounded shadow-lg translate-y-4 pointer-events-none"}
+			class={(props.show ? "fixed" : "hidden") + " z-[99999] bottom-10 left-1/2 transform -translate-x-1/2 " + bgColor + " text-white px-6 py-3 rounded shadow-lg translate-y-4 pointer-events-none"}
 		>{props.con}
 		</div>);
 }
@@ -62,27 +62,6 @@ const CardButton = (props: { onClick?: CallableFunction }) => {
 	)
 }
 
-const redirectToActiveGame = async () => 
-{
-	const response = await fetch("http://localhost/api/player/games", {
-		method: 'GET',
-		credentials: 'include'
-	});
-	if (!response.ok)
-		return;
-	const games = await response.json();
-	if (!(typeof games === typeof []))
-		return;
-	for (let i=0; i < games.length; i++)
-	{
-		if (['WAITING', 'LIVE'].includes(games[i].status))
-		{
-			window.history.pushState({}, "", "/game/" + games[i].id);
-			window.dispatchEvent(new PopStateEvent("popstate"));
-			return;
-		}
-	}
-}
 
 export const CreateGamePage: ComponentFunction = () => {
 	const [loading, isAuthenticated, user] = useAuth();
@@ -93,15 +72,16 @@ export const CreateGamePage: ComponentFunction = () => {
 		type: 'primary'
 	});
 	useEffect(() => {
-		if (!isAuthenticated || !user)
+		if (!user)
 			return;
-	}, [isAuthenticated, user])
+		redirectToActiveGame();
+	}, [user])
 
 	useEffect(() => {
 
 	}, [user]);
 
-	const showToast = (content: string, type='primary') => {
+	const showToast = (content: string, type = 'primary') => {
 		setToast({
 			show: true,
 			content: content,
@@ -115,40 +95,14 @@ export const CreateGamePage: ComponentFunction = () => {
 	const handleClickRemote = async (type: GameType, e: Event) => {
 		console.log(e);
 		console.log(type);
-		try {
-			const response = await fetch("http://localhost/api/game/create", {
-				method: 'POST',
-				headers:
-				{
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					gameType: type,
-					gameMode: GameMode.CLASSIC,
-				}),
-				credentials: 'include'
-			});
-			if (!response.ok) {
-				const data = await response.json();
-				if (response.status === 401)
-				{
-					showToast("Failed to create game: " + data.error, "error");
-					redirectToActiveGame();
-				}else{
-					showToast("Failed to create game", "error");
-				}
-				return;
-			}
-			const data = await response.json();
-			showToast("Game created successfully: " + data.id);
-			setTimeout(() => {
-				window.history.pushState({}, "", "/game/" + data.id);
-				window.dispatchEvent(new PopStateEvent("popstate"));
-			}, 2000);
-		}
-		catch (err) {
-			showToast("Failed to create game: " + err, "error");
-		}
+		const game = await createNewGame(type);
+		if (!game)
+			return showToast("Failed to create game!", "error");
+		showToast("[!] Game created successfully: " + game.id);
+		setTimeout(() => {
+			window.history.pushState({}, "", "/game/" + game.id);
+			window.dispatchEvent(new PopStateEvent("popstate"));
+		}, 2000);
 	}
 
 	const [players, setPlayers] = useState([
@@ -191,7 +145,7 @@ export const CreateGamePage: ComponentFunction = () => {
 								<img src={GameRemoteImg} className="max-w-[100px]" />
 							</div>
 							<CardButton onClick={handleClickRemote.bind(null, GameType.SOLO)} />
-							<CardButton onClick={handleClickRemote.bind(null, GameType.TEAM)}/>
+							<CardButton onClick={handleClickRemote.bind(null, GameType.TEAM)} />
 						</CardContainer>
 					</div>
 					<div>

@@ -21,7 +21,7 @@ async function gameRoutes(fastify: FastifyInstance) {
 			const game = await createGame(db, {
 				type: gameType,
 				mode: gameMode,
-				player: user
+				player: user,
 			});
 			if (!game) return reply.code(401).send({ error: 'Player already has an active game' });
 			const gameId = game.id;
@@ -39,6 +39,10 @@ async function gameRoutes(fastify: FastifyInstance) {
 		'/invite',
 		{ schema: inviteGameSchema },
 		async (request, reply) => {
+			const sessionId = request.cookies?.session_id;
+			const token = request.cookies?.token;
+			if (!sessionId || !token)
+				return reply.code(401).send({ error: 'Unauthorized: session not found' });
 			const user = (request as any).user;
 			const { gameId, playerId } = request.body;
 			if (user.id === playerId) return reply.code(403).send({ error: 'cannot invite this player' });
@@ -48,17 +52,73 @@ async function gameRoutes(fastify: FastifyInstance) {
 			console.log('game players:', game.players);
 			if (!game.players.some((p) => p.userId === user.id))
 				return reply.code(403).send({ error: 'cannot invite to this game' }); // Keep same message ??
+			const cookies = 'session_id=' + sessionId + ';token=' + token;
 			let gameInvites = invites.get(gameId);
-			if (!gameInvites) invites.set(gameId, [playerId]);
-			else {
-				if (gameInvites.includes(playerId))
-					return reply.code(403).send({
-						error: 'player is already invited to this game',
-					}); // Keep same message ??
-				gameInvites.push(playerId);
+			if (!gameInvites) {
+				gameInvites = [];
+				invites.set(gameId, gameInvites);
 			}
+			if (gameInvites.includes(playerId))
+				return reply.code(403).send({
+					error: 'player is already invited to this game',
+				}); // Keep same message ??
+			const response = await fetch(
+				'http://transcendence-user-service:8001/api/notifications/create',
+				{
+					method: 'POST',
+					headers: {
+						Cookie: cookies,
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						gameId: gameId,
+						userId: playerId,
+						type: 'MATCH_NOTIFICATION',
+					}),
+				}
+			);
+			if (!response.ok) {
+				const text = await response.text();
+				console.log('fetch err:', response.status, text);
+				return reply.code(403).send({ error: 'Could not invite player to this game' });
+			}
+			gameInvites.push(playerId);
+			console.log('game invites:', invites.get(gameId));
 			console.log('invited players:', invites.get(gameId));
 			return reply.code(204).send();
+		}
+	);
+	fastify.post<{ Body: { gameId: string } }>(
+		'/invite/decline',
+		//{ schema: DeclineGameSchema },
+		async (request, reply) => {
+			const sessionId = request.cookies.session_id!;
+			const token = request.cookies.token!;
+			const user = (request as any).user;
+			const playerId = user.id;
+			const { gameId } = request.body;
+			let gameInvites = invites.get(gameId);
+			if (gameInvites)
+				invites.set(
+					gameId,
+					gameInvites.filter((id) => id !== playerId)
+				);
+			const cookies = 'session_id=' + sessionId + ';token=' + token;
+			const response = await fetch(
+				'http://transcendence-user-service:8001/api/notifications/' + gameId,
+				{
+					method: 'DELETE',
+					headers: {
+						Cookie: cookies,
+					},
+				}
+			);
+			if (!response.ok) {
+				const text = await response.text();
+				console.log('fetch err:', response.status, text);
+				return reply.code(403).send({ error: 'Something went wrong! try again later.' });
+			}
+			reply.code(204).send();
 		}
 	);
 
@@ -66,6 +126,8 @@ async function gameRoutes(fastify: FastifyInstance) {
 		'/join',
 		{ schema: joinGameSchema },
 		async (request, reply) => {
+			const sessionId = request.cookies.session_id!;
+			const token = request.cookies.token!;
 			const user = (request as any).user;
 			const { gameId } = request.body;
 			const db = fastify.prisma;
@@ -73,8 +135,14 @@ async function gameRoutes(fastify: FastifyInstance) {
 			const game = await joinGame(db, { gameId, player: user });
 			if (!game) return reply.code(404).send({ error: 'game is full or does not exist' });
 			const gameSession = games.get(gameId);
-			if (gameSession)
-				gameSession.game = game;
+			if (gameSession) gameSession.game = game;
+			const cookies = 'session_id=' + sessionId + ';token=' + token;
+			fetch('http://transcendence-user-service:8001/api/notifications/' + gameId, {
+				method: 'DELETE',
+				headers: {
+					Cookie: cookies,
+				},
+			});
 			//notify game players
 			reply.code(201).send(game);
 		}

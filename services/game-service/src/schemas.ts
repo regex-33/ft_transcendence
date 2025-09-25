@@ -1,10 +1,9 @@
-
 const playerSchema = {
 	type: 'object',
 	properties: {
 		userId: { type: 'integer' },
 	},
-}
+};
 
 const createGameSchema = {
 	tags: ['Game'],
@@ -27,12 +26,13 @@ const createGameSchema = {
 				status: { $ref: 'GameStatus#' },
 				type: { $ref: 'GameType#' },
 				duration: { type: 'integer' },
+				winningTeam: { type: 'string' },
 				tournamentId: { type: 'string' },
 				mode: { $ref: 'GameMode#' },
 				players: {
 					type: 'array',
 					items: {
-						playerSchema
+						playerSchema,
 					},
 				},
 			},
@@ -102,7 +102,7 @@ const gamePlayerSchema = {
 		playerId: { type: 'integer' },
 		score: { type: 'integer' },
 	},
-}
+};
 
 const getGameSchema = {
 	tags: ['Game'],
@@ -123,17 +123,18 @@ const getGameSchema = {
 				status: { $ref: 'GameStatus#' },
 				type: { $ref: 'GameType#' },
 				mode: { $ref: 'GameMode#' },
+				winningTeam: { type: 'string' },
 				duration: { type: 'integer' },
 				players: {
 					type: 'array',
 					items: {
-						playerSchema
+						playerSchema,
 					},
 				},
 				gamePlayers: {
 					type: 'array',
 					items: {
-						gamePlayerSchema
+						gamePlayerSchema,
 					},
 				},
 			},
@@ -159,12 +160,13 @@ const getPlayerGamesSchema = {
 					status: { $ref: 'GameStatus#' },
 					type: { $ref: 'GameType#' },
 					mode: { $ref: 'GameMode#' },
+					winningTeam: { type: 'string' },
 					tournamentId: { type: 'string' },
 					duration: { type: 'number' },
 					players: {
 						type: 'array',
 						items: {
-							playerSchema
+							playerSchema,
 						},
 					},
 				},
