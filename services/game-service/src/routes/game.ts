@@ -132,10 +132,6 @@ async function gameRoutes(fastify: FastifyInstance) {
 			const { gameId } = request.body;
 			const db = fastify.prisma;
 			// const player = await createPlayer(db, { id: 10 });
-			const game = await joinGame(db, { gameId, player: user });
-			if (!game) return reply.code(404).send({ error: 'game is full or does not exist' });
-			const gameSession = games.get(gameId);
-			if (gameSession) gameSession.game = game;
 			const cookies = 'session_id=' + sessionId + ';token=' + token;
 			fetch('http://transcendence-user-service:8001/api/notifications/' + gameId, {
 				method: 'DELETE',
@@ -143,6 +139,10 @@ async function gameRoutes(fastify: FastifyInstance) {
 					Cookie: cookies,
 				},
 			});
+			const game = await joinGame(db, { gameId, player: user });
+			if (!game) return reply.code(404).send({ error: 'game is full or does not exist' });
+			const gameSession = games.get(gameId);
+			if (gameSession) gameSession.game = game;
 			//notify game players
 			reply.code(201).send(game);
 		}

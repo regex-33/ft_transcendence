@@ -124,7 +124,10 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 			"game-canvas"
 		) as HTMLCanvasElement | null;
 		if (!(canvasEl instanceof HTMLCanvasElement))
-			throw new Error("canvas element not found");
+		{
+			console.error("canvas element not found");
+			return;
+		}
 		const resizeHandler = handleCanvasResize.bind(this, canvasEl);
 		const context: CanvasRenderingContext2D = initCanvas(props.game.id, resizeHandler, setScores);
 		const gameData = {
@@ -175,7 +178,6 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 				</div>
 				<div className="flex justify-center my-2 bg-[#91BFBF] shadow-xs shadow-gray-400 rounded-xl">
 					<canvas
-						ref={canvasRef}
 						height="400px"
 						width="800px"
 						id="game-canvas"
