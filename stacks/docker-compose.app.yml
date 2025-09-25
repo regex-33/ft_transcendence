@@ -126,13 +126,36 @@ services:
       - USER_SERVICE_URL=http://user-service:8001
     depends_on:
       - vault-agent-app
-      - redis
     command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && source /vault/secrets/oauth.env && set +a && npm start"]
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+
+  game-service:
+    image: ft_transcendence/game-service
+    deploy:
+      replicas: 1  # Removed variable interpolation
+      placement:
+        constraints: 
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    volumes:
+      - vault-app-secrets:/vault/secrets:ro
+    networks:
+      - app-network
+    depends_on:
+      - vault-agent-app
+      - redis
+    command: ["/bin/bash", "-c", "set -a && source /vault/secrets/database.env && set +a && npm run dev"]
 
   # Chat Service - Updated with Vault
   chat-service:
@@ -169,11 +192,7 @@ services:
       - vault-agent-app
       - user-service
     command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && set +a && npm start"]
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+
 
   xo-game:
     image: ft_transcendence/xo-game
@@ -214,11 +233,7 @@ services:
       - user-service
       - redis
     command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && set +a && npm run dev"]
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+
 
 
   # Redis Cache - Updated with Vault
@@ -251,11 +266,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+
 
   # Monitoring services for manager node
   cadvisor-manager:
@@ -405,11 +416,7 @@ services:
       - NGINX_STATUS=http://nginx:80/nginx_status
     depends_on:
       - nginx
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+
 
   # Redis Exporter - Updated with Vault
   redis-exporter:
@@ -437,11 +444,7 @@ services:
       - vault-agent-app
       - redis
     command: ["/bin/bash", "-c", "set -a && source /vault/secrets/app.env && set +a && redis_exporter -redis.addr=redis:6379 -redis.password=$$REDIS_PASSWORD"]
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+
 
 # Network Definitions
 networks:

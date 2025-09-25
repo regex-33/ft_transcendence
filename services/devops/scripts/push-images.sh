@@ -22,6 +22,7 @@ echo -e "${BLUE} Pushing Docker images to private registry${NC}"
 IMAGES=(
     # "ft_transcendence/frontend"
     "ft_transcendence/user-service"
+    "ft_transcendence/game-service"
     "ft_transcendence/chat-service"
     "ft_transcendence/xo-game"
     "ft_transcendence/nginx"

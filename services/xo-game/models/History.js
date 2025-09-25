@@ -18,7 +18,7 @@ const history = (s, d) => {
             defaultValue: '[["-","-","-"],["-","-","-"],["-","-","-"]]',
             allowNull: true
         },
-        turn: d.BOOLEAN,
+        turn: d.INTEGER,
         finished: { type: d.BOOLEAN, defaultValue: false }
     });
 }

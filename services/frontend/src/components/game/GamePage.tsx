@@ -73,7 +73,7 @@ export type Player = {
 
 const getGame = async (gameId: string) => {
 	try {
-		const response = await fetch("http://localhost/api/game/" + gameId, {
+		const response = await fetch(`${import.meta.env.VITE_GAME_SERVICE_HOST}:${import.meta.env.VITE_GAME_SERVICE_PORT}/api/game/${gameId}`, {
 			method: "GET",
 			credentials: "include",
 		});

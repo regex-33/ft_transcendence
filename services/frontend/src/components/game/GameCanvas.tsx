@@ -115,7 +115,7 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 	// console.log("Toast", Toast);
 
 	useEffect(() => {
-		console.log("useffect called ref", canvasRef);
+		console.log("useEffect is called ref", canvasRef);
 		if (!props.game?.id) return;
 		console.log("gameId:", props.game.id);
 		const players = props.game.players;
@@ -145,8 +145,7 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 			showToast("Connection closed", "error");
 		})
 		return () => {
-			console.log("Clean up called: canvas unmounted");
-			connection.close();
+			console.log("Cleanup called");
 			window.removeEventListener("resize", resizeHandler);
 		};
 	}, [props.game]);

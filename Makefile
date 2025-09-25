@@ -194,17 +194,18 @@ setup:		    ## Generate Elasticsearch SSL Certs and Keystore.
 build-images: generate-certs
 	@echo "$(BLUE) Building Docker images...$(NC)"
 # 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/frontend ./services/frontend/
-	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/user-service ./services/user-service/
-	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/xo-game ./services/xo-game/
-	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/chat-service ./services/chat-service/
-	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/nginx ./services/devops/nginx/
-	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/redis ./services/devops/databases/redis/
+	@docker build  -t ft_transcendence/user-service ./services/user-service/
+	@docker build  --build-arg DATABASE_URL=$(DATABASE_URL) -t ft_transcendence/game-service ./services/game-service/
+	@docker build  -t ft_transcendence/xo-game ./services/xo-game/
+	@docker build  -t ft_transcendence/chat-service ./services/chat-service/
+	@docker build  -t ft_transcendence/nginx ./services/devops/nginx/
+	@docker build  -t ft_transcendence/redis ./services/devops/databases/redis/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/elasticsearch ./services/devops/logging/elasticsearch/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/logstash ./services/devops/logging/logstash/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/kibana ./services/devops/logging/kibana/
 	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/filebeat ./services/devops/logging/filebeat/
-	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/prometheus ./services/devops/monitoring/prometheus/
-	@docker build --build-arg ELK_VERSION=$(ELK_VERSION) -t ft_transcendence/grafana ./services/devops/monitoring/grafana/
+	@docker build  -t ft_transcendence/prometheus ./services/devops/monitoring/prometheus/
+	@docker build  -t ft_transcendence/grafana ./services/devops/monitoring/grafana/
 	@docker build -t ft_transcendence/traefik ./services/devops/traefik/
 	@docker build -t ft_transcendence/vault ./services/devops/vault/
 	@docker build -t ft_transcendence/redis-exporter ./services/devops/exporters/redis-exporter/

@@ -7,21 +7,6 @@ import { PasswordReset } from "./security/PasswordReset";
 
 export const SecuritySettings: ComponentFunction = (props) => {
   const [activeTab, setActiveTab] = useState<'2fa' | 'password' | 'sessions'>('2fa');
-  const [globalError, setGlobalError] = useState('');
-  const [globalSuccess, setGlobalSuccess] = useState('');
-
-  const handleSuccess = (message: string) => {
-    setGlobalSuccess(message);
-    setGlobalError('');
-    // clear success message after 5 seconds
-    setTimeout(() => setGlobalSuccess(''), 5000);
-  };
-
-  const handleError = (message: string) => {
-    setGlobalError(message);
-    setGlobalSuccess('');
-    setTimeout(() => setGlobalError(''), 5000);
-  };
 
   return (
     <div
@@ -71,41 +56,19 @@ export const SecuritySettings: ComponentFunction = (props) => {
           </button>
         </div>
         
-        {/* Global Messages */}
-        {globalError && (
-          <div className="mb-4 p-3 bg-red-500/20 border border-red-400 text-red-100 rounded">
-            {globalError}
-          </div>
-        )}
-
-        {globalSuccess && (
-          <div className="mb-4 p-3 bg-green-500/20 border border-green-400 text-green-100 rounded">
-            {globalSuccess}
-          </div>
-        )}
-        
         {/* Content Area */}
-        <div className="max-h-[450px] overflow-y-auto pr-1">
-          {activeTab === '2fa' && (
-            <TwoFactorAuth 
-              onSuccess={handleSuccess}
-              onError={handleError}
-            />
-          )}
+        <div className="max-h-[450px] overflow-y-auto pr-1 relative">
+          <div className={`transition-opacity duration-300 ${activeTab === '2fa' ? 'opacity-100' : 'opacity-0 absolute invisible w-full'}`}>
+            <TwoFactorAuth />
+          </div>
           
-          {activeTab === 'password' && (
-            <PasswordReset 
-              onSuccess={handleSuccess}
-              onError={handleError}
-            />
-          )}
+          <div className={`transition-opacity duration-300 ${activeTab === 'password' ? 'opacity-100' : 'opacity-0 absolute invisible w-full'}`}>
+            <PasswordReset />
+          </div>
           
-          {activeTab === 'sessions' && (
-            <SessionManagement 
-              onSuccess={handleSuccess}
-              onError={handleError}
-            />
-          )}
+          <div className={`transition-opacity duration-300 ${activeTab === 'sessions' ? 'opacity-100' : 'opacity-0 absolute invisible w-full'}`}>
+            <SessionManagement />
+          </div>
         </div>
       </div>
     </div>

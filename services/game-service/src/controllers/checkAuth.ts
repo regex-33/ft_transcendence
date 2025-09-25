@@ -7,7 +7,7 @@ export const checkAuth = async function(request: FastifyRequest, reply: FastifyR
 		return reply.code(401).send({ error: "Unauthorized: session not found" });
 	const cookies = "session_id=" + sessionId + ";token=" + token;
 	try {
-		const response = await fetch("http://transcendence-nginx/api/users/get/me",
+		const response = await fetch("http://nginx/api/users/get/me",
 			{
 				headers: {
 					Cookie: cookies

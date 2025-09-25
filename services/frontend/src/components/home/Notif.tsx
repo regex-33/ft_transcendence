@@ -83,7 +83,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 		try {
 			let response;
 			if (action === 'refuse') {
-				response = await fetch('http://localhost/api/game/invite/decline', {
+				response = await fetch(`${import.meta.env.VITE_GAME_SERVICE_HOST}:${import.meta.env.VITE_GAME_SERVICE_PORT}/api/game/invite/decline`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					credentials: 'include',
@@ -92,7 +92,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 				if (!response.ok) throw new Error(`Failed to ${action} match`);
 			}
 			else {
-				response = await fetch('http://localhost/api/game/join', {
+				response = await fetch(`${import.meta.env.VITE_GAME_SERVICE_HOST}:${import.meta.env.VITE_GAME_SERVICE_PORT}/api/game/join`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					credentials: 'include',
@@ -146,7 +146,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 			return (
 				<div className="flex gap-1 justify-end">
 					<button
-						onClick={() => handleMatchAction(notification.gameId, 'accept')}
+						onClick={() => notification.gameId && handleMatchAction(notification.gameId, 'accept')}
 						className="
             flex items-center gap-1 px-2 h-[20px] min-w-[70px]
             bg-[url('/images/setting-assests/bg-accept.svg')]
@@ -158,7 +158,7 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 						<span>Play match</span>
 					</button>
 					<button
-						onClick={() => handleMatchAction(notification.gameId, 'refuse')}
+						onClick={() => notification.gameId && handleMatchAction(notification.gameId, 'refuse')}
 						className="
             flex items-center gap-1 px-2 h-[20px] min-w-[50px]
             bg-[url('/images/setting-assests/bg-decline.svg')]

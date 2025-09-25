@@ -41,17 +41,18 @@ const rev = (c) => {
 
 const sendMap = (History) => {
     const map = JSON.parse(History.map_);
+    console.log(History.turn, History.player, History.opponent);
     players.get(History.player)?.send(JSON.stringify({ type: 'update', map, turn: History.player === History.turn }));
     players.get(History.opponent)?.send(JSON.stringify({
         type: 'update',
         map: map.map(row => row.map(c => rev(c))),
-        turn: History.turn == History.opponent
+        turn: History.turn === History.opponent
     }));
 }
 
 const sendMSG = (History, winner) => {
-    players.get(History.player)?.send(JSON.stringify({ type: 'end', winner: winner.winner == 'X' ? "you win" : "you lose" }));
-    players.get(History.opponent)?.send(JSON.stringify({ type: 'end', winner: winner.winner == 'O' ? "you win" : "you lose" }));
+    players.get(History.player)?.send(JSON.stringify({ type: 'end', winner: winner.winner === 'X' ? "you win" : "you lose" }));
+    players.get(History.opponent)?.send(JSON.stringify({ type: 'end', winner: winner.winner === 'O' ? "you win" : "you lose" }));
 }
 
 const handler = async (ws, req) => {
