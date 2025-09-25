@@ -18,6 +18,7 @@ export function useEffect(effect: () => void | (() => void), dependencies?: any[
 
   if (hasChanged) {
     if (currentEffect.cleanup) {
+    console.log("hasChanged:", hasChanged);
       currentEffect.cleanup();
     }
 

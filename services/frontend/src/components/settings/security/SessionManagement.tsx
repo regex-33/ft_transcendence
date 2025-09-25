@@ -11,14 +11,7 @@ type Session = {
   lastActive?: string;
 };
 
-interface SessionManagementProps {
-  onSuccess?: (message: string) => void;
-  onError?: (message: string) => void;
-}
-
-export const SessionManagement: ComponentFunction<SessionManagementProps> = (props) => {
-  const { onSuccess, onError } = props || {};
-  
+export const SessionManagement: ComponentFunction = (props) => {
   const [activeSessions, setActiveSessions] = useState<Session[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [error, setError] = useState('');
@@ -28,8 +21,20 @@ export const SessionManagement: ComponentFunction<SessionManagementProps> = (pro
     fetchActiveSessions();
   }, []);
 
+  useEffect(() => {
+    let timer: number;
+    if (error || success) {
+      timer = setTimeout(() => {
+        setError('');
+        setSuccess('');
+      }, 5000);
+    }
+    return () => clearTimeout(timer);
+  }, [error, success]);
+
   const fetchActiveSessions = async () => {
     setLoadingSessions(true);
+    setError('');
     
     try {
       const response = await fetch(
@@ -47,12 +52,10 @@ export const SessionManagement: ComponentFunction<SessionManagementProps> = (pro
       } else {
         console.error('Failed to fetch active sessions');
         setError('Failed to fetch active sessions');
-        if (onError) onError('Failed to fetch active sessions');
       }
     } catch (err) {
       console.error('Error fetching active sessions:', err);
       setError('Network error while fetching sessions');
-      if (onError) onError('Network error while fetching sessions');
     } finally {
       setLoadingSessions(false);
     }
@@ -70,15 +73,12 @@ export const SessionManagement: ComponentFunction<SessionManagementProps> = (pro
 
       if (response.ok) {
         setSuccess('Session terminated successfully');
-        if (onSuccess) onSuccess('Session terminated successfully');
         fetchActiveSessions(); // Refresh the list
       } else {
         setError('Failed to terminate session');
-        if (onError) onError('Failed to terminate session');
       }
     } catch (err) {
       setError('Network error occurred. Please try again.');
-      if (onError) onError('Network error occurred. Please try again.');
       console.error('Session termination error:', err);
     }
   };
@@ -99,15 +99,12 @@ export const SessionManagement: ComponentFunction<SessionManagementProps> = (pro
 
       if (response.ok) {
         setSuccess('All other sessions terminated successfully');
-        if (onSuccess) onSuccess('All other sessions terminated successfully');
         fetchActiveSessions(); // Refresh the list
       } else {
         setError('Failed to terminate sessions');
-        if (onError) onError('Failed to terminate sessions');
       }
     } catch (err) {
       setError('Network error occurred. Please try again.');
-      if (onError) onError('Network error occurred. Please try again.');
       console.error('Sessions termination error:', err);
     }
   };
@@ -145,6 +142,17 @@ export const SessionManagement: ComponentFunction<SessionManagementProps> = (pro
           Refresh
         </button>
       </div>
+      
+      {error && (
+        <div className="mb-4 p-3 bg-red-500/20 border border-red-400 text-red-100 rounded">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className="mb-4 p-3 bg-green-500/20 border border-green-400 text-green-100 rounded">
+          {success}
+        </div>
+      )}
 
       {loadingSessions ? (
         <div className="flex justify-center py-8">

@@ -33,11 +33,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+
 
   # Registry UI (Optional - for web interface)
   registry-ui:
@@ -85,11 +81,6 @@ services:
       SINGLE_REGISTRY: "true"
     depends_on:
       - registry
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "5m"
-        max-file: "2"
 # Network Definitions
 networks:
   registry-network:

@@ -63,7 +63,7 @@ async function gameRoutes(fastify: FastifyInstance) {
 					error: 'player is already invited to this game',
 				}); // Keep same message ??
 			const response = await fetch(
-				'http://transcendence-user-service:8001/api/notifications/create',
+				'http://user-service:8001/api/notifications/create',
 				{
 					method: 'POST',
 					headers: {
@@ -105,7 +105,7 @@ async function gameRoutes(fastify: FastifyInstance) {
 				);
 			const cookies = 'session_id=' + sessionId + ';token=' + token;
 			const response = await fetch(
-				'http://transcendence-user-service:8001/api/notifications/' + gameId,
+				'http://user-service:8001/api/notifications/' + gameId,
 				{
 					method: 'DELETE',
 					headers: {
@@ -137,7 +137,7 @@ async function gameRoutes(fastify: FastifyInstance) {
 			const gameSession = games.get(gameId);
 			if (gameSession) gameSession.game = game;
 			const cookies = 'session_id=' + sessionId + ';token=' + token;
-			fetch('http://transcendence-user-service:8001/api/notifications/' + gameId, {
+			fetch('http://user-service:8001/api/notifications/' + gameId, {
 				method: 'DELETE',
 				headers: {
 					Cookie: cookies,

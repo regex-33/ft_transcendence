@@ -1,36 +1,35 @@
 import { useCallback } from "../../../hooks/useCallback";
 import { useEffect } from "../../../hooks/useEffect";
 import { useState } from "../../../hooks/useState";
-import { useRef } from "../../../hooks/useRef";
 import { ComponentFunction } from "../../../types/global";
 import { h } from "../../../vdom/createElement";
 
-interface TwoFactorAuthProps {
-  onSuccess?: (message: string) => void;
-  onError?: (message: string) => void;
-}
-
-export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
-  const { onSuccess, onError } = props || {};
-  
+export const TwoFactorAuth: ComponentFunction = (props) => {
   const [twoFAEnabled, setTwoFAEnabled] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
   const [showSetup, setShowSetup] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
 
-  // Disable 2FA modal states
+  // Disable 2FA modal state
   const [showDisable2FAModal, setShowDisable2FAModal] = useState(false);
-  const [disable2faPassword, setDisable2faPassword] = useState('');
-  const [disable2faError, setDisable2faError] = useState('');
-  const [disable2faLoading, setDisable2faLoading] = useState(false);
 
   useEffect(() => {
     checkTwoFAStatus();
   }, []);
+  
+  useEffect(() => {
+    let timer: number;
+    if (error || success) {
+      timer = setTimeout(() => {
+        setError('');
+        setSuccess('');
+      }, 5000);
+    }
+    return () => clearTimeout(timer);
+  }, [error, success]);
 
   const checkTwoFAStatus = async () => {
     try {
@@ -47,36 +46,25 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
       
       if (twoFAResponse.ok) {
         const twoFAData = await twoFAResponse.json();
-        // console.log('2FA Status Response:', twoFAData);
         
-        const isEnabled = twoFAData.enabled || twoFAData.twoFactorEnabled || false;
+        /**
+         * FINAL FIX:
+         * The API response for 2FA status is `{"isActive": true}`.
+         * This line is updated to check for `twoFAData.isActive` first.
+         * The previous checks for `enabled` and `twoFactorEnabled` are kept as fallbacks
+         * to make the component more robust against potential API changes.
+         */
+        const isEnabled = twoFAData.isActive || twoFAData.enabled || twoFAData.twoFactorEnabled || false;
         setTwoFAEnabled(isEnabled);
-        // console.log('2FA Enabled Status:', isEnabled);
+
       } else {
-        const userResponse = await fetch(
-          `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`,
-          {
-            method: 'GET',
-            credentials: 'include'
-          }
-        );
-        
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
-          // console.log('User Profile Response:', userData);
-          
-          const isEnabled = userData.twoFactorEnabled || userData.two_factor_enabled || false;
-          setTwoFAEnabled(isEnabled);
-          // console.log('2FA Enabled from Profile:', isEnabled);
-        } else {
-          throw new Error('Failed to check 2FA status');
-        }
+        setTwoFAEnabled(false);
+        console.error('Failed to get a valid 2FA status response:', twoFAResponse.statusText);
       }
     } catch (err) {
       console.error('Error checking 2FA status:', err);
       setTwoFAEnabled(false);
       setError('Unable to check 2FA status. Please refresh.');
-      if (onError) onError('Unable to check 2FA status. Please refresh.');
     } finally {
       setIsCheckingStatus(false);
     }
@@ -85,11 +73,9 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
   const generateQRCode = async () => {
     if (twoFAEnabled) {
       setError('Two-Factor Authentication is already enabled for your account.');
-      if (onError) onError('Two-Factor Authentication is already enabled for your account.');
       return;
     }
 
-    setLoading(true);
     setError('');
     setSuccess('');
 
@@ -106,19 +92,14 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
       const data = await response.json();
       if (!response.ok) {
         setError(data.message || 'Failed to generate QR code');
-        if (onError) onError(data.message || 'Failed to generate QR code');
       } else {
         setQrCodeUrl(data.qrCodeUrl);
         setShowSetup(true);
         setError('');
-        // console.log('QR Code generated successfully');
       }
     } catch (err) {
       setError('Network error while generating QR code.');
-      if (onError) onError('Network error while generating QR code.');
       console.error('QR generation error:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -173,11 +154,9 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
     const code = verificationCode.join('');
     if (code.length !== 6) {
       setError('Please enter a complete 6-digit verification code');
-      if (onError) onError('Please enter a complete 6-digit verification code');
       return;
     }
 
-    setLoading(true);
     setError('');
     setSuccess('');
 
@@ -197,21 +176,15 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
       }
     } catch (err) {
       setError('Could not verify user data. Please try again.');
-      if (onError) onError('Could not verify user data. Please try again.');
-      setLoading(false);
       return;
     }
 
     if (!profileData || !profileData.username) {
       setError('User data is incomplete. Please try again.');
-      if (onError) onError('User data is incomplete. Please try again.');
-      setLoading(false);
       return;
     }
 
     try {
-      // console.log('Verifying 2FA with username:', profileData.username);
-
       const response = await fetch(
         `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/2fa/active2fa`,
         {
@@ -227,25 +200,17 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
 
       if (!response.ok) {
         setError('Invalid verification code. Please try again.');
-        if (onError) onError('Invalid verification code. Please try again.');
         return;
       }
 
       setSuccess('Two-Factor Authentication has been successfully enabled!');
-      if (onSuccess) onSuccess('Two-Factor Authentication has been successfully enabled!');
       setTwoFAEnabled(true);
       setShowSetup(false);
       setVerificationCode(['', '', '', '', '', '']);
       setQrCodeUrl('');
-      
-      // console.log('2FA enabled successfully');
-
     } catch (err) {
       setError('Network error occurred. Please try again.');
-      if (onError) onError('Network error occurred. Please try again.');
       console.error('2FA verification error:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -255,53 +220,27 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
 
   const handleDisable2FASubmit = async (e: Event) => {
     e.preventDefault();
-    setDisable2faError('');
-    setDisable2faLoading(true);
-    
+    setError('');
+    setSuccess('');
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/auth/validate-password`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ password: disable2faPassword })
-        }
-      );
-      const data = await response.json();
-      if (!response.ok || !data.valid) {
-        setDisable2faError('Invalid password. Please try again.');
-        setDisable2faLoading(false);
-        return;
-      }
-      
-      setLoading(true);
-      setError('');
-      setSuccess('');
       const disableResponse = await fetch(
         `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/2fa/disable`,
         {
-          method: 'GET',
+          method: 'POST',
           credentials: 'include'
         }
       );
       if (!disableResponse.ok) {
         const disableData = await disableResponse.json();
         setError(disableData.message || 'Failed to disable 2FA');
-        if (onError) onError(disableData.message || 'Failed to disable 2FA');
       } else {
         setSuccess('Two-Factor Authentication has been disabled.');
-        if (onSuccess) onSuccess('Two-Factor Authentication has been disabled.');
         setTwoFAEnabled(false);
       }
       setShowDisable2FAModal(false);
-      setDisable2faPassword('');
     } catch (err) {
-      setDisable2faError('Network error occurred. Please try again.');
+      setError('Network error occurred. Please try again.');
       console.error('2FA disable error:', err);
-    } finally {
-      setDisable2faLoading(false);
-      setLoading(false);
     }
   };
 
@@ -322,7 +261,7 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 overflow-y-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-xl font-semibold text-white">Two-Factor Authentication</h3>
@@ -337,7 +276,11 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
         </div>
       </div>
 
-
+      {error && (
+        <div className="mb-4 p-3 bg-red-500/20 border border-red-400 text-red-100 rounded">
+          {error}
+        </div>
+      )}
       {success && (
         <div className="mb-4 p-3 bg-green-500/20 border border-green-400 text-green-100 rounded">
           {success}
@@ -361,14 +304,14 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
                 onClick={generateQRCode}
                 className="flex items-center justify-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {loading ? 'Setting up...' : 'Enable 2FA'}
+                Enable 2FA
               </button>
             ) : (
               <button
                 onClick={disable2FA}
                 className="flex items-center justify-center px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {loading ? 'Disabling...' : 'Disable 2FA'}
+                Disable 2FA
               </button>
             )}
             
@@ -437,7 +380,7 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
                 onClick={verifyAndEnable2FA}
                 className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {loading ? 'Verifying...' : 'Verify & Enable'}
+                Verify & Enable
               </button>
               <button
                 onClick={resetSetup}
@@ -456,33 +399,12 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
           <div className="bg-[#64B0C5] rounded-lg shadow-lg p-6 w-full max-w-sm border border-white/30">
             <h3 className="text-lg font-semibold mb-4 text-white">Confirm Disable 2FA</h3>
             <form onSubmit={handleDisable2FASubmit} className="space-y-4">
-              <div>
-                <label htmlFor="disable2faPassword" className="block text-sm font-medium text-white mb-1">
-                  Enter your password to confirm
-                </label>
-                <input
-                  type="password"
-                  id="disable2faPassword"
-                  value={disable2faPassword}
-                  onInput={(e: any) => setDisable2faPassword(e.target.value)}
-                  className="w-full px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-gray-300 focus:ring-2 focus:ring-white/50 focus:border-white"
-                  placeholder="Enter your password"
-                  required
-                />
-              </div>
-              {disable2faError && (
-                <div className="p-2 bg-red-500/20 border border-red-400 text-red-100 rounded text-sm">
-                  {disable2faError}
-                </div>
-              )}
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
                   className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
                   onClick={() => {
                     setShowDisable2FAModal(false);
-                    setDisable2faPassword('');
-                    setDisable2faError('');
                   }}
                 >
                   Cancel
@@ -491,7 +413,7 @@ export const TwoFactorAuth: ComponentFunction<TwoFactorAuthProps> = (props) => {
                   type="submit"
                   className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
                 >
-                  {disable2faLoading ? 'Validating...' : 'Disable 2FA'}
+                  Disable 2FA
                 </button>
               </div>
             </form>

@@ -1,7 +1,7 @@
 import { GameMode, GameType } from "./game";
 
 export const redirectToActiveGame = async () => {
-  const response = await fetch("http://localhost/api/player/games", {
+  const response = await fetch(`${import.meta.env.VITE_GAME_SERVICE_HOST}:${import.meta.env.VITE_GAME_SERVICE_PORT}/api/player/games`, {
     method: "GET",
     credentials: "include",
   });
@@ -23,7 +23,7 @@ export const createNewGame = async (
   redirectOnError = true,
 ) => {
   try {
-    const response = await fetch("http://localhost/api/game/create", {
+    const response = await fetch(`${import.meta.env.VITE_GAME_SERVICE_HOST}:${import.meta.env.VITE_GAME_SERVICE_PORT}/api/game/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -1,15 +1,9 @@
 import { useState } from "../../../hooks/useState";
+import { useEffect } from "../../../hooks/useEffect";
 import { ComponentFunction } from "../../../types/global";
 import { h } from "../../../vdom/createElement";
 
-interface PasswordResetProps {
-  onSuccess?: (message: string) => void;
-  onError?: (message: string) => void;
-}
-
-export const PasswordReset: ComponentFunction<PasswordResetProps> = (props) => {
-  const { onSuccess, onError } = props || {};
-  
+export const PasswordReset: ComponentFunction = (props) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,22 +11,27 @@ export const PasswordReset: ComponentFunction<PasswordResetProps> = (props) => {
   const [success, setSuccess] = useState('');
   const [resettingPassword, setResettingPassword] = useState(false);
 
+  useEffect(() => {
+    let timer: number;
+    if (error || success) {
+      timer = setTimeout(() => {
+        setError('');
+        setSuccess('');
+      }, 5000);
+    }
+    return () => clearTimeout(timer);
+  }, [error, success]);
+
   const handlePasswordReset = async (e: Event) => {
     e.preventDefault();
     
-    console.log('New Password:', newPassword);
-    console.log('Confirm Password:', confirmPassword);
-    console.log('Current Password:', currentPassword);
-
     if (newPassword !== confirmPassword) {
       setError('New passwords do not match');
-      if (onError) onError('New passwords do not match');
       return;
     }
     
     if (newPassword.length < 8) {
       setError('Password must be at least 8 characters long');
-      if (onError) onError('Password must be at least 8 characters long');
       return;
     }
     
@@ -54,22 +53,17 @@ export const PasswordReset: ComponentFunction<PasswordResetProps> = (props) => {
         }
       );
 
-      console.log('Password change response status:', response.status);
-
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.message || 'Failed to change password');
-        if (onError) onError(errorData.message || 'Failed to change password');
       } else {
         setSuccess('Password has been successfully changed');
-        if (onSuccess) onSuccess('Password has been successfully changed');
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
       }
     } catch (err) {
       setError('Network error occurred. Please try again.');
-      if (onError) onError('Network error occurred. Please try again.');
       console.error('Password change error:', err);
     } finally {
       setResettingPassword(false);
@@ -82,6 +76,12 @@ export const PasswordReset: ComponentFunction<PasswordResetProps> = (props) => {
         <h3 className="text-xl font-semibold text-white mb-2">Change Password</h3>
         <p className="text-gray-200 text-sm">Update your password to keep your account secure</p>
       </div>
+      
+      {error && (
+        <div className="mb-4 p-3 bg-red-500/20 border border-red-400 text-red-100 rounded">
+          {error}
+        </div>
+      )}
       
       {success && (
         <div className="mb-4 p-3 bg-green-500/20 border border-green-400 text-green-100 rounded">
@@ -145,4 +145,3 @@ export const PasswordReset: ComponentFunction<PasswordResetProps> = (props) => {
     </div>
   );
 };
-

@@ -58,7 +58,7 @@ export const Online: ComponentFunction<OnlineProps> = ({ friends, position = 'ri
 			console.log("New game created:", game.id);
 			id = game.id;
 		}
-		const response = await fetch(`http://localhost/api/game/invite`, {
+		const response = await fetch(`${import.meta.env.VITE_GAME_SERVICE_HOST}:${import.meta.env.VITE_GAME_SERVICE_PORT}/api/game/invite`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
