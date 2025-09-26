@@ -136,10 +136,12 @@ function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	const now = Date.now();
 	let duration;
 	if (now < gameSession.startAt) duration = 0;
-	else duration = gameSession.startAt - now;
+	else duration = now - gameSession.startAt;
 
-	const TeamAScore = gameSession.state.players.find((p) => p.team === GameTeam.TEAM_A)?.score || 0;
-	const TeamBScore = gameSession.state.players.find((p) => p.team === GameTeam.TEAM_B)?.score || 0;
+	const TeamAScore = gameSession.state.players.find((p) => p.team == GameTeam.TEAM_A)?.score || 0;
+	const TeamBScore = gameSession.state.players.find((p) => p.team == GameTeam.TEAM_B)?.score || 0;
+	console.log('scoreA:', TeamAScore);
+	console.log('scoreB:', TeamBScore);
 	const winningTeam =
 		TeamAScore === TeamBScore ? null : TeamAScore > TeamBScore ? GameTeam.TEAM_A : GameTeam.TEAM_B;
 	prismaClient.$transaction([
@@ -149,15 +151,6 @@ function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
 				status: GameStatus.ENDED,
 				duration: duration,
 				winningTeam: winningTeam,
-				gamePlayers: {
-					createMany: {
-						data: gameSession.state.players.map((p) => ({
-							playerId: p.id,
-							score: p.score,
-							team: p.team,
-						})),
-					},
-				},
 			},
 		}),
 		prismaClient.player.updateMany({
@@ -165,6 +158,18 @@ function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
 			data: {
 				points: { increment: 100 },
 				activeGameId: null,
+			},
+		}),
+		prismaClient.gamePlayer.updateMany({
+			where: { gameId: game.id, team: GameTeam.TEAM_A },
+			data: {
+				score: TeamAScore,
+			},
+		}),
+		prismaClient.gamePlayer.updateMany({
+			where: { gameId: game.id, team: GameTeam.TEAM_B },
+			data: {
+				score: TeamBScore,
 			},
 		}),
 	]);
@@ -181,6 +186,15 @@ function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
 			where: { id: gameSession.game.id },
 			data: {
 				status: 'LIVE',
+				gamePlayers: {
+					createMany: {
+						data: gameSession.state.players.map((p) => ({
+							playerId: p.id,
+							score: p.score,
+							team: p.team,
+						})),
+					},
+				},
 			},
 		})
 		.catch((err) => {
@@ -191,7 +205,14 @@ function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	gameSession.intervalId = setInterval(runner, gameConfig.tick);
 	gameSession.onEnd = () => {
 		console.log('ENDING GAME');
-		gameSession.state.playersSockets.forEach((s) => s.close());
+		gameSession.state.playersSockets.forEach((s) => {
+			s.send(JSON.stringify({
+				type: 'GAME_END',
+				players: gameSession.state.players
+			}));
+			s.close();
+		});
+		//gameSession.state.playersSockets.forEach((s) => s.close());
 		gameSession.state.spectators.forEach((s) => s.close());
 		endGame(gameSession, prismaClient);
 	};
@@ -314,7 +335,7 @@ async function playRoutes(fastify: FastifyInstance) {
 				setTimeout(() => {
 					if (session.game.status !== GameStatus.ENDED && session.state.players.length === 0) {
 						if (session.intervalId) clearInterval(session.intervalId);
-						session.runner = undefined;
+						session.runner = null;
 						console.log('[TIMEOUT] Clearing game', session.game.id);
 						endGame(session, fastify.prisma);
 						session.state.players = session.state.players.filter((p) => p.id !== playerId);
@@ -340,18 +361,22 @@ async function playRoutes(fastify: FastifyInstance) {
 					}
 					console.log('[RECV] data:', data);
 					if (data.type == 'INIT') {
-						const paddleDir: Direction = session.state.players.filter(p => (p.paddle.dir === 'LEFT')).length % 2 ?  'RIGHT' : 'LEFT';
+						const paddleDir: Direction =
+							session.state.players.filter((p) => p.paddle.dir === 'LEFT').length % 2
+								? 'RIGHT'
+								: 'LEFT';
+						const playerTeam = paddleDir === 'LEFT' ? GameTeam.TEAM_A : GameTeam.TEAM_B;
 						const playerState: PlayerState = {
 							id: playerId,
 							score: 0,
 							paddle: createPaddle(paddleDir),
-							team: getPlayerTeam(session),
+							team: playerTeam,
 						};
 						if (session.state.players.find((p) => p.id === playerId) !== undefined)
 							console.log('already initialized');
 						else session.state.players.push(playerState);
 						// console.log(session.state);
-						const connectedPlayers = session.state.players.map(p => p.id);
+						const connectedPlayers = session.state.players.map((p) => p.id);
 						console.log('connectedPlayers:', connectedPlayers);
 						console.log('games:', games.size);
 						console.log('connections:', connections.size);

@@ -16,6 +16,8 @@ enum GameType {
 enum GameMode {
   CLASSIC
   SPEED
+  VANISH
+  GOLD
 }
 
 enum GameStatus {
@@ -95,6 +97,7 @@ model Tournament {
 
   games    Game[]
   status   TournamentStatus @default(ONGOING)
+  maxPlayers Int 	@default(4)
   winner   Player?      @relation(fields: [winnerId], references: [userId])
   winnerId Int?
 

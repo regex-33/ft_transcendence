@@ -63,7 +63,7 @@ export class Paddle {
         x + width,
         y + height,
         x + width - radius,
-        y + height
+        y + height,
       );
       ctx.lineTo(x, y + height);
     } else {
@@ -94,6 +94,8 @@ export enum GameType {
 export enum GameMode {
   CLASSIC = "CLASSIC",
   SPEED = "SPEED",
+  VANISH = "VANISH",
+  GOLD = "GOLD",
 }
 
 const ballWidth = 10;
@@ -138,7 +140,7 @@ export class Game {
     ctx: CanvasRenderingContext2D,
     { id, type, mode }: { id: string; type: GameType; mode: GameMode },
     setScores: Function,
-    setPlayers: Function
+    setPlayers: Function,
   ) {
     this._activeKeys = new Set();
     this._setScores = setScores;
@@ -150,11 +152,11 @@ export class Game {
     const p2 = new Paddle(
       GameConfig.canvasWidth - GameConfig.paddleWidth - 10,
       GameConfig.canvasHeight / 2,
-      rightPaddleOptions
+      rightPaddleOptions,
     );
     this.paddles = [p1, p2];
     this._connection = new Connection(
-      `${import.meta.env.VITE_WS_GAME_SERVICE_HOST}/play/efpep`
+      `${import.meta.env.VITE_WS_GAME_SERVICE_HOST}/play/efpep`,
     );
     this.type = type;
     this.mode = mode;
@@ -242,7 +244,7 @@ export class Game {
     playerId: number;
   }) => {
     const players = data.players.map(
-      ({ userId, username, avatar, ...rest }) => ({ userId, username, avatar })
+      ({ userId, username, avatar, ...rest }) => ({ userId, username, avatar }),
     );
     console.log("players:", players);
     this._setPlayers(players);

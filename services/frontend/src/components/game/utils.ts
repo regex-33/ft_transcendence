@@ -1,13 +1,16 @@
 import { GameMode, GameType } from "./game";
 
 export const redirectToActiveGame = async () => {
-  const response = await fetch(`${import.meta.env.VITE_GAME_SERVICE_HOST}:${import.meta.env.VITE_GAME_SERVICE_PORT}/api/player/games`, {
-    method: "GET",
-    credentials: "include",
-  });
+  const response = await fetch(
+    `${import.meta.env.VITE_GAME_SERVICE_HOST}:${import.meta.env.VITE_GAME_SERVICE_PORT}/api/player/games`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
   if (!response.ok) return;
   const games = await response.json();
-  if (!(typeof games === typeof [])) return;
+  if (!(games instanceof Array)) return;
   for (let i = 0; i < games.length; i++) {
     if (["WAITING", "LIVE"].includes(games[i].status)) {
       window.history.pushState({}, "", "/game/" + games[i].id);
@@ -23,17 +26,20 @@ export const createNewGame = async (
   redirectOnError = true,
 ) => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_GAME_SERVICE_HOST}:${import.meta.env.VITE_GAME_SERVICE_PORT}/api/game/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await fetch(
+      `${import.meta.env.VITE_GAME_SERVICE_HOST}:${import.meta.env.VITE_GAME_SERVICE_PORT}/api/game/create`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          gameType: type,
+          gameMode: mode,
+        }),
+        credentials: "include",
       },
-      body: JSON.stringify({
-        gameType: type,
-        gameMode: mode,
-      }),
-      credentials: "include",
-    });
+    );
     if (!response.ok) {
       //const data = await response.json();
       if (response.status === 401) {
