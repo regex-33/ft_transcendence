@@ -38,6 +38,34 @@ const createGame = async (db: PrismaClient | Prisma.TransactionClient, data: Gam
 	}
 };
 
+const createTournamentGame = (db: PrismaClient | Prisma.TransactionClient, tournamentId: string, users: UserData[]) => {
+		return db.game.create({
+			data: {
+				type: GameType.SOLO,
+				mode: GameMode.CLASSIC,
+				tournament:
+				{
+					connect:
+						{ id: tournamentId }
+				},
+				players: {
+					connectOrCreate:
+						users.map(u => ({
+							where: { userId: u.id, activeGameId: { equals: null } },
+							create:
+							{
+								userId: u.id,
+								avatar: u.avatar,
+								username: u.username
+
+							}
+						}))
+				},
+			},
+			include: { players: true },
+		});
+}
+
 const joinGame = async (db: PrismaClient, data: { gameId: string; player: UserData }) => {
 	try {
 		const gameInvitedPlayers = invites.get(data.gameId);
@@ -105,4 +133,4 @@ const getGame = async (db: PrismaClient, id: string) => {
 	return game;
 };
 
-export { createGame, getGame, joinGame };
+export { createGame, getGame, joinGame, createTournamentGame };

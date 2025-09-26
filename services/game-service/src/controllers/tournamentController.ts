@@ -1,4 +1,5 @@
 import { PrismaClient, type Player, type Tournament } from '../../generated/prisma';
+import { createGame, createTournamentGame } from './gameController';
 import { createPlayer } from './playerController';
 import type { UserData } from './playerController';
 
@@ -16,7 +17,46 @@ export const createTournament = async (db: PrismaClient, data: UserData) => {
 	}
 };
 
-export type TournamentState = Tournament & { players: number[] };
+export const getTournament = async (db: PrismaClient, tournamentId: string) =>
+{
+	try{
+		const tournament = db.tournament.findUnique({
+			where: {id: tournamentId},
+			include: {
+				games: true
+			}
+		});
+		if (!tournament.games)
+		{
+			console.error('Tournament has no games');
+			return null;
+		}
+		return tournament;
+	}
+	catch (err)
+	{
+		console.error("[ERROR] getTournament: ", err);
+		return null;
+	}
+}
+
+export type TournamentState = Tournament & { players: UserData[] };
+
+function shuffle<T>(array: Array<T | undefined>) {
+  let currentIndex = array.length;
+
+  // While there remain elements to shuffle...
+  while (currentIndex != 0) {
+
+    // Pick a remaining element...
+    let randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+}
 
 class TournamentManager {
 	private _tournaments: Map<string, TournamentState>;
@@ -28,7 +68,7 @@ class TournamentManager {
 	}
 
 	playerHasTournament(playerId: number) {
-		const allPlayers = Array.from(this._tournaments.values()).flatMap((state) => state.players);
+		const allPlayers = Array.from(this._tournaments.values()).flatMap((state) => state.players.map(p => p.id));
 		return allPlayers.includes(playerId);
 	}
 
@@ -43,7 +83,9 @@ class TournamentManager {
 		const tournamentState = this._tournaments.get(tournamentId);
 		if (!tournamentState) throw new Error('tournament does not exist'); // check db ?
 		if (this.playerHasTournament(user.id)) throw new Error('player already in a tournament');
-		tournamentState.players.push(player.userId);
+		const playerWithId = Object.assign({id: player.userId}, player);
+		Object.freeze(playerWithId);
+		tournamentState.players.push(playerWithId);
 		if (tournamentState.players.length === tournamentState.maxPlayers) {
 			this._startTournament(tournamentState);
 		}
@@ -51,11 +93,24 @@ class TournamentManager {
 	}
 
 	private async _startTournament(tournamentState: TournamentState) {
-		let playerPairs = [];
 		const players = tournamentState.players;
+		if (players.length !== tournamentState.maxPlayers)
+			throw new Error('not enough players for tournament');
+		shuffle(players);
+		let playersPairs = [];
 		for (let i = 0; i < players.length; i += 2) {
-			playerPairs.push(players.slice(i, i + 2));
+			playersPairs.push(players.slice(i, i + 2));
 		}
+		try{
+		await this._db.$transaction(playersPairs.map( pair => {
+			return createTournamentGame(this._db, tournamentState.id, pair);
+		}));
+		} catch (err)
+		{
+			console.error("[ERROR] start tournament: ", err);
+			return null;
+		}
+		return await getTournament(this._db, tournamentState.id);
 	}
 }
 

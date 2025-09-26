@@ -173,6 +173,10 @@ function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
 			},
 		}),
 	]);
+	if (gameSession.game.tournamentId) // game is part of a tournament
+	{
+		//TODO: update tournament
+	}
 	gameSession.game.status = GameStatus.ENDED;
 	games.delete(gameSession.game.id);
 }
@@ -333,7 +337,8 @@ async function playRoutes(fastify: FastifyInstance) {
 					return true;
 				});
 				setTimeout(() => {
-					if (session.game.status !== GameStatus.ENDED && session.state.players.length === 0) {
+					console.log("[timeout] sstart");
+					if (session.game.status !== GameStatus.ENDED && session.state.playersSockets.length === 0) {
 						if (session.intervalId) clearInterval(session.intervalId);
 						session.runner = null;
 						console.log('[TIMEOUT] Clearing game', session.game.id);
