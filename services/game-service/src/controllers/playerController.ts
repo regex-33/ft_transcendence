@@ -6,7 +6,7 @@ export type UserData = {
 	username: string;
 };
 
-const createPlayer = async (db: PrismaClient | Prisma.TransactionClient, data: UserData) => {
+export const createPlayer = async (db: PrismaClient | Prisma.TransactionClient, data: UserData) => {
 	const player = await db.player.upsert({
 		where: { userId: data.id },
 		update: {},
@@ -27,8 +27,8 @@ const getPlayerStats = async (db: PrismaClient | Prisma.TransactionClient, playe
 		where: { userId: playerId },
 		include: {
 			games: {
-				include:{
-				game: true
+				include: {
+					game: true
 				}
 			}
 		},
@@ -49,13 +49,35 @@ const getPlayerGames = async (
 	data: { id: number }
 ) => {
 	const games = await db.game.findMany({
-		where: { players: { some: { userId: data.id } } },
-		include: {
-			players: true,
+		where: { gamePlayers: { some: { playerId: data.id } } },
+		select: {
+			duration: true,
+			status: true,
+			mode: true,
+			type: true,
+			winningTeam: true,
+			gamePlayers: {
+				select:
+				{
+					player:
+					{
+						select: {
+							avatar: true,
+							username: true
+						}
+					},
+					team: true,
+					score: true
+				}
+			}
 		},
 	});
+	// const games = games.map(game => {
+
+	// }
+	// );
 	console.log(games);
 	return games;
 };
 
-export { createPlayer, getPlayerGames, getPlayerStats };
+export { getPlayerGames, getPlayerStats };

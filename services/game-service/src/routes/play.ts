@@ -1,16 +1,14 @@
 import type { FastifyInstance } from 'fastify';
-import fastifyWebsocket from '@fastify/websocket';
 import redis from '../redis';
 import { checkAuth } from '../controllers/checkAuth';
 import { getGame } from '../controllers/gameController';
-import type { Ball, Direction, GameMetadata, GameSession, Paddle, PlayerState } from '../gameState';
+import type { Ball, Direction, GameSession, Paddle, PlayerState } from '../gameState';
 import type WebSocket from 'ws';
 import { games, connections, gameConfig, initSession } from '../gameState';
 import {
 	GameStatus,
 	GameTeam,
 	GameType,
-	type Player,
 	type PrismaClient,
 } from '../../generated/prisma';
 
@@ -21,12 +19,6 @@ const BALL_SPEED = 1.2;
 const SPEED_BALL_SPEED = 1.8;
 const MAX_SCORE = 4;
 const DISCONNECT_TIMEOUT = 5000;
-
-const getPlayerTeam = (gameSession: GameSession) => {
-	const maxPlayers = gameSession.game.type === GameType.SOLO ? 2 : 4;
-	if (gameSession.state.players.length < maxPlayers) return GameTeam.TEAM_A;
-	return GameTeam.TEAM_B;
-};
 
 function isColliding(ball: Ball, paddle: Paddle) {
 	const ballLeft = ball.x - gameConfig.ballRadius;
@@ -407,13 +399,13 @@ async function playRoutes(fastify: FastifyInstance) {
 
 	fastify.get('/health', {}, async (request, reply) => {
 		try {
-			const ping = await redis.ping();
-			reply.code(200).send({
-				status: 'ok',
-				redis: {
-					ping,
-				},
-			});
+			// const ping = await redis.ping();
+			// reply.code(200).send({
+			// 	status: 'ok',
+			// 	redis: {
+			// 		ping,
+			// 	},
+			// });
 		} catch (err) {
 			reply.code(200).send({
 				status: 'error',

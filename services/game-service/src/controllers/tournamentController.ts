@@ -1,4 +1,6 @@
-import { PrismaClient, type Player, type Tournament } from '../../generated/prisma';
+import type { FastifyReply } from 'fastify';
+import { Prisma, PrismaClient, type Player, type Tournament } from '../../generated/prisma';
+import { prismaClient } from '../client-plugin';
 import { createGame, createTournamentGame } from './gameController';
 import { createPlayer } from './playerController';
 import type { UserData } from './playerController';
@@ -9,6 +11,9 @@ export const createTournament = async (db: PrismaClient, data: UserData) => {
 		if (player.activeGameId) return null;
 		const tournament = await db.tournament.create({
 			data: {},
+			include: {
+				games: true
+			}
 		});
 		return tournament;
 	} catch (err) {
@@ -40,7 +45,8 @@ export const getTournament = async (db: PrismaClient, tournamentId: string) =>
 	}
 }
 
-export type TournamentState = Tournament & { players: UserData[] };
+export type TournamentWithGames = Prisma.TournamentGetPayload<{include: {games: true}}>
+export type TournamentState =  TournamentWithGames & { players: UserData[], streams: FastifyReply[]};
 
 function shuffle<T>(array: Array<T | undefined>) {
   let currentIndex = array.length;
@@ -72,23 +78,28 @@ class TournamentManager {
 		return allPlayers.includes(playerId);
 	}
 
-	async addTournament(tournament: Tournament) {
+	async addTournament(tournament: TournamentWithGames) {
 		if (this._tournaments.has(tournament.id)) throw new Error('tournament already exists');
-		this._tournaments.set(tournament.id, { ...tournament, players: [] });
+		this._tournaments.set(tournament.id, { ...tournament, players: [], streams: [] });
 	}
 
 	async joinTournament(tournamentId: string, user: UserData) {
-		const player = await createPlayer(this._db, user);
-		if (player.activeGameId) throw new Error('player already in game');
 		const tournamentState = this._tournaments.get(tournamentId);
 		if (!tournamentState) throw new Error('tournament does not exist'); // check db ?
+		if (tournamentState.players.length >= tournamentState.maxPlayers)
+			throw new Error("Tournament full");
+		const player = await createPlayer(this._db, user);
+		if (player.activeGameId) throw new Error('player already in game');
 		if (this.playerHasTournament(user.id)) throw new Error('player already in a tournament');
 		const playerWithId = Object.assign({id: player.userId}, player);
 		Object.freeze(playerWithId);
+
 		tournamentState.players.push(playerWithId);
 		if (tournamentState.players.length === tournamentState.maxPlayers) {
 			this._startTournament(tournamentState);
 		}
+		else
+			this.publish(tournamentState.id);
 		return tournamentState;
 	}
 
@@ -110,8 +121,41 @@ class TournamentManager {
 			console.error("[ERROR] start tournament: ", err);
 			return null;
 		}
-		return await getTournament(this._db, tournamentState.id);
+		const tournament = await getTournament(this._db, tournamentState.id);
+		if (!tournament)
+			return null;
+		tournamentState.games = tournament.games;
+		this.publish(tournamentState.id);
+		return tournament;
+	}
+
+	public subscribeToUpdate(tournamentId: string, stream: FastifyReply)
+	{
+		const tournamentState = this._tournaments.get(tournamentId);
+		if (!tournamentState) throw new Error('tournament does not exist'); // check db ?
+		tournamentState.streams.push(stream)
+	}
+
+	public unsubscribe(tournamentId: string, stream: FastifyReply)
+	{
+		const tournamentState = this._tournaments.get(tournamentId);
+		if (!tournamentState) return;
+		tournamentState.streams = tournamentState.streams.filter(s => s !== stream);
+	}
+
+	private publish(tournamentId: string, event = 'update')
+	{
+		const tournamentState = this._tournaments.get(tournamentId);
+		if (!tournamentState) return;
+		const { streams, ...state } = tournamentState;
+		tournamentState.streams.forEach(stream => {
+			const data = JSON.stringify(state);
+			stream.raw.write(`event: ${event}\n`);
+			stream.raw.write(`data: ${data}\n\n`);
+		});
 	}
 }
 
 export const joinTournament = async (db: PrismaClient, player: UserData) => {};
+
+export const tournamentManager = new TournamentManager(prismaClient);

@@ -133,4 +133,14 @@ const getGame = async (db: PrismaClient, id: string) => {
 	return game;
 };
 
+const getAllGames = async (db: PrismaClient) => {
+	const game = await db.game.findMany({
+		include: {
+			gamePlayers: true,
+			players: true,
+		},
+	});
+	return game;
+};
+
 export { createGame, getGame, joinGame, createTournamentGame };

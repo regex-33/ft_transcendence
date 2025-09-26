@@ -7,7 +7,7 @@ import BadgeBg from '../../../images/game-badge-bg.png';
 import GameRemoteImg from '../../../images/game-remote.png';
 import GameLocalImg from '../../../images/game-local.png';
 import GameTournamentImg from '../../../images/game-tournament.png';
-import TournamentButtonImg from '../../../images/tournament-button.svg';
+import TournamentButtonSvg from '../../../images/tournament-button.svg';
 import { TeamCard } from './TeamCard';
 import { useAuth } from '../../hooks/useAuth';
 import { GameMode, GameType } from './game';
@@ -108,7 +108,10 @@ export const CreateGamePage: ComponentFunction = () => {
 								<img src={GameTournamentImg} className="max-w-[150px]" />
 							</div>
 							<div className="flex justify-center">
-								<object type="image/svg+xml" data={TournamentButtonImg} className="max-w-[150px]"></object>
+								{/* <object type="image/svg+xml" data={TournamentButtonSvg} className="max-w-[150px]"></object> */}
+								<button>
+									<img src={TournamentButtonSvg} className="hover:scale-[1.04]"/>
+								</button>
 							</div>
 						</CardContainer>
 					</div>

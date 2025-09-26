@@ -5,7 +5,7 @@ import {
 import { createGame, getGame, joinGame } from '../controllers/gameController';
 import { checkAuth } from '../controllers/checkAuth';
 import { games, invites } from '../gameState';
-import { getPlayerGames, getPlayerStats } from '../controllers/playerController';
+import { createPlayer, getPlayerGames, getPlayerStats } from '../controllers/playerController';
 
 async function playerRoutes(fastify: FastifyInstance) {
 	fastify.addHook('preHandler', checkAuth);
@@ -22,6 +22,16 @@ async function playerRoutes(fastify: FastifyInstance) {
 		console.log('userid', user.id);
 		const playerGames = await getPlayerStats(fastify.prisma, user.id);
 		reply.code(200).send(playerGames);
+	});
+	
+	fastify.get('/', async (request, reply) => {
+		const user = (request as any).user;
+		console.log('userid', user.id);
+		const player = await createPlayer(fastify.prisma, user);
+		if (!player)
+			reply.code(404).send({error: "failed to fetch player"});
+		console.log(player);
+		reply.code(200).send(player);
 	});
 
 	fastify.get<{ Params: { id: number } }>(
