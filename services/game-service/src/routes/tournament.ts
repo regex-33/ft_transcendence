@@ -32,6 +32,17 @@ async function tournamentRoutes(fastify: FastifyInstance) {
 		try
 		{
 			tournamentManager.subscribeToUpdate(tournamentId, reply);
+			const interval = setInterval(() => {
+				const data = JSON.stringify({
+					health: "ok"
+				});
+				reply.raw.write(`event: ERROR\n`);
+				reply.raw.write(`data: ${data}\n\n`);
+			}, 2000);
+			request.raw.on('close', () => {
+				tournamentManager.unsubscribe(tournamentId, reply);
+				clearInterval(interval);
+			});
 		}
 		catch (err)
 		{
@@ -42,9 +53,6 @@ async function tournamentRoutes(fastify: FastifyInstance) {
 			reply.raw.write(`data: ${data}\n\n`);
 			reply.raw.end();
 		}
-		request.raw.on('close', () => {
-			tournamentManager.unsubscribe(tournamentId, reply);
-		});
 
 	});
 
@@ -81,11 +89,6 @@ async function tournamentRoutes(fastify: FastifyInstance) {
 		}
 	});
 
-	fastify.get<{ Params: { id: number } }>('/:id', { schema: {} }, async (request, reply) => {
-		const { id } = request.params;
-		const playerGames = await getPlayerGames(fastify.prisma, { id });
-		reply.code(200).send(playerGames);
-	});
 }
 
 export default tournamentRoutes;

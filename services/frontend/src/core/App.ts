@@ -272,8 +272,8 @@ export class App {
       this.createFunctionalComponent(Xo_page)
     );
 
-    this.router.addRoute("/tournament", () =>
-      this.createFunctionalComponent(TournamentPage)
+    this.router.addRoute("/tournament/:tournamentId", (params) =>
+      this.createFunctionalComponent(TournamentPage, {tournamentId: params?.tournamentId || ""})
     );
 
     this.router.addRoute("/Leaderboard", () =>

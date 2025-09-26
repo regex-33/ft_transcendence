@@ -13,6 +13,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { GameMode, GameType } from './game';
 import { createNewGame, redirectToActiveGame } from './utils';
 import { useToast } from './toast';
+import { fetchGameApi } from './fetch';
 
 const Badge = (props: { text: string }) => {
 	return (
@@ -109,8 +110,19 @@ export const CreateGamePage: ComponentFunction = () => {
 							</div>
 							<div className="flex justify-center">
 								{/* <object type="image/svg+xml" data={TournamentButtonSvg} className="max-w-[150px]"></object> */}
-								<button>
-									<img src={TournamentButtonSvg} className="hover:scale-[1.04]"/>
+								<button onClick={async () => {
+									try
+									{
+										const tournament = await fetchGameApi('/tournament/create', 'POST');
+										window.history.pushState({}, "", "/tournament/" + tournament.id);
+										window.dispatchEvent(new PopStateEvent("popstate"));
+									}
+									catch (err)
+									{
+										console.log("create tournament error: ", err)
+									}
+								}}>
+									<img src={TournamentButtonSvg} className="hover:scale-[0.96]"/>
 								</button>
 							</div>
 						</CardContainer>

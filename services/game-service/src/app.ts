@@ -4,6 +4,7 @@ import clientPlugin from './client-plugin';
 import gameRoutes from './routes/game';
 import playRoutes from './routes/play';
 import playerRoutes from './routes/player';
+import tournamentRoutes from './routes/tournament';
 import fastifyCookie from '@fastify/cookie';
 import fastifyWebsocket from '@fastify/websocket';
 //import fastifySwagger from '@fastify/swagger';
@@ -65,6 +66,8 @@ fastify.register(clientPlugin);
 fastify.register(fastifyWebsocket);
 
 fastify.register(gameRoutes, { prefix: '/game' });
+
+fastify.register(tournamentRoutes, { prefix: '/tournament' });
 
 fastify.register(playRoutes, { prefix: '/play' });
 

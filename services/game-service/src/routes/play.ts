@@ -265,10 +265,7 @@ const getPlayerGame = async (db: PrismaClient, playerId: number) => {
 async function playRoutes(fastify: FastifyInstance) {
 	fastify.addHook('preHandler', checkAuth);
 	fastify.decorate('redis', redis);
-	//fastify.register(fastifyWebsocket);
-	fastify.get('/test', { websocket: true }, async (socket, request) => {
-		console.log(socket);
-	});
+	
 	fastify.get<{ Params: { gameId: string } }>(
 		'/:gameId',
 		{ websocket: true },

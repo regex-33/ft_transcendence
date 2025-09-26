@@ -1,8 +1,10 @@
 import { h } from '../../vdom/createElement';
 import { Header } from '../home/Header';
 import GameTournamentImg from '../../../images/game-tournament.png';
-import { ComponentFunction } from "../../types/global";
 import './style.css';
+import { useEffect } from '../../hooks/useEffect';
+import { fetchGameApi } from './fetch';
+import { useState } from '../../hooks/useState';
 
 const CardButton = () => {
     return (
@@ -14,7 +16,31 @@ const CardButton = () => {
     )
 }
 
-export const TournamentPage: ComponentFunction = () => {
+export type TournamentStatus = 'ONGOING' | 'ENDED';
+
+export interface Tournament {
+    id: string;
+    status: TournamentStatus;
+    maxPlayers: number;
+    games: { id: string }[];
+    winnerId: number;
+}
+
+export const TournamentPage = (props: { tournamentId: string }) => {
+    const [tournament, setTournament] = useState<Tournament | null>(null);
+    useEffect(() => {
+        const fetchTournament = async () => {
+            try {
+                const data = await fetchGameApi('/tournament/' + props.tournamentId, 'GET');
+                setTournament(data);
+            }
+            catch (err) {
+                console.error("get tournament error: ", err);
+            }
+        }
+        fetchTournament();
+    }, [props.tournamentId]);
+
     return (
         <div
             className="relative flex flex-col overflow-hidden h-screen w-screen"
@@ -32,26 +58,33 @@ export const TournamentPage: ComponentFunction = () => {
             <div className="relative z-10">
                 <Header />
             </div>
-            <div className="z-10 m-auto w-[90%]">
-                <div className="bg-[#58D7DFAD]/30 flex flex-col justify-center py-20 my-2 px-10 rounded-2xl border-white-100 border-2">
-                    <div class="grid grid-flow-col grid-rows-2 ">
-                        <div class="row-span-2 flex justify-center items-center tournament-game1-card"><CardButton /></div>
-                        <div class="col-span-1 flex justify-center items-center">
-                            <img src={GameTournamentImg} className="max-w-[150px]"/>
-                        </div>
-                        <div className="flex flex-col justify-center mx-[-2px]">
-                            <div className="flex justify-center ">
-                                <div className="border-r-0 w-full border-t-2 min-h-[4vh] border-white">
-                                </div>
-                                <div className="border-l-2 w-full border-t-2 min-h-[2vh] border-white">
-                                </div>
+            {/* {tournament ? */}
+                <div className="z-10 m-auto w-[90%]">
+                    <div className="bg-[#58D7DFAD]/30 flex flex-col justify-center py-20 my-2 px-10 rounded-2xl border-white-100 border-2">
+                        <div className="text-white font-luckiest text-lg text-center w-[100%]">ID: {tournament?.id}</div>
+                        <div class="grid grid-flow-col grid-rows-2 ">
+                            <div class="row-span-2 flex justify-center items-center tournament-game1-card"><CardButton /></div>
+                            <div class="col-span-1 flex justify-center items-center">
+                                <img src={GameTournamentImg} className="max-w-[150px]" />
                             </div>
-                            <div class="col-span-1 row-span-1 flex justify-center m-0 tournament-gamefinal-card items-center"><CardButton /></div>
+                            <div className="flex flex-col justify-center mx-[-2px]">
+                                <div className="flex justify-center ">
+                                    <div className="border-r-0 w-full border-t-2 min-h-[4vh] border-white">
+                                    </div>
+                                    <div className="border-l-2 w-full border-t-2 min-h-[2vh] border-white">
+                                    </div>
+                                </div>
+                                <div class="col-span-1 row-span-1 flex justify-center m-0 tournament-gamefinal-card items-center"><CardButton /></div>
+                            </div>
+                            <div class="row-span-2 flex justify-center items-center tournament-game2-card"><CardButton /></div>
                         </div>
-                        <div class="row-span-2 flex justify-center items-center tournament-game2-card"><CardButton /></div>
                     </div>
                 </div>
-            </div>
+            {/* : 
+				<div class="flex justify-center min-h-[100vh] items-center">
+					<div class="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+				</div>
+            } */}
         </div>
     );
 };
