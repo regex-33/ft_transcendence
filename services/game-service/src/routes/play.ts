@@ -2,15 +2,11 @@ import type { FastifyInstance } from 'fastify';
 import redis from '../redis';
 import { checkAuth } from '../controllers/checkAuth';
 import { getGame } from '../controllers/gameController';
-import type { Ball, Direction, GameSession, Paddle, PlayerState } from '../gameState';
+import type { Ball, Direction, GameMetadata, GameSession, Paddle, PlayerState } from '../gameState';
 import type WebSocket from 'ws';
 import { games, connections, gameConfig, initSession } from '../gameState';
-import {
-	GameStatus,
-	GameTeam,
-	GameType,
-	type PrismaClient,
-} from '../../generated/prisma';
+import { GameStatus, GameTeam, GameType, type PrismaClient } from '../../generated/prisma';
+import { tournamentManager } from '../controllers/tournamentController';
 
 // INIT: { type: init, data: gameId} response: {type: init_ack, players: [], spectator: bool }
 //
@@ -123,7 +119,7 @@ function sendPlayerUpdate(socket: WebSocket, session: GameSession) {
 	socket.send(JSON.stringify({ type: 'PLAYERS_UPDATE', players: session.state.players }));
 }
 
-function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
+async function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	const game = gameSession.game;
 	const now = Date.now();
 	let duration;
@@ -136,15 +132,8 @@ function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	console.log('scoreB:', TeamBScore);
 	const winningTeam =
 		TeamAScore === TeamBScore ? null : TeamAScore > TeamBScore ? GameTeam.TEAM_A : GameTeam.TEAM_B;
-	prismaClient.$transaction([
-		prismaClient.game.update({
-			where: { id: game.id },
-			data: {
-				status: GameStatus.ENDED,
-				duration: duration,
-				winningTeam: winningTeam,
-			},
-		}),
+	gameSession.game.status = GameStatus.ENDED;
+	const [, , , updatedGame] = await prismaClient.$transaction([
 		prismaClient.player.updateMany({
 			where: { activeGameId: game.id },
 			data: {
@@ -164,12 +153,23 @@ function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
 				score: TeamBScore,
 			},
 		}),
+		prismaClient.game.update({
+			where: { id: game.id },
+			data: {
+				status: GameStatus.ENDED,
+				duration: duration,
+				winningTeam: winningTeam,
+			},
+			include: {
+				gamePlayers: {
+					include: { player: true },
+				},
+			},
+		}),
 	]);
-	if (gameSession.game.tournamentId) // game is part of a tournament
-	{
-		//TODO: update tournament
+	if (updatedGame && updatedGame.tournamentId) {
+		tournamentManager.onGameEnd(updatedGame);
 	}
-	gameSession.game.status = GameStatus.ENDED;
 	games.delete(gameSession.game.id);
 }
 function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
@@ -202,10 +202,12 @@ function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	gameSession.onEnd = () => {
 		console.log('ENDING GAME');
 		gameSession.state.playersSockets.forEach((s) => {
-			s.send(JSON.stringify({
-				type: 'GAME_END',
-				players: gameSession.state.players
-			}));
+			s.send(
+				JSON.stringify({
+					type: 'GAME_END',
+					players: gameSession.state.players,
+				})
+			);
 			s.close();
 		});
 		//gameSession.state.playersSockets.forEach((s) => s.close());
@@ -265,7 +267,7 @@ const getPlayerGame = async (db: PrismaClient, playerId: number) => {
 async function playRoutes(fastify: FastifyInstance) {
 	fastify.addHook('preHandler', checkAuth);
 	fastify.decorate('redis', redis);
-	
+
 	fastify.get<{ Params: { gameId: string } }>(
 		'/:gameId',
 		{ websocket: true },
@@ -326,8 +328,11 @@ async function playRoutes(fastify: FastifyInstance) {
 					return true;
 				});
 				setTimeout(() => {
-					console.log("[timeout] sstart");
-					if (session.game.status !== GameStatus.ENDED && session.state.playersSockets.length === 0) {
+					console.log('[timeout] sstart');
+					if (
+						session.game.status !== GameStatus.ENDED &&
+						session.state.playersSockets.length === 0
+					) {
 						if (session.intervalId) clearInterval(session.intervalId);
 						session.runner = null;
 						console.log('[TIMEOUT] Clearing game', session.game.id);
