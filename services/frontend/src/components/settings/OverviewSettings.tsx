@@ -8,8 +8,36 @@ import { Speed } from "./gameMode/Speed";
 import { Gold } from "./gameMode/Gold";
 import { Vanish } from "./gameMode/Vanish";
 
+interface Player {
+  avatar: string;
+  username: string;
+}
+
+interface GamePlayer {
+  player: Player;
+  team: "TEAM_A" | "TEAM_B";
+  score: number;
+}
+
+interface HighlightedGame {
+  duration: number;
+  status: string;
+  mode: "CLASSIC" | "SPEED" | "GOLD" | "VANISH";
+  type: string;
+  winningTeam: "TEAM_A" | "TEAM_B";
+  gamePlayers: GamePlayer[];
+}
+
+interface ApiResponse {
+  rank: number;
+  matchesWon: number;
+  matchesLost: number;
+  points: number;
+  highlightedGames: HighlightedGame[];
+}
+
 interface OverviewSettingsProps {
-  username?: string; // If provided, fetch data for this user, otherwise use current user
+  username?: string;
 }
 
 export const OverviewSettings: ComponentFunction<OverviewSettingsProps> = (props) => {
@@ -18,59 +46,19 @@ export const OverviewSettings: ComponentFunction<OverviewSettingsProps> = (props
     matchesWon: 0,
     leaderboardPosition: 0,
     matchesLost: 0,
-    achievements: 0,
     totalPoints: 0
   });
+  const [highlightedGames, setHighlightedGames] = useState<HighlightedGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const highlightedMatches = [
-    {
-      id: 1,
-      time: "12:30",
-      type: 'SPEED',
-      player1: {
-        name: "YOUSSEF",
-        avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
-        score: 7
-      },
-      player2: {
-        name: "AHMED",
-        avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
-        score: 4
-      }
-    },
-    {
-      id: 2,
-      time: "14:45",
-      type: 'GOLD',
-      player1: {
-        name: "ALI",
-        avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
-        score: 3
-      },
-      player2: {
-        name: "OMAR",
-        avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
-        score: 5
-      }
-    },
-    {
-      id: 3,
-      time: "16:20",
-      type: 'CLASSIC',
-      player1: {
-        name: "najib",
-        avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
-        score: 6
-      },
-      player2: {
-        name: "LINA",
-        avatar: "https://cdn.intra.42.fr/users/1b0a76a865862fd567d74d06a2a7baf8/yachtata.jpeg",
-        score: 8
-      }
-    }
-  ];
+  // Helper function to format duration from milliseconds to MM:SS
+  const formatDuration = (duration: number): string => {
+    const totalSeconds = Math.floor(duration / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
 
   useEffect(() => {
     const fetchStatsData = async () => {
@@ -81,10 +69,10 @@ export const OverviewSettings: ComponentFunction<OverviewSettingsProps> = (props
         let endpoint;
         if (username) {
           // Viewing another user's profile
-          endpoint = `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/${username}`;
+          endpoint = `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/player/overview/${username}`;
         } else {
           // Viewing own profile
-          endpoint = `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/users/get/me`;
+          endpoint = `${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/player/overview`;
         }
 
         const response = await fetch(endpoint, {
@@ -96,22 +84,21 @@ export const OverviewSettings: ComponentFunction<OverviewSettingsProps> = (props
         });
 
         if (response.ok) {
-          const data = await response.json();
+          const data: ApiResponse = await response.json();
           setStatsData({
-            matchesWon: data.matchesWon || 320,
-            leaderboardPosition: data.leaderboardPosition || 200,
-            matchesLost: data.matchesLost || 12,
-            achievements: data.achievements || 9,
-            totalPoints: data.totalPoints || 450
+            matchesWon: data.matchesWon || 0,
+            leaderboardPosition: data.rank || 0,
+            matchesLost: data.matchesLost || 0,
+            totalPoints: data.points || 0
           });
+          setHighlightedGames(data.highlightedGames || []);
         } else {
-          // Use default values if API fails
           console.warn('Stats API failed, using default values');
+          setError('Failed to load data from server');
         }
       } catch (error) {
         console.error('Error fetching stats:', error);
         setError('Failed to load statistics');
-        // Keep default values from useState
       } finally {
         setLoading(false);
       }
@@ -168,17 +155,6 @@ export const OverviewSettings: ComponentFunction<OverviewSettingsProps> = (props
           className="flex flex-col justify-center items-center w-[180px] text-white bg-no-repeat bg-contain bg-center"
           style={{ backgroundImage: `url('/images/setting-assests/bg-greenOve.svg')` }}>
           <img
-            src="/images/setting-assests/unlocked.svg"
-            alt="Achievements"
-            className="w-10 h-10 transition-transform duration-200 hover:scale-95"
-          />
-          <span className="font-luckiest text-3xl pt-2 whitespace-nowrap">{statsData.achievements}</span>
-          <span className="text-sm whitespace-nowrap break-words">Unlocked Achievements</span>
-        </div>
-        <div
-          className="flex flex-col justify-center items-center w-[180px] text-white bg-no-repeat bg-contain bg-center"
-          style={{ backgroundImage: `url('/images/setting-assests/bg-greenOve.svg')` }}>
-          <img
             src="/images/setting-assests/sales.svg"
             alt="Total Points"
             className="w-12 h-12 transition-transform duration-200 hover:scale-95"
@@ -194,67 +170,94 @@ export const OverviewSettings: ComponentFunction<OverviewSettingsProps> = (props
       </div>
       
       <div className="flex flex-row h-[450px] px-5 gap-12 overflow-x-auto mt-16 ml-0">
-        {highlightedMatches.slice(0, 3).map((match) => {
-          const winner = match.player1.score > match.player2.score ? match.player1 : match.player2;
-          const loser = match.player1.score > match.player2.score ? match.player2 : match.player1;
-          
-          return (
-            <div
-              key={match.id}
-              className="relative flex opacity-95 flex-col justify-center items-center space-y-5 h-[330px] w-[380px] text-white bg-no-repeat bg-contain bg-center flex-shrink-0"
-              style={{ backgroundImage: `url('/images/setting-assests/Vector.svg')` }}>
-              <div className="absolute top-4 right-4 flex flex-col items-center">
-                <img
-                  src="/images/setting-assests/time.svg"
-                  alt="time"
-                  className="w-8 h-8 transition-transform duration-200 hover:scale-95"
-                />
-                <span className="font-luckiest text-sm pt-1 whitespace-nowrap">{match.time}</span>
-              </div>
-              <div className="bg-[#6EC2B4] w-[250px] rounded-full h-[60px] flex items-center gap-2">
-                <div className="relative w-[60px] h-[60px] flex-shrink-0">
-                  <img
-                    src="/images/home-assests/cir-online.svg"
-                    className="absolute inset-0 w-full h-full z-0"
-                    alt="Online circle"
-                  />
-                  <img
-                    src={winner.avatar}
-                    className="absolute inset-[8px] w-11 h-11 rounded-full object-cover z-10"
-                    alt="Avatar"
-                  />
-                </div>
-                <h2 className="text-lg font-bold truncate max-w-[120px] text-white">{winner.name.toUpperCase()}</h2>
-                <span className="text-lg font-bold ml-auto pr-4 text-white">{winner.score}</span>
-              </div>
-              <div className="bg-[#828282] w-[250px] rounded-full h-[60px] flex items-center gap-2 bg-opacity-65">
-                <div className="relative w-[60px] h-[60px] flex-shrink-0">
-                  <img
-                    src="/images/home-assests/cir-online.svg"
-                    className="absolute inset-0 w-full h-full z-0"
-                    alt="Online circle"
-                  />
-                  <img
-                    src={loser.avatar}
-                    className="absolute inset-[8px] w-11 h-11 rounded-full object-cover z-10"
-                    alt="Avatar"
-                  />
-                </div>
-                <h2 className="text-lg font-bold truncate max-w-[120px] text-white">{loser.name.toUpperCase()}</h2>
-                <span className="text-lg font-bold ml-auto pr-4 text-white">{loser.score}</span>
-              </div>
-            <div className="w-14 h-14 absolute top-1 left-10 flex flex-col items-center ">
-              {(() => {
-                const GameModeComponent = match.type === 'SPEED' ? Speed :
-                  match.type === 'GOLD' ? Gold :
-                  match.type === 'CLASSIC' ? Classic :
-                  match.type === 'VANISH' ? Vanish : null;
-                return GameModeComponent ? <GameModeComponent /> : null;
-              })()}
+        {highlightedGames.length === 0 ? (
+          <div className="flex items-center justify-center w-full h-[330px] text-white">
+            <div className="text-center">
+              <p className="text-lg">No highlighted matches yet</p>
+              <p className="text-sm text-gray-500">Play some games to see your best matches here!</p>
             </div>
-            </div>
-          );
-        })}
+          </div>
+        ) : (
+          highlightedGames.slice(0, 3).map((game, index) => {
+            // Find winner and loser based on winningTeami
+            const teamAPlayer = game.gamePlayers.find(p => p.team === "TEAM_A");
+            const teamBPlayer = game.gamePlayers.find(p => p.team === "TEAM_B");
+            
+            const winner = game.winningTeam === "TEAM_A" ? teamAPlayer : teamBPlayer;
+            const loser = game.winningTeam === "TEAM_A" ? teamBPlayer : teamAPlayer;
+            
+            if (!winner || !loser) return null;
+            
+            return (
+              <div
+                key={index}
+                className="relative flex opacity-95 flex-col justify-center items-center space-y-5 h-[330px] w-[380px] text-white bg-no-repeat bg-contain bg-center flex-shrink-0"
+                style={{ backgroundImage: `url('/images/setting-assests/Vector.svg')` }}>
+                <div className="absolute top-4 right-4 flex flex-col items-center">
+                  <img
+                    src="/images/setting-assests/time.svg"
+                    alt="time"
+                    className="w-8 h-8 transition-transform duration-200 hover:scale-95"
+                  />
+                  <span className="font-luckiest text-sm pt-1 whitespace-nowrap">
+                    {formatDuration(game.duration)}
+                  </span>
+                </div>
+                
+                {/* Winner */}
+                <div className="bg-[#6EC2B4] w-[250px] rounded-full h-[60px] flex items-center gap-2">
+                  <div className="relative w-[60px] h-[60px] flex-shrink-0">
+                    <img
+                      src="/images/home-assests/cir-online.svg"
+                      className="absolute inset-0 w-full h-full z-0"
+                      alt="Online circle"
+                    />
+                    <img
+                      src={winner.player.avatar}
+                      className="absolute inset-[8px] w-11 h-11 rounded-full object-cover z-10"
+                      alt="Winner Avatar"
+                    />
+                  </div>
+                  <h2 className="text-lg font-bold truncate max-w-[120px] text-white">
+                    {winner.player.username.toUpperCase()}
+                  </h2>
+                  <span className="text-lg font-bold ml-auto pr-4 text-white">{winner.score}</span>
+                </div>
+                
+                {/* Loser */}
+                <div className="bg-[#828282] w-[250px] rounded-full h-[60px] flex items-center gap-2 bg-opacity-65">
+                  <div className="relative w-[60px] h-[60px] flex-shrink-0">
+                    <img
+                      src="/images/home-assests/cir-online.svg"
+                      className="absolute inset-0 w-full h-full z-0"
+                      alt="Online circle"
+                    />
+                    <img
+                      src={loser.player.avatar}
+                      className="absolute inset-[8px] w-11 h-11 rounded-full object-cover z-10"
+                      alt="Loser Avatar"
+                    />
+                  </div>
+                  <h2 className="text-lg font-bold truncate max-w-[120px] text-white">
+                    {loser.player.username.toUpperCase()}
+                  </h2>
+                  <span className="text-lg font-bold ml-auto pr-4 text-white">{loser.score}</span>
+                </div>
+                
+                {/* Game Mode Icon */}
+                <div className="w-14 h-14 absolute top-1 left-10 flex flex-col items-center">
+                  {(() => {
+                    const GameModeComponent = game.mode === 'SPEED' ? Speed :
+                      game.mode === 'GOLD' ? Gold :
+                      game.mode === 'CLASSIC' ? Classic :
+                      game.mode === 'VANISH' ? Vanish : null;
+                    return GameModeComponent ? <GameModeComponent /> : null;
+                  })()}
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {error && (
