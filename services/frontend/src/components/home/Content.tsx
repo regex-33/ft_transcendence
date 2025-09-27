@@ -21,7 +21,7 @@ export const Content: ComponentFunction = () => {
   useEffect(() => {
     const fetchPlayerData = async () => {
       try {
-        const response = await fetch('/api/player/');
+        const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/player/`);
         if (!response.ok) {
           throw new Error('Failed to fetch player data');
         }

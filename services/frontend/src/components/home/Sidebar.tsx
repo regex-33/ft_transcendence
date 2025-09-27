@@ -79,7 +79,7 @@ export const Sidebar: ComponentFunction = () => {
     const fetchMatches = async () => {
       try {
         setLoading(true);
-        const response = await fetch("https://transs.free.beeceptor.com/api/recent");
+        const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/recent`);
         if (!response.ok) {
           throw new Error('Failed to fetch matches');
         }

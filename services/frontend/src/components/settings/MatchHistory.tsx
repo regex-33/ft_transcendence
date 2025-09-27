@@ -47,7 +47,7 @@ export const MatchHistory: ComponentFunction = () => {
       setError('');
       
       try {
-        const response = await fetch('/api/player/game-history', {
+        const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/player/game-history`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

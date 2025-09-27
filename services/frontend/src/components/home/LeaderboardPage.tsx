@@ -77,7 +77,7 @@ export const Leaderboard: ComponentFunction = () => {
       setLeaderboardError('');
       
       try {
-        const response = await fetch('/api/player/leaderboard', {
+        const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/player/leaderboard`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
