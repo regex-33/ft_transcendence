@@ -71,6 +71,8 @@ export const Online: ComponentFunction<OnlineProps> = ({ friends, position = 'ri
 		});
 		if (!response.ok)
 			console.log("failed to invite friend to game");
+		setbareinfo(false);
+		setNameFriend(null);
 		console.log("Player invited to game");
 	}
 
@@ -147,7 +149,7 @@ export const Online: ComponentFunction<OnlineProps> = ({ friends, position = 'ri
 			))}
 			{onlineFriends?.length === 0 && <p className="text-white text-sm">No friends online</p>}
 			{showinfo && nameFriend && (
-				<div className="fixed z-50 w-[300px] h-[120px] bg-chat-send/85
+				<div onMouseLeave={() => { setbareinfo(false); setNameFriend(null)} } className="fixed z-50 w-[300px] h-[120px] bg-chat-send/85
                         rounded-3xl p-6 shadow-2xl
                         flex flex-col items-center  justify-center gap-4"
 					style={{

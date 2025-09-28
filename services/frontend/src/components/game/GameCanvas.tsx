@@ -106,8 +106,13 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 	const handleCanvasResize = () => {
 		const canvasEl = canvasRef.current;
 		if (!canvasEl) return;
-		canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width;
-		canvasEl.height = canvasEl.width * GameConfig.canvasRatio;
+		const ratio = window.devicePixelRatio;
+		canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width * ratio;
+		canvasEl.height = canvasEl.width * GameConfig.canvasRatio * ratio;
+		canvasEl.getContext("2d")?.scale(ratio, ratio)
+		canvasEl.style.width = canvasEl.width / ratio + 'px';
+		canvasEl.style.height = canvasEl.height / ratio + 'px';
+
 		console.log(canvasEl.width);
 		console.log(canvasEl.height);
 		console.log(canvasEl.clientWidth, canvasEl.clientHeight);
@@ -200,18 +205,24 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 						</div>
 					) : <div className="m-auto text-center text-gray-800 text:sm md:text-xl font-luckiest">waiting for players</div>
 				}
-				<div className="relative flex justify-center my-2 bg-[#91BFBF] shadow-xs shadow-gray-400 rounded-xl">
-					<canvas
-						ref={canvasRef}
-						height="400px"
-						width="800px"
-						id="game-canvas"
-						onClick={handleClick}
-						className="rounded-lg bg-[#91BFBF] border-2 border-solid "
-					></canvas>
-					{(players?.length === 2 && !started) && <button onClick={handleStartGame} className="absolute border-2 top-[50%] translate-y-[-50%] rounded-lg shadow-lg bg-teal-400 hover:bg-teal-300 px-7 py-3 font-luckiest text-white">start</button>
+				<div className="px-3 py-1 rounded-3xl bg-[#91BFBF]">
+				<div className="relative flex justify-center my-2 bg-white p-4 shadow-xs shadow-gray-400 rounded-xl">
+					<div className="w-full flex justify-center">
+						<canvas
+							ref={canvasRef}
+							height="400px"
+							width="800px"
+							id="game-canvas"
+							onClick={handleClick}
+							className="bg-[#91BFBF]"
+						></canvas>
+					</div>
+					{(players?.length === 2 && !started) && <button onClick={handleStartGame} className="absolute flex gap-4 align-center border-2 top-[50%] translate-y-[-50%] text-lg rounded-lg shadow-sm bg-teal-400 hover:bg-teal-300 px-8 py-2 font-poppins font-bold text-white">
+					<i class="fa-solid text-lg fa-table-tennis-paddle-ball"></i>	
+					<div>start</div>
+						</button>
 					 }
-				</div>
+				</div></div>
 			</div>
 		</div>
 	);

@@ -1,6 +1,8 @@
 import { Connection } from "./connection";
 import { Player } from "./GamePage";
 import { UpdateMessage } from "./types";
+import koraSVG from '../../../images/kora.svg';
+import { isReadonlyKeywordOrPlusOrMinusToken } from "typescript";
 
 export class GameConfig {
   static canvasWidth = 0;
@@ -10,14 +12,14 @@ export class GameConfig {
   static ballRadius = 2 * (GameConfig.canvasWidth / 200);
   static readonly paddleRatio = 15 / 3;
   static readonly canvasRatio = 1 / 2;
-  static upKeys = new Set(["arrowLeft", "arrowUp", "W", "w", "a", "A"]);
-  static downKeys = new Set(["arrowRight", "arrowDown", "d", "D", "s", "S"]);
+  static upKeys = new Set(["ArrowLeft", "ArrowUp", "W", "w", "a", "A"]);
+  static downKeys = new Set(["ArrowRight", "ArrowDown", "d", "D", "s", "S"]);
 
   static onResize(width: number, height: number) {
     GameConfig.canvasWidth = width;
     GameConfig.canvasHeight = height;
     GameConfig.paddleWidth = (width * GameConfig.paddlePercent) / 100;
-    GameConfig.ballRadius = 2 * (GameConfig.canvasWidth / 200);
+    GameConfig.ballRadius = 3 * (GameConfig.canvasWidth / 200);
   }
 }
 
@@ -83,6 +85,8 @@ export class Paddle {
 export type Ball = {
   x: number;
   y: number;
+  vx: number;
+  vy: number;
   color: string;
 };
 
@@ -98,15 +102,19 @@ export enum GameMode {
   GOLD = "GOLD",
 }
 
+const koraImg = new Image(GameConfig.ballRadius * 2, GameConfig.ballRadius * 2);
+koraImg.src = koraSVG;
+
 const ballWidth = 10;
 
 const drawBall = (ctx: CanvasRenderingContext2D, ball: Ball) => {
-  ctx.beginPath();
-  const radius = GameConfig.ballRadius;
-  ctx.arc(ball.x, ball.y, radius, 0, 2 * Math.PI);
-  ctx.strokeStyle = ball.color;
-  ctx.fill();
-  ctx.stroke();
+  // ctx.beginPath();
+  const radius = GameConfig.ballRadius * 2;
+  // ctx.arc(ball.x, ball.y, radius, 0, 2 * Math.PI);
+  // ctx.strokeStyle = ball.color;
+  // ctx.fill();
+  // ctx.stroke();
+  ctx.drawImage(koraImg, ball.x - GameConfig.ballRadius, ball.y - GameConfig.ballRadius, radius, radius);
 };
 
 export type PlayerState = {
@@ -124,17 +132,22 @@ export class Game {
   ball: Ball = {
     x: -999,
     y: -999,
+    vx: 1,
+    vy: 1,
     color: "red",
   };
   type: GameType;
   mode: GameMode;
   id: string;
   ctx: CanvasRenderingContext2D;
-  _connection: Connection;
-  _setScores: Function;
-  _setPlayers: Function;
-  _scores: number[];
+  private _connection: Connection;
+  private _setScores: Function;
+  private _setPlayers: Function;
+  private _scores: number[];
+  private _status: 'WAITING' | 'LIVE' | 'ENDED' = 'WAITING'
   private _activeKeys: Set<string>;
+  private _endgameText = '';
+  private _lastUpdate = Date.now();
 
   constructor(
     ctx: CanvasRenderingContext2D,
@@ -148,6 +161,7 @@ export class Game {
     this.ctx = ctx;
     this.id = id;
     this._scores = [0, 0];
+    this._setScores(this._scores);
     const paddleHeight = GameConfig.paddleWidth * GameConfig.paddleRatio;
     const p1 = new Paddle(10, GameConfig.canvasHeight / 2 - paddleHeight / 2, leftPaddleOptions);
     const p2 = new Paddle(
@@ -180,13 +194,15 @@ export class Game {
   }
 
   onServerUpdate = (data: {
-    ball: { x: number; y: number };
+    ball: { x: number; y: number, vx: number; vy: number};
     players: PlayerState[];
   }) => {
-    console.log("serverUpdate");
+    if (this._status !== 'LIVE') this._status = 'LIVE';
     this.ball.x = data.ball.x * (GameConfig.canvasWidth / 200);
     const serverHeight = 200 * GameConfig.canvasRatio;
     this.ball.y = data.ball.y * (GameConfig.canvasHeight / serverHeight);
+    this.ball.vy = data.ball.vy;
+    this.ball.vx = data.ball.vx;
     const paddles = data.players.map((p) => p.paddle);
 
     const leftScore =
@@ -204,6 +220,7 @@ export class Game {
 
     this.paddles[1].x = paddles[1].x * (GameConfig.canvasWidth / 200);
     this.paddles[1].y = paddles[1].y * (GameConfig.canvasHeight / serverHeight);
+    this._lastUpdate = Date.now();
   };
 
   draw = () => {
@@ -226,6 +243,20 @@ export class Game {
     connection.on("GAME_UPDATE", this.onServerUpdate);
     connection.on("PLAYER_DISCONNECT", this._onPlayerDisconnect);
     connection.on("PLAYER_CONNECT", this._onPlayerConnect);
+    connection.on("GAME_END", (data: {players: Player[]}) => {
+      this._scores = data.players.map(player => player.score);
+      const maxScore = Math.max(...this._scores);
+      const winners = data.players.filter(player => player.score === maxScore).map(p => p.username);
+      console.log('winners: ', winners)
+      console.log('maxScore: ', maxScore)
+      console.log('data.players: ', data.players)
+      if (winners.length > 1)
+        this._endgameText = 'Winners: ' + winners.join(' ')
+      else
+        this._endgameText = 'Winner: ' + winners.join(' ')
+      this._setScores(this._scores);
+      this._status = 'ENDED';
+    });
     this._connection = connection;
   };
 
@@ -280,7 +311,27 @@ export class Game {
 
   private _renderFrame = () => {
     for (const key of this._activeKeys) this._sendEvent(key);
-    this.draw();
+    if (this._status === 'LIVE')
+    {
+      console.log('dt:', Date.now() - this._lastUpdate);
+      const speed = 0.1 * (200 / GameConfig.canvasWidth);
+      const dt = Date.now() - this._lastUpdate - 16;
+      if (dt > 0)
+        this.ball.x += this.ball.vx * dt * speed;
+        this.ball.y += this.ball.vy * dt * speed;
+      this.draw();
+    }
+    else if (this._status === 'ENDED')
+    {
+      this.ctx.clearRect(0, 0, GameConfig.canvasWidth, GameConfig.canvasHeight);
+      this.ctx.font = '30px Luckiest Guy';
+      this.ctx.fillStyle = '#F7F4EA';
+      this.ctx.textAlign = 'center';
+      this.ctx.textBaseline = 'middle';
+      const centerX = GameConfig.canvasWidth / 2;
+      const centerY = GameConfig.canvasHeight / 2;
+      this.ctx.fillText(this._endgameText, centerX, centerY);
+    }
     requestAnimationFrame(this._renderFrame);
   };
 }

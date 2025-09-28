@@ -69,6 +69,7 @@ export type Player = {
 	username: string;
 	userId: number;
 	avatar: string;
+	score: number;
 };
 
 const getGame = async (gameId: string) => {
@@ -95,16 +96,6 @@ const getGame = async (gameId: string) => {
 		console.error("getGame", err);
 	}
 	return null;
-};
-
-const TeamCard = ({ players }: { players: Player[] }) => {
-	return (
-		<div className="landscape:hidden md:landscape:inline-flex flex-row gap-x-2 md:flex-col h-full md:gap-y-3 px-2 py-2 md:py-4 bg-blue-200 bg-opacity-20 rounded-lg">
-			{players.map((player) => (
-				<AvatarCircle avatarImage={player.avatar} key={"" + player.userId} />
-			))}
-		</div>
-	);
 };
 
 export const GamePage: ComponentFunction = (props) => {

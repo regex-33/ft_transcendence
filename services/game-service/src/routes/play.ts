@@ -11,7 +11,7 @@ import { tournamentManager } from '../controllers/tournamentController';
 // INIT: { type: init, data: gameId} response: {type: init_ack, players: [], spectator: bool }
 //
 //
-const BALL_SPEED = 1.2;
+const BALL_SPEED = 0.1;
 const SPEED_BALL_SPEED = 1.8;
 const MAX_SCORE = 4;
 const DISCONNECT_TIMEOUT = 5000;
@@ -47,13 +47,15 @@ function goal(players: PlayerState[], dir: Direction) {
 	return false;
 }
 
+
 function simPong(gameSession: GameSession, dt: number) {
 	const ball = gameSession.state.ball;
 	const players = gameSession.state.players;
 	const ballSpeed = gameSession.game.mode === 'SPEED' ? SPEED_BALL_SPEED : BALL_SPEED;
+	console.log('dt:', dt);
 	let terminateGame = false;
-	ball.x += ball.vx * ballSpeed;
-	ball.y += ball.vy * ballSpeed;
+	ball.x += ball.vx * ballSpeed * dt;
+	ball.y += ball.vy * ballSpeed * dt;
 	if (ball.x + gameConfig.ballRadius > gameConfig.gameWidth) {
 		terminateGame = goal(players, 'RIGHT');
 		ball.x = gameConfig.gameWidth / 2;
@@ -202,6 +204,7 @@ function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	gameSession.intervalId = setInterval(runner, gameConfig.tick);
 	gameSession.onEnd = () => {
 		console.log('ENDING GAME');
+		clearInterval(gameSession.intervalId);
 		gameSession.state.playersSockets.forEach((s) => {
 			s.send(
 				JSON.stringify({

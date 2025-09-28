@@ -77,7 +77,7 @@ const ratio = 1 / 2;
 const paddleWidth = (gameWidth * 3) / 100;
 const paddleRatio = 15 / 3;
 const paddleHeight = paddleWidth * paddleRatio;
-const ballRadius = 2;
+const ballRadius = 3;
 const paddleSpeed = 2;
 
 const gameHeight = gameWidth * ratio;

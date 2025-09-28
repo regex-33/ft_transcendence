@@ -158,8 +158,8 @@ class TournamentManager {
 	}
 	private async getPlayerTournament(playerId: number)
 	{
-		const tournamentState = this._tournaments.values().find(tournamentState => tournamentState.players.find());
-		return tournamentState ?? null;
+		// const tournamentState = this._tournaments.values().find(tournamentState => tournamentState.players.find());
+		// return tournamentState ?? null;
 	}
 
 	private async _nextBracket(tournamentState: TournamentState) {
