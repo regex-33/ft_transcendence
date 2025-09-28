@@ -6,8 +6,7 @@ const getSessions = async (req, res) => {
   try {
     const { check, payload } = await checkAuthJWT(req, res);
     if (check) return check;
-    req.user = payload;
-    const { id, username } = req.user;
+    const { id } = payload;
 
     const sessions = await db.Session.findAll({
       where: {
@@ -81,7 +80,7 @@ const terminateAllOtherSessions = async (req, res) => {
     await db.Session.destroy({
       where: {
         userId: id,
-        id: { [db.Sequelize.Op.ne]: session.sessionId }
+        SessionId: { [db.Sequelize.Op.ne]: session.SessionId }
       }
     });
 

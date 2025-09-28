@@ -65,20 +65,26 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
   User.associate = (models) => {
+    // friends relationship
     User.belongsToMany(User, {
       through: models.Relationship,
       as: 'other',
       foreignKey: 'userId',
       otherKey: 'otherId'
     });
+    
+    // notifications relationship
     User.hasMany(models.Notification, {
       foreignKey: 'userId',
       as: 'notifications'
     });
+
+    // sessions relationship
     User.hasMany(models.Session, {
       foreignKey: 'userId',
       as: 'sessions'
     });
+
   }
 
   return User;

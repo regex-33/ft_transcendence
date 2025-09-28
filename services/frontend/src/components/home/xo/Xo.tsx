@@ -61,8 +61,7 @@ const reset = (setMap: any) => {
 }
 
 const handlepvp = (map: string[][], setMap: any, state: number, setState: any) => {
-    const scheme = location.protocol === 'https:' ? 'wss' : 'ws';
-    ws = new WebSocket(`${scheme}://${location.host}/xo-game/pvp/handler`);
+    ws = new WebSocket(`${import.meta.env.WS_PROTOCOL}://${location.host}/xo-game/pvp/handler`);
     ws.onopen = () => {
         console.log('WebSocket connection established');
     };

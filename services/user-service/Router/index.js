@@ -7,7 +7,6 @@ const {
 const {
   github, intra, google
 } = require("./Oauth");
-const check = require("./check");
 // const checkcode = require("./emailconfirm");
 const _2fa = require("./2fa");
 const {
@@ -55,23 +54,13 @@ async function FriendRoutes(fastify) {
 
 const { redirect: githubRedirect, handleAuthCallback: githubHandleAuthCallback } = github;
 const { redirect: intraRedirect, handleAuthCallback: intraHandleAuthCallback } = intra;
-const { redirect: googleRedirect, handleAuthCallback: googleHandleAuthCallback } = google;
 
 async function OauthRoutes(fastify) {
   fastify.get("/github", safeHandler(githubRedirect));
   fastify.get("/github/callback", safeHandler(githubHandleAuthCallback));
   fastify.get("/intra", safeHandler(intraRedirect));
   fastify.get("/intra/callback", safeHandler(intraHandleAuthCallback));
-  fastify.get("/google", safeHandler(googleRedirect));
-  fastify.get("/google/callback", safeHandler(googleHandleAuthCallback));
 }
-
-// const { send_code, check_code } = checkcode;
-
-// async function checkCodeRoutes(fastify) {
-//   fastify.post("/sendcode", safeHandler(send_code));
-//   fastify.post("/checkcode", safeHandler(check_code));
-// }
 
 const { disable2fa, create2fa, active2fa, check2faStatus } = _2fa;
 
@@ -80,10 +69,6 @@ async function _2faRoutes(fastify) {
   fastify.get("/generate", safeHandler(create2fa)); // /api/2fa/generate
   fastify.post("/active2fa", safeHandler(active2fa)); // /api/2fa/active2fa
   fastify.get("/status", safeHandler(check2faStatus)); // /api/2fa/status
-}
-
-async function checksRoutes(fastify) {
-  fastify.get("/token", safeHandler(check));
 }
 
 async function NotificationRoutes(fastify) {
@@ -96,9 +81,7 @@ module.exports = {
   UserRoutes,
   FriendRoutes,
   OauthRoutes,
-  // checkCodeRoutes,
   _2faRoutes,
-  checksRoutes,
   NotificationRoutes,
   AuthRoutes
 };

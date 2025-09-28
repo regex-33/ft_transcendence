@@ -9,10 +9,11 @@ function logError(message = "error") {
   const now = new Date();
   const timestamp = now.toISOString().replace("T", " ");
 
-  const logEntry = `============================\n
+  const logEntry = 
+  `============================\n
                     ${message}\n
                     ${timestamp}\n
-                    ================================\n`;
+  ================================\n`;
 
   fs.appendFileSync(logFile, logEntry, "utf8");
 }

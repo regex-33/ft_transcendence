@@ -8,32 +8,36 @@ const checkAuthJWT = async (req, reply) => {
     return { check: reply.status(401).send({ error: "No token provided" }) };
   }
   return await jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
-    if (err) {
-      return {
-        check: reply.status(401).send(
-          { error: "Invalid token" }
-        )
-      };
-    }
-    req.user = decoded.payload;
-    const session = await db.Session.findOne({
-      where: {
-        SessionId: session_id,
-        userId: decoded.payload.id
+    try {
+      if (err) {
+        return {
+          check: reply.status(401).send(
+            { error: "Invalid token" }
+          )
+        };
       }
-    });
-    if (!session) {
-      return {
-        check: reply.status(401).send(
-          { error: "Invalid session id" }
-        )
-      };
-    }
-    if (decoded.token) {
-      return { check: Cookie(reply, decoded.token, decoded.payload.id) };
-    }
+      req.user = decoded.payload;
+      const session = await db.Session.findOne({
+        where: {
+          SessionId: session_id,
+          userId: decoded.payload.id
+        }
+      });
+      if (!session) {
+        return {
+          check: reply.status(401).send(
+            { error: "Invalid session id" }
+          )
+        };
+      }
+      if (decoded.token) {
+        return { check: Cookie(reply, decoded.token, decoded.payload.id) };
+      }
 
-    return { payload: decoded.payload, session };
+      return { payload: decoded.payload, session };
+    } catch (error) {
+      return { check: reply.status(401).send({ error: "Authentication error" }) };
+    }
   });
 }
 

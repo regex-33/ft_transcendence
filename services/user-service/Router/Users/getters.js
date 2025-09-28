@@ -23,7 +23,7 @@ const getbyusername = async (request, reply) => {
 
     const user = await db.User.findOne({
       where: { username },
-      include: [{ model: db.Session, as: 'sessions' }]
+      include: [{ model: db.Session, as: 'sessions' }] 
     });
     if (!user || !user.valid) {
       return reply.status(404).send({ error: "User not found." });

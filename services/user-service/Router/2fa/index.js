@@ -26,7 +26,7 @@ const create2fa = async (req, res) => {
         } else {
             return res.status(400).send({ msg: "2FA is already enabled" });
         }
-        const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url);
+        const qrCodeUrl = qrcode.toDataURL(secret.otpauth_url);
         if (!qrCodeUrl) {
             return res.status(500).send({ msg: "Error generating QR code" });
         }

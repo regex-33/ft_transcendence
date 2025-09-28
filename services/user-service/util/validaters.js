@@ -14,4 +14,3 @@ const passwordvalid = (password) => {
 }
 
 module.exports = { usernamevalid, emailvalid, passwordvalid };
-// will use in login and register update getter by username 

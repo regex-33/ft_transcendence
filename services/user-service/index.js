@@ -1,6 +1,3 @@
-const { type } = require("os");
-const { counter } = require("speakeasy");
-
 try {
 
 
@@ -12,7 +9,6 @@ try {
   const { UserRoutes, FriendRoutes, OauthRoutes, checkCodeRoutes, _2faRoutes, checksRoutes, NotificationRoutes, AuthRoutes } = require("./Router");
   const logger = require("./util/logger_request");
   const websocket = require('@fastify/websocket')
-  const { log_infile } = require("./util/logger");
 
   fastify.addHook("onResponse", (req, res, done) => {
     req = logger(req, res);
@@ -54,7 +50,6 @@ try {
   fastify.register(OauthRoutes, { prefix: "/api/oauth" });
   // fastify.register(checkCodeRoutes, { prefix: "/api" });
   fastify.register(_2faRoutes, { prefix: "/api/2fa" });
-  fastify.register(checksRoutes, { prefix: "/api/check" });// /api/check/token
   fastify.register(NotificationRoutes, { prefix: "/api/notifications" });
 
 
