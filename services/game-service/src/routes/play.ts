@@ -161,6 +161,7 @@ async function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
 				winningTeam: winningTeam,
 			},
 			include: {
+				players: true,
 				gamePlayers: {
 					include: { player: true },
 				},

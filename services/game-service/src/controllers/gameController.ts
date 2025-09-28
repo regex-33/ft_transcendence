@@ -62,7 +62,7 @@ const createTournamentGame = (db: PrismaClient | Prisma.TransactionClient, tourn
 						}))
 				},
 			},
-			include: { players: true },
+			include: { players: true, gamePlayers: true },
 		});
 }
 

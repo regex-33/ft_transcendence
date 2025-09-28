@@ -148,10 +148,11 @@ export class Game {
     this.ctx = ctx;
     this.id = id;
     this._scores = [0, 0];
-    const p1 = new Paddle(10, GameConfig.canvasHeight / 2, leftPaddleOptions);
+    const paddleHeight = GameConfig.paddleWidth * GameConfig.paddleRatio;
+    const p1 = new Paddle(10, GameConfig.canvasHeight / 2 - paddleHeight / 2, leftPaddleOptions);
     const p2 = new Paddle(
       GameConfig.canvasWidth - GameConfig.paddleWidth - 10,
-      GameConfig.canvasHeight / 2,
+      GameConfig.canvasHeight / 2 - paddleHeight / 2,
       rightPaddleOptions,
     );
     this.paddles = [p1, p2];

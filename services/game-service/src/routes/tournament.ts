@@ -8,6 +8,7 @@ import {
 	getTournament,
 	tournamentManager,
 } from '../controllers/tournamentController';
+import { TournamentStatus } from '../../generated/prisma';
 
 async function tournamentRoutes(fastify: FastifyInstance) {
 	fastify.addHook('preHandler', checkAuth);
@@ -34,6 +35,16 @@ async function tournamentRoutes(fastify: FastifyInstance) {
 				Connection: 'keep-alive',
 			});
 			try {
+				const tournament = await getTournament(fastify.prisma, tournamentId);
+				if (!tournament) throw new Error();
+				if (tournament.status === TournamentStatus.ENDED)
+				{
+					const data = JSON.stringify(tournament);
+					reply.raw.write(`event: UPDATE\n`);
+					reply.raw.write(`data: ${data}\n\n`);
+					reply.raw.end();
+					return ;
+				}
 				await tournamentManager.subscribeToUpdate(tournamentId, reply);
 				if (!tournamentManager.playerHasTournament(user.id)) {
 					await tournamentManager.joinTournament(tournamentId, user);
@@ -44,18 +55,12 @@ async function tournamentRoutes(fastify: FastifyInstance) {
 					reply.raw.write(`event: UPDATE\n`);
 					reply.raw.write(`data: ${data}\n\n`);
 				}
-				const interval = setInterval(async () => {
-					//	const tournament = await tournamentManager.getTournamentState(tournamentId);
-					const data = JSON.stringify({
-						health: 'ok',
-						//		players: tournament?.players || [],
-					});
-					reply.raw.write(`event: HEALTH\n`);
-					reply.raw.write(`data: ${data}\n\n`);
-				}, 2000);
+				reply.raw.write(`data: first\n\n`);
+				// }, 2000);
 				request.raw.on('close', () => {
+					console.log('[CLOSE] update closed by: ' + user.id);
 					tournamentManager.unsubscribe(tournamentId, reply);
-					clearInterval(interval);
+					// clearInterval(interval);
 				});
 			} catch (err) {
 				const data = JSON.stringify({
@@ -72,10 +77,10 @@ async function tournamentRoutes(fastify: FastifyInstance) {
 		const user = request.user;
 		try {
 			if (tournamentManager.playerHasTournament(user.id)) {
-				return reply.code(400).send({ error: 'Player already in a tournament' });
+				return reply.code(400).send({ error: 'Player already in a tournament', });
 			}
 			const tournament = await createTournament(fastify.prisma, user);
-			if (!tournament) return reply.code(404).send({ error: 'Failed to create tournament' });
+			if (!tournament) return reply.code(404).send({ error: 'Failed to create tournament. tournament is null' });
 			tournamentManager.addTournament(tournament);
 			//tournamentManager.joinTournament(tournament.id, user);
 			return reply.code(200).send(tournament);

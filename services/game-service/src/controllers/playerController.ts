@@ -52,6 +52,7 @@ const getPlayerGames = async (
 		where: { gamePlayers: { some: { playerId: data.id } } },
 		select: {
 			duration: true,
+			id: true,
 			status: true,
 			mode: true,
 			type: true,
@@ -63,7 +64,8 @@ const getPlayerGames = async (
 					{
 						select: {
 							avatar: true,
-							username: true
+							username: true,
+							userId: true
 						}
 					},
 					team: true,
