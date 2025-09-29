@@ -52,16 +52,16 @@ const click = (i: number, j: number, map: string[][], setMap: any) => {
 };
 
 const reset = (setMap: any) => {
-    if (mode_ == 'ai')
-        window.location.href = '/xo';
-    else if (mode_ == 'pvp')
-        window.location.href = '/home';
+    safeFetch(`reset`, {
+        method: 'DELETE'
+    }).then(data => {
+        if (data?.map)
+            setMap(data.map)
+    }).catch(error => console.log("error"))
 }
 
 const handlepvp = (map: string[][], setMap: any, state: number, setState: any) => {
-    // ws = new WebSocket('ws://localhost:8083/xo-game/pvp/handler');
-    const scheme = location.protocol === 'https:' ? 'wss' : 'ws';
-    ws = new WebSocket(`${scheme}://${location.host}/xo-game/pvp/handler`);
+    ws = new WebSocket(`${import.meta.env.WS_PROTOCOL}://${location.host}/xo-game/pvp/handler`);
     ws.onopen = () => {
         console.log('WebSocket connection established');
     };
@@ -166,11 +166,11 @@ const History: ComponentFunction = ({ close }) => {
                 onClick={close}
                 className="
                 p-2
-                text-white
-                bg-red-500
                 rounded-[10px]
+                self-end
+                bg-[url(/images/chat/close.png)] bg-no-repeat bg-[length:100%_100%]
               "
-            >Close</button>
+            ></button>
             <h1>Game History</h1>
             <div
                 className="
@@ -296,7 +296,7 @@ const Xo: ComponentFunction = ({ mode }) => {
           "
         > <button
             type="button"
-            onclick={() => reset(setMap)}
+            onclick={() => window.location.href = mode == 'ai' ? '/xo' : '/home'}
             className={reset_class}
         >
                 Tic tac Toe
@@ -325,15 +325,28 @@ const Xo: ComponentFunction = ({ mode }) => {
                       "
                     >{yourturn ? "Your turn" : "Opponent's turn"}</div>
                 )
-            ) || (<button
-                type="button"
-                className="
-                mt-2
-                text-white text-2xl font-['Irish_Grover'] text-center
-              "
-                onclick={() => setHistory(true)}>
-                History
-            </button>)
+            ) || (
+                    <div className="flex place-content-between gap-4">
+                        <button
+                            type="button"
+                            className="
+                                        mt-2
+                                        text-white text-2xl font-['Irish_Grover'] text-center
+                                    "
+                            onclick={() => setHistory(true)}>
+                            History
+                        </button>
+                        <button
+                            type="button"
+                            className="
+                                        mt-2
+                                        text-white text-2xl font-['Irish_Grover'] text-center
+                                    "
+                            onclick={() => reset(setMap)}>
+                            Reset
+                        </button>
+                    </div>
+                )
             }
             {table}</div>)
         }

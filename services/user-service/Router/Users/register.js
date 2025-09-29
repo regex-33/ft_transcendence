@@ -52,7 +52,7 @@ async function createUser(request, reply, userInfo) {
   }
 }
 
-async function checkUserExisting(reply, username, email, request) {
+async function checkUserExisting(reply, username, email) {
   try {
     const user = await db.User.findOne({
       where: {

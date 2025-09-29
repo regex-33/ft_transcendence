@@ -18,6 +18,10 @@ const multer = async (request) => {
 
       for await (const part of parts) {
         if (part.file) {
+          if ([".png", ".jpg", ".jpeg", ".gif"].indexOf(path.extname(part.filename).toLowerCase()) === -1) {
+            logger(request, "ERROR", "FileSaving", request.user.username || "guest", false, "INVALIDFORMAT", request.cookies?.token || null);
+            throw new Error("Invalid file format");
+          }
           const safeFilename = Date.now() + "_" + path.basename(part.filename);
           const filePath = path.join(uploadDir, safeFilename);
 

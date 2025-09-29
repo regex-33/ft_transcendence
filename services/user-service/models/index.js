@@ -5,6 +5,8 @@ const path = require('path');
 const Sequelize = require('sequelize');
 const basename = path.basename(__filename);
 const db = {};
+
+// configure database connection
 const sequelize = new Sequelize({
   dialect: process.env.DB_DIALECT || 'sqlite',
   storage: process.env.DB_STORAGE || path.join(__dirname, '../database.sqlite'),
@@ -17,7 +19,7 @@ fs
     return (
       file.indexOf('.') !== 0 &&
       file !== basename &&
-      file.slice(-3) === '.js' &&
+      file.slice(-3) === '.js' && 
       file.indexOf('.test.js') === -1
     );
   })

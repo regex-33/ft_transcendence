@@ -1,17 +1,12 @@
-import { useEffect } from "../../../hooks/useEffect";
 import { h } from '../../../vdom/createElement';
-import { useState } from "../../../hooks/useState";
 import { ComponentFunction } from "../../../types/global";
 
-export const Gold: ComponentFunction = () => {
-    const [starActive, setStarActive] = useState(true)
-  let point = 100;
-// useEffect(() => {
-    if (point === 150)
-      setStarActive(true);
-    else
-      setStarActive(false);
-  // }, [point]);
+interface ClassicProps {
+  playerPoints: number;
+}
+
+export const Gold: ComponentFunction<ClassicProps> = ({ playerPoints = 0 }) => {
+  const starActive = playerPoints >= 1000;
     return (
 
 <div className="flex flex-col items-center text-center w-full max-w-[180px] sm:max-w-[200px]">

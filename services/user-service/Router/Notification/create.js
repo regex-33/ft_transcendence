@@ -14,8 +14,14 @@ const createNotification = async (req, reply) => {
     (gameId && typeof gameId !== "string")
   )
     return reply.status(400).send({ error: "bad request" });
+  const  user = await db.User.findByPk(userId);
+  if (!user) return reply.status(404).send({ error: "User not found" });
+  if (userId === payload.id)
+    return reply
+      .status(400)
+      .send({ error: "You cannot send notification to yourself" });
 
-  if (["MATCH_NOTIFICATION","TOURNAMENT_NOTIFICATION", "FRIEND_REQUEST"].includes(type)) {
+  if (["MATCH_NOTIFICATION", "TOURNAMENT_NOTIFICATION", "FRIEND_REQUEST"].includes(type)) {
     try {
       await db.Notification.create({
         userId,

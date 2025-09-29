@@ -67,15 +67,6 @@ Currently only starts third‑party flows (no immediate token return until front
 
 All are public (no prior auth needed).
 
----
-## Email Code / Password Reset (`/api`)
-
-| Method | Endpoint | Auth | Body | Description |
-| ------ | -------- | :--: | ---- | ----------- |
-| POST | /sendcode | No | { email } | Send 6‑digit reset code to email. |
-| POST | /checkcode | No | { email, code } | Verify code, sets auth cookies, redirects `HOME_PAGE`. |
-
-Notes: After successful `/checkcode`, the reset code record is destroyed.
 
 ---
 ## Two-Factor Authentication (`/api/2fa`)
@@ -121,12 +112,6 @@ NOT IMPLEMENTED (but were previously mentioned in comments): `validate-password`
 
 Session objects returned: `{ sessionId, lastActive, isActive }`.
 
----
-## Token / Auth Check (`/api/check`)
-
-| Method | Endpoint | Auth | Description |
-| ------ | -------- | :--: | ----------- |
-| GET | /token | Yes | Returns 200 if token valid (no body). |
 
 ---
 ## Data Models (Highlights)

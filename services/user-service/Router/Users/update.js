@@ -12,7 +12,10 @@ const update = async (req, res) => {
   try {
     req.body = await multer(req);
   } catch (error) {
+    if (error.message === "Invalid file format")
+      return res.status(400).send({ error: "Invalid file format" });
     require(`${process.env.PROJECT_PATH}/util/catch`)(error);
+    return res.status(400).send({ error: "bad request" });
   }
   if (req.body.username)
     await updateUser(req, res, payload);

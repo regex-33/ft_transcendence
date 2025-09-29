@@ -2,7 +2,6 @@ const { base64urlEncode, base64urlDecode } = require("./base64");
 const crypto = require("crypto");
 const { JWT_SECRET, TIME_TOKEN_EXPIRATION } = process.env;
 const db = require('../models');
-const { NUMBER } = require("sequelize");
 
 
 const sign = (payload, secret, options = {}) => {

@@ -30,7 +30,6 @@ const setOnline = async (req, res) => {
             return res.status(400).send({ "message": "isOnline is required" });
         }
 
-        const { username } = req.user;
         if (isOnline !== false && isOnline !== true) {
             return res.status(400).send({ "message": "isOnline must be boolean" });
         }

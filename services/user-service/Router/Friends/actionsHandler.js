@@ -29,7 +29,6 @@ const actionsHandler = async (req, reply) => {
         .send({ error: "You cannot perform this action on yourself." });
     }
 
-    // Remove any existing friend request notifications between the two users
     await db.Notification.destroy({
       where: {
         [Op.or]:[

@@ -6,8 +6,7 @@ const changePassword = async (req, res) => {
   try {
     const { check, payload } = await checkAuthJWT(req, res);
     if (check) return check;
-    req.user = payload;
-    const { id, username } = req.user;
+    const { id } = payload;
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) {
       return res.status(400).send({ error: "Current password and new password are required" });

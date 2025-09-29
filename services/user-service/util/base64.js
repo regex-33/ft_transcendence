@@ -1,14 +1,13 @@
 const base64urlEncode = (str) => {
-    
-    return Buffer.from(str)
-        .toString("base64")
-        .replace(/=/g, "")
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_");
+
+  return Buffer.from(str)
+    .toString("base64")
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
 };
 
 function base64urlDecode(str) {
-  // Add padding if needed
   str = str.replace(/-/g, '+').replace(/_/g, '/');
   while (str.length % 4) {
     str += '=';
@@ -17,6 +16,6 @@ function base64urlDecode(str) {
 }
 
 module.exports = {
-    base64urlEncode,
-    base64urlDecode
+  base64urlEncode,
+  base64urlDecode
 };

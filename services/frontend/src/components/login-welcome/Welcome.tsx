@@ -4,7 +4,7 @@ import { h } from "../../vdom/createElement";
 
 export const Welcome: ComponentFunction = () => {
   const handleGoogleLogin = useCallback(() => {
-    window.location.href = '/api/oauth/google';
+    // window.location.href = '/api/oauth/google';
   }, []);
 
   const handleGithubLogin = useCallback(() => {
