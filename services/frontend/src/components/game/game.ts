@@ -511,15 +511,18 @@ export class LocalGame extends Game {
   }
 
   private _renderFrame = () => {
+      const now = performance.now();
+      const dt = performance.now() - this._lastUpdate;
     if (this._status === "LIVE") {
-      const dt = Date.now() - this._lastUpdate;
       for (const key of this._activeKeys) {
         this._movePaddle(key, dt);
       }
       this.calcFrame(dt);
+      this._lastUpdate = performance.now();
       this.draw();
-      this._lastUpdate = Date.now();
     }
+    if (dt > 20)
+      console.log('render/calculation time:', performance.now() - now, 'dt (last - now):', dt)
     if (this._status === "ENDED") {
       this.ctx.clearRect(0, 0, GameConfig.canvasWidth, GameConfig.canvasHeight);
       this.ctx.font = "30px Luckiest Guy";
