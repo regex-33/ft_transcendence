@@ -5,7 +5,7 @@ import { Gold } from "./gameMode/Gold";
 import { h } from '../../vdom/createElement';
 import { ComponentFunction } from "../../types/global";
 
-export const GameModes: ComponentFunction = () => {
+export const GameModes: ComponentFunction = ({playerPoints}: {playerPoints: number}) => {
   return (
 <div className="w-full max-w-7xl mx-auto  sm:px-1 lg:px-8  translate-y-20">
   
@@ -21,10 +21,10 @@ export const GameModes: ComponentFunction = () => {
 
 <div className="bg-black bg-opacity-25 px-4 sm:px-10 py-9 sm:py-7 rounded-[40px] w-full mt-4 overflow-hidden">
   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 justify-items-center">
-    <Classic />
-    <Speed />
-    <Vanish />
-    <Gold />
+    <Classic playerPoints={playerPoints} />
+    <Speed playerPoints={playerPoints} />
+    <Vanish playerPoints={playerPoints} />
+    <Gold playerPoints={playerPoints} />
   </div>
 </div>
 

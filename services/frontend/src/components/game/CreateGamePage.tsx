@@ -7,18 +7,19 @@ import BadgeBg from '../../../images/game-badge-bg.png';
 import GameRemoteImg from '../../../images/game-remote.png';
 import GameLocalImg from '../../../images/game-local.png';
 import GameTournamentImg from '../../../images/game-tournament.png';
-import TournamentButtonImg from '../../../images/tournament-button.svg';
+import TournamentButtonSvg from '../../../images/tournament-button.svg';
 import { TeamCard } from './TeamCard';
 import { useAuth } from '../../hooks/useAuth';
 import { GameMode, GameType } from './game';
 import { createNewGame, redirectToActiveGame } from './utils';
 import { useToast } from './toast';
+import { fetchGameApi } from './fetch';
 
 const Badge = (props: { text: string }) => {
 	return (
 		<div className="flex justify-center items-center object-fit leading-none">
 			<div className={"bg-[url(/images/game-badge-bg.png)] font-luckiest min-w-[200px] text-center text-white p-10 bg-center bg-no-repeat bg-contain"}>
-			{props.text}
+				{props.text}
 			</div>
 		</div>
 	)
@@ -76,7 +77,7 @@ export const CreateGamePage: ComponentFunction = () => {
 			className="relative flex flex-col overflow-hidden h-screen w-screen"
 			style={{ backgroundColor: 'rgba(94, 156, 171, 0.4)' }}
 		>
-		{Toast}	
+			{Toast}
 			<div className="relative z-10">
 				<Header />
 			</div>
@@ -88,7 +89,10 @@ export const CreateGamePage: ComponentFunction = () => {
 							<div className="flex justify-center">
 								<img src={GameLocalImg} className="max-w-[100px]" />
 							</div>
-							<CardButton />
+							<CardButton onClick={() => {
+								window.history.pushState({}, "", "/game/local");
+								window.dispatchEvent(new PopStateEvent("popstate"));
+							}} />
 						</CardContainer>
 					</div>
 					<div className="justify-center">
@@ -108,7 +112,19 @@ export const CreateGamePage: ComponentFunction = () => {
 								<img src={GameTournamentImg} className="max-w-[150px]" />
 							</div>
 							<div className="flex justify-center">
-								<object type="image/svg+xml" data={TournamentButtonImg} className="max-w-[150px]"></object>
+								{/* <object type="image/svg+xml" data={TournamentButtonSvg} className="max-w-[150px]"></object> */}
+								<button onClick={async () => {
+									try {
+										const tournament = await fetchGameApi('/tournament/create', 'POST');
+										window.history.pushState({}, "", "/tournament/" + tournament.id);
+										window.dispatchEvent(new PopStateEvent("popstate"));
+									}
+									catch (err) {
+										console.log("create tournament error: ", err)
+									}
+								}}>
+									<img src={TournamentButtonSvg} className="hover:scale-[0.96]" />
+								</button>
 							</div>
 						</CardContainer>
 					</div>

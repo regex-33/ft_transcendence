@@ -3,6 +3,15 @@ import { createGameSchema, getGameSchema, inviteGameSchema, joinGameSchema } fro
 import { createGame, getGame, joinGame } from '../controllers/gameController';
 import { checkAuth } from '../controllers/checkAuth';
 import { games, invites } from '../gameState';
+import { GameMode, GameStatus, type PrismaClient } from '../../generated/prisma';
+import { getOrCreatePlayer } from '../controllers/playerController';
+
+const MODE_POINTS = {
+	[GameMode.CLASSIC]: 150,
+	[GameMode.SPEED]: 300,
+	[GameMode.VANISH]: 550,
+	[GameMode.GOLD]: 1000,
+}
 
 async function gameRoutes(fastify: FastifyInstance) {
 	fastify.addHook('preHandler', checkAuth);
@@ -13,11 +22,12 @@ async function gameRoutes(fastify: FastifyInstance) {
 		{ schema: createGameSchema },
 		async (request, reply: FastifyReply) => {
 			const user = (request as any).user;
-			console.log('user:', user);
 			const { gameType, gameMode } = request.body as any;
 			const db = fastify.prisma;
-			// const player = await createPlayer(db, { id: 10 });
-			const userId = user.id;
+			const player = await getOrCreatePlayer(db, user);
+			const modePoints = MODE_POINTS[gameMode as GameMode];
+			if (player.points < modePoints)
+				return reply.code(401).send({ error: 'not enough points for this game mode' });
 			const game = await createGame(db, {
 				type: gameType,
 				mode: gameMode,
@@ -62,21 +72,18 @@ async function gameRoutes(fastify: FastifyInstance) {
 				return reply.code(403).send({
 					error: 'player is already invited to this game',
 				}); // Keep same message ??
-			const response = await fetch(
-				'http://user-service:8001/api/notifications/create',
-				{
-					method: 'POST',
-					headers: {
-						Cookie: cookies,
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						gameId: gameId,
-						userId: playerId,
-						type: 'MATCH_NOTIFICATION',
-					}),
-				}
-			);
+			const response = await fetch('http://user-service:8001/api/notifications/create', {
+				method: 'POST',
+				headers: {
+					Cookie: cookies,
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					gameId: gameId,
+					userId: playerId,
+					type: 'MATCH_NOTIFICATION',
+				}),
+			});
 			if (!response.ok) {
 				const text = await response.text();
 				console.log('fetch err:', response.status, text);
@@ -104,15 +111,12 @@ async function gameRoutes(fastify: FastifyInstance) {
 					gameInvites.filter((id) => id !== playerId)
 				);
 			const cookies = 'session_id=' + sessionId + ';token=' + token;
-			const response = await fetch(
-				'http://user-service:8001/api/notifications/' + gameId,
-				{
-					method: 'DELETE',
-					headers: {
-						Cookie: cookies,
-					},
-				}
-			);
+			const response = await fetch('http://user-service:8001/api/notifications/' + gameId, {
+				method: 'DELETE',
+				headers: {
+					Cookie: cookies,
+				},
+			});
 			if (!response.ok) {
 				const text = await response.text();
 				console.log('fetch err:', response.status, text);
@@ -131,7 +135,7 @@ async function gameRoutes(fastify: FastifyInstance) {
 			const user = (request as any).user;
 			const { gameId } = request.body;
 			const db = fastify.prisma;
-			// const player = await createPlayer(db, { id: 10 });
+			// const player = await getOrCreatePlayer(db, { id: 10 });
 			const cookies = 'session_id=' + sessionId + ';token=' + token;
 			fetch('http://user-service:8001/api/notifications/' + gameId, {
 				method: 'DELETE',
@@ -148,9 +152,22 @@ async function gameRoutes(fastify: FastifyInstance) {
 		}
 	);
 
-	// fastify.post('/delete', async (request, reply) => {
-	//	return { "hello": "world" };
-	// });
+	fastify.get('/recent', async (request, reply) => {
+		const user = request.user;
+		const db: PrismaClient = fastify.prisma;
+		try {
+			const games = await db.game.findMany({
+				where: { status: { not: { equals: GameStatus.WAITING } } },
+				include: { gamePlayers: { include: { player: true } } },
+				orderBy: [{ updatedAt: 'desc' }, { status: 'desc' }],
+				take: 5,
+			});
+			if (!games) return reply.code(400).send({ error: 'could not fetch recent games' });
+			reply.code(200).send(games);
+		} catch (err) {
+			reply.code(404).send({ error: 'could not fetch recent games' });
+		}
+	});
 
 	fastify.get<{ Params: { id: string } }>(
 		'/:id',

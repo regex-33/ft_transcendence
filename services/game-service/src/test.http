@@ -57,6 +57,10 @@ GET http://localhost:9000/game/9fe89080-58d5-4d00-bbaa-415fde66c7c9
 GET http://localhost:9000/player/games
 ###
 
+###
+GET http://localhost:9000/player/
+###
+
 # @name createNotification
 @gameId = {{createGame.response.body.id}}
 POST http://localhost:8001/api/notifications/create

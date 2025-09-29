@@ -79,7 +79,7 @@ export const Sidebar: ComponentFunction = () => {
     const fetchMatches = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/recent`);
+        const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/game/recent`);
         if (!response.ok) {
           throw new Error('Failed to fetch matches');
         }

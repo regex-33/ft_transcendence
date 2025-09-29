@@ -74,10 +74,10 @@ const FPS = 60;
 const tick = 1000 / FPS;
 const gameWidth = 200;
 const ratio = 1 / 2;
-const paddleWidth = (gameWidth * 3) / 100;
-const paddleRatio = 15 / 3;
+const paddleWidth = (gameWidth * 2) / 100;
+const paddleRatio = 20 / 3;
 const paddleHeight = paddleWidth * paddleRatio;
-const ballRadius = 2;
+const ballRadius = 3;
 const paddleSpeed = 2;
 
 const gameHeight = gameWidth * ratio;

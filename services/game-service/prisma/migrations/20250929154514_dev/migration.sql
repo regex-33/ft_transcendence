@@ -1,0 +1,20 @@
+-- RedefineTables
+PRAGMA defer_foreign_keys=ON;
+PRAGMA foreign_keys=OFF;
+CREATE TABLE "new_Player" (
+    "userId" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "updatedAt" DATETIME NOT NULL,
+    "avatar" TEXT NOT NULL,
+    "username" TEXT NOT NULL,
+    "points" INTEGER NOT NULL DEFAULT 150,
+    "wins" INTEGER NOT NULL DEFAULT 0,
+    "losses" INTEGER NOT NULL DEFAULT 0,
+    "activeGameId" TEXT,
+    CONSTRAINT "Player_activeGameId_fkey" FOREIGN KEY ("activeGameId") REFERENCES "Game" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+);
+INSERT INTO "new_Player" ("activeGameId", "avatar", "points", "updatedAt", "userId", "username") SELECT "activeGameId", "avatar", "points", "updatedAt", "userId", "username" FROM "Player";
+DROP TABLE "Player";
+ALTER TABLE "new_Player" RENAME TO "Player";
+CREATE INDEX "Player_activeGameId_idx" ON "Player"("activeGameId");
+PRAGMA foreign_keys=ON;
+PRAGMA defer_foreign_keys=OFF;
