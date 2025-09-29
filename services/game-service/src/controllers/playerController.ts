@@ -6,7 +6,7 @@ export type UserData = {
 	username: string;
 };
 
-export const createPlayer = async (db: PrismaClient | Prisma.TransactionClient, data: UserData) => {
+export const getOrCreatePlayer = async (db: PrismaClient | Prisma.TransactionClient, data: UserData) => {
 	const player = await db.player.upsert({
 		where: { userId: data.id },
 		update: {},

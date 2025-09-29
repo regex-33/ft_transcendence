@@ -2,6 +2,7 @@ import { Connection } from "./connection";
 import { Player } from "./GamePage";
 import { UpdateMessage } from "./types";
 import koraSVG from "../../../images/kora.svg";
+import { throttle } from "../../utils/throttle";
 
 const MAX_SCORE = 4;
 export class GameConfig {
@@ -302,12 +303,10 @@ export class RemoteGame extends Game {
     connection.on("GAME_UPDATE", this.onServerUpdate);
     connection.on("PLAYER_DISCONNECT", this._onPlayerDisconnect);
     connection.on("PLAYER_CONNECT", this._onPlayerConnect);
-    connection.on("GAME_END", (data: { players: Player[] }) => {
+    connection.on("GAME_END", (data: { players: Player[], winners: {username: string}[] }) => {
       this._scores = data.players.map((player) => player.score);
       const maxScore = Math.max(...this._scores);
-      const winners = data.players
-        .filter((player) => player.score === maxScore)
-        .map((p) => p.username);
+      const winners = data.winners.map(w => w.username);
       console.log("winners: ", winners);
       console.log("maxScore: ", maxScore);
       console.log("data.players: ", data.players);
@@ -343,7 +342,7 @@ export class RemoteGame extends Game {
     console.log("connect received:", data);
   };
 
-  private _sendEvent = (key: string) => {
+  private _sendEvent = throttle((key: string) => {
     console.log("send event:", key);
     if (GameConfig.upKeys.has(key)) {
       this._connection!.send({ type: "UPDATE", action: "KEY_UP" });
@@ -351,7 +350,8 @@ export class RemoteGame extends Game {
       this._connection!.send({ type: "UPDATE", action: "KEY_DOWN" });
     }
     console.log("key:", key);
-  };
+  }, 20);
+
 
   private _renderFrame = () => {
     for (const key of this._activeKeys) this._sendEvent(key);

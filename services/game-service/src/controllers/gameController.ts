@@ -1,7 +1,7 @@
 import type { PrismaClient, Prisma } from '../../generated/prisma';
 import { GameStatus, GameType, GameMode } from '../../generated/prisma';
 import { invites } from '../gameState';
-import { createPlayer, type UserData } from './playerController';
+import { getOrCreatePlayer, type UserData } from './playerController';
 
 type GameData = {
 	type: GameType;
@@ -11,7 +11,7 @@ type GameData = {
 
 const createGame = async (db: PrismaClient | Prisma.TransactionClient, data: GameData) => {
 	try {
-		//const player = await createPlayer(db, { id: data.player.id, avatar: data.player.avatar, username: data.player.username });
+		// const player = await getOrCreatePlayer(db, { id: data.player.id, avatar: data.player.avatar, username: data.player.username });
 		//console.log('player:', player);
 
 		const game = await db.game.create({
@@ -74,7 +74,7 @@ const joinGame = async (db: PrismaClient, data: { gameId: string; player: UserDa
 			return null;
 		}
 		const game = await db.$transaction(async (tx) => {
-			const player = await createPlayer(tx, {
+			const player = await getOrCreatePlayer(tx, {
 				id: data.player.id,
 				avatar: data.player.avatar,
 				username: data.player.username,

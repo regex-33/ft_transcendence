@@ -5,7 +5,7 @@ import { getGame } from '../controllers/gameController';
 import type { Ball, Direction, GameMetadata, GameSession, Paddle, PlayerState } from '../gameState';
 import type WebSocket from 'ws';
 import { games, connections, gameConfig, initSession } from '../gameState';
-import { GameStatus, GameTeam, GameType, type PrismaClient } from '../../generated/prisma';
+import { GameStatus, GameTeam, GameType, Prisma, type PrismaClient } from '../../generated/prisma';
 import { tournamentManager } from '../controllers/tournamentController';
 
 // INIT: { type: init, data: gameId} response: {type: init_ack, players: [], spectator: bool }
@@ -118,8 +118,16 @@ function sendPlayerUpdate(socket: WebSocket, session: GameSession) {
 	//const players = session.state.players.map(({ socket, ...rest }) => rest);
 	socket.send(JSON.stringify({ type: 'PLAYERS_UPDATE', players: session.state.players }));
 }
+type UpdatedGame = Prisma.GameGetPayload<{
+    include: {
+        players: true,
+        gamePlayers: {
+            include: { player: true }
+        }
+    }
+}>
 
-async function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
+async function endGame(gameSession: GameSession, prismaClient: PrismaClient, sendEnd = false) {
 	const game = gameSession.game;
 	const now = Date.now();
 	let duration;
@@ -132,15 +140,58 @@ async function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	console.log('scoreB:', TeamBScore);
 	const winningTeam =
 		TeamAScore === TeamBScore ? null : TeamAScore > TeamBScore ? GameTeam.TEAM_A : GameTeam.TEAM_B;
+	if (sendEnd)
+	{
+		const winnersStats = gameSession.state.players.filter(p => p.team === winningTeam);
+		const winners = gameSession.game.players.filter(p => !!winnersStats.find(w => w.id === p.userId));
+		gameSession.state.playersSockets.forEach((s) => {
+			s.send(
+				JSON.stringify({
+					type: 'GAME_END',
+					players: gameSession.state.players,
+					winners: winners
+				})
+			);
+			s.close();
+		});
+	}
+	let playerOps: Prisma.PrismaPromise<Prisma.BatchPayload>[] = [];
+	if (winningTeam === null) {
+		playerOps.push(
+			prismaClient.player.updateMany({
+				where: { activeGameId: game.id },
+				data: {
+					activeGameId: null,
+				},
+			})
+		);
+	} else {
+		playerOps.push(
+			prismaClient.player.updateMany({
+				where: {
+					activeGameId: game.id,
+					games: { some: { team: { not: { equals: winningTeam } } } },
+				},
+				data: {
+					losses: { increment: 1 },
+					activeGameId: null,
+				},
+			})
+		);
+		playerOps.push(
+			prismaClient.player.updateMany({
+				where: { activeGameId: game.id, games: { some: { team: { equals: winningTeam } } } },
+				data: {
+					points: { increment: 100 },
+					wins: { increment: 1 },
+					activeGameId: null,
+				},
+			})
+		);
+	}
 	gameSession.game.status = GameStatus.ENDED;
-	const [, , , updatedGame] = await prismaClient.$transaction([
-		prismaClient.player.updateMany({
-			where: { activeGameId: game.id },
-			data: {
-				points: { increment: 100 },
-				activeGameId: null,
-			},
-		}),
+	const updates = await prismaClient.$transaction([
+		...playerOps,
 		prismaClient.gamePlayer.updateMany({
 			where: { gameId: game.id, team: GameTeam.TEAM_A },
 			data: {
@@ -168,14 +219,13 @@ async function endGame(gameSession: GameSession, prismaClient: PrismaClient) {
 			},
 		}),
 	]);
+	const updatedGame = updates.at(-1) as UpdatedGame;
 	if (updatedGame && updatedGame.tournamentId) {
 		tournamentManager.onGameEnd(updatedGame);
 	}
 	games.delete(gameSession.game.id);
 }
 function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
-	// TODO: notify players about game start
-	// TODO: run game loop
 	const runner = createGameRunner(gameSession);
 	gameSession.game.status = 'LIVE';
 	const promise = prismaClient.game
@@ -202,19 +252,20 @@ function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	gameSession.intervalId = setInterval(runner, gameConfig.tick);
 	gameSession.onEnd = () => {
 		console.log('ENDING GAME');
-		clearInterval(gameSession.intervalId);
-		gameSession.state.playersSockets.forEach((s) => {
-			s.send(
-				JSON.stringify({
-					type: 'GAME_END',
-					players: gameSession.state.players,
-				})
-			);
-			s.close();
-		});
+		if (gameSession.intervalId)
+			clearInterval(gameSession.intervalId);
+		// gameSession.state.playersSockets.forEach((s) => {
+		// 	s.send(
+		// 		JSON.stringify({
+		// 			type: 'GAME_END',
+		// 			players: gameSession.state.players,
+		// 		})
+		// 	);
+		// 	s.close();
+		// });
 		//gameSession.state.playersSockets.forEach((s) => s.close());
 		gameSession.state.spectators.forEach((s) => s.close());
-		endGame(gameSession, prismaClient);
+		endGame(gameSession, prismaClient, true);
 	};
 	gameSession.startAt = Date.now();
 }
@@ -358,20 +409,20 @@ async function playRoutes(fastify: FastifyInstance) {
 					}
 					console.log('[RECV] data:', data);
 					if (data.type == 'INIT') {
-						const paddleDir: Direction =
-							session.state.players.filter((p) => p.paddle.dir === 'LEFT').length % 2
-								? 'RIGHT'
-								: 'LEFT';
-						const playerTeam = paddleDir === 'LEFT' ? GameTeam.TEAM_A : GameTeam.TEAM_B;
-						const playerState: PlayerState = {
-							id: playerId,
-							score: 0,
-							paddle: createPaddle(paddleDir),
-							team: playerTeam,
-						};
 						if (session.state.players.find((p) => p.id === playerId) !== undefined)
 							console.log('already initialized');
-						else session.state.players.push(playerState);
+						else {
+							const pIdx = session.game.players.findIndex(p => p.userId === playerId);
+							const paddleDir: Direction = pIdx % 2 === 0 ? 'RIGHT' : 'LEFT';
+							const playerTeam = paddleDir === 'LEFT' ? GameTeam.TEAM_A : GameTeam.TEAM_B;
+							const playerState: PlayerState = {
+								id: playerId,
+								score: 0,
+								paddle: createPaddle(paddleDir),
+								team: playerTeam,
+							};
+							session.state.players.splice(pIdx, 0, playerState);
+						}
 						// console.log(session.state);
 						const connectedPlayers = session.state.players.map((p) => p.id);
 						console.log('connectedPlayers:', connectedPlayers);

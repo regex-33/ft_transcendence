@@ -2,12 +2,12 @@ import type { FastifyReply } from 'fastify';
 import { Prisma, PrismaClient, TournamentStatus } from '../../generated/prisma';
 import { prismaClient } from '../client-plugin';
 import { createTournamentGame } from './gameController';
-import { createPlayer } from './playerController';
+import { getOrCreatePlayer } from './playerController';
 import type { UserData } from './playerController';
 
 export const createTournament = async (db: PrismaClient, data: UserData) => {
 	try {
-		const player = await createPlayer(db, data);
+		const player = await getOrCreatePlayer(db, data);
 		if (player.activeGameId) {
 			console.log("[ERROR]: player has a game", player.activeGameId);
 			return null;
@@ -125,7 +125,7 @@ class TournamentManager {
 		if (!tournamentState) throw new Error('tournament does not exist'); // check db ?
 		if (tournamentState.players.length >= tournamentState.maxPlayers)
 			throw new Error('Tournament full');
-		const player = await createPlayer(this._db, user);
+		const player = await getOrCreatePlayer(this._db, user);
 		if (player.activeGameId) throw new Error('player already in game');
 		if (this.playerHasTournament(user.id)) throw new Error('player already in a tournament');
 		const playerWithId = Object.assign({ id: player.userId }, player);

@@ -2,32 +2,12 @@ import { h } from "../../vdom/createElement";
 import { useState } from "../../hooks/useState";
 import { useRef } from "../../hooks/useRef";
 import { useEffect } from "../../hooks/useEffect";
-import { Game, GameConfig, GameType, GameMode, LocalGame, RemoteGame } from "./game";
+import { GameConfig, GameType, GameMode, LocalGame, RemoteGame } from "./game";
 import { Connection } from "./connection";
 import { Player } from "./GamePage";
 import bgTeam from "../../../images/game-assets/bg-team.png";
 import ScoreSepImg from '../../../images/game-assets/score-separator.png';
 import { useToast } from "./toast";
-
-const startGame = (ctx: CanvasRenderingContext2D, game: Game, onConnect: Function): Connection => {
-	ctx;
-	const connection = new Connection(`${import.meta.env.VITE_WS_GAME_SERVICE_HOST}/play/${game.id}`);
-	console.log("calling connect");
-	connection.connect().then(() => {
-		console.log("then connect");
-		onConnect();
-		game.start(connection);
-		connection.send({
-			type: "INIT",
-		});
-		connection.send({
-			type: "FETCH_PLAYERS",
-		});
-		console.log("sent fetch");
-	});
-	return connection;
-};
-
 
 const initCanvas = (
 	canvasEl: HTMLCanvasElement,

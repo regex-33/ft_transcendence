@@ -75,6 +75,8 @@ model Player {
   username String
   
   points        Int     @default(150)
+  wins    Int   @default(0)
+  losses    Int   @default(0)
 
   games GamePlayer[]
 
