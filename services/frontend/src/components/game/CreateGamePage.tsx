@@ -14,6 +14,8 @@ import { GameMode, GameType } from './game';
 import { createNewGame, redirectToActiveGame } from './utils';
 import { useToast } from './toast';
 import { fetchGameApi } from './fetch';
+import { Modes } from './Modes';
+import { ToggleButton } from './ToggleButton';
 
 const Badge = (props: { text: string }) => {
 	return (
@@ -49,7 +51,7 @@ export const CreateGamePage: ComponentFunction = () => {
 	const [loading, isAuthenticated, user] = useAuth();
 	const [showToast, Toast] = useToast();
 	const [mode, setMode] = useState<GameMode>(GameMode.CLASSIC);
-
+	console.log("mode: ", mode);
 	useEffect(() => {
 		if (!user)
 			return;
@@ -82,8 +84,7 @@ export const CreateGamePage: ComponentFunction = () => {
 			<div className="relative z-10">
 				<Header />
 			</div>
-			<div className="flex items-center gap-10 mt-10 md:mx-5 flex-col md:flex-row md:justify-between overflow-auto">
-				<div className="gap-10 my-10 m-auto grid md:grid-rows-1 md:grid-cols-3 w-[80%] md:w-full items-center md:justify-between ">
+		<div className="gap-10 my-10 m-auto grid md:grid-rows-1 md:grid-cols-3 w-[80%] md:w-full items-center md:justify-between  px-7">
 					<div>
 						<Badge text="local" />
 						<CardContainer>
@@ -102,8 +103,7 @@ export const CreateGamePage: ComponentFunction = () => {
 							<div className="flex justify-center">
 								<img src={GameRemoteImg} className="max-w-[100px] pointer-events-none" />
 							</div>
-							<CardButton onClick={handleClickRemote.bind(null, GameType.SOLO)} />
-							<CardButton onClick={handleClickRemote.bind(null, GameType.TEAM)} />
+							<ToggleButton onStart={(type: GameType) => handleClickRemote(type, new Event("click"))} />
 						</CardContainer>
 					</div>
 					<div>
@@ -129,9 +129,10 @@ export const CreateGamePage: ComponentFunction = () => {
 							</div>
 						</CardContainer>
 					</div>
-					{/* <Modes mode={mode} setMode={setMode}></Modes> */}
 				</div>
-			</div>
+				<div className="flex justify-center w-full">
+					<Modes modes={mode} setModes={setMode}></Modes>
+				</div>
 		</div>
 	);
 };

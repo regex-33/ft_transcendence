@@ -64,7 +64,7 @@ export const Content: ComponentFunction = () => {
   return (
     <section className="w-full lg:w-[80%] flex flex-col items-center justify-center relative px-3 sm:px-6 md:px-8 mx-auto">
       <div className="w-full text-white text-center space-y-4 sm:space-y-6 md:space-y-7 transform -translate-y-8 sm:-translate-y-12 md:-translate-y-15 lg:-translate-y-9 lg:translate-x-8 xl:translate-x-14">
-        <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-8xl font-inconsolata font-bold leading-tight">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-6xl font-inconsolata font-bold leading-tight">
           Welcome Back, {playerData?.username || 'Player'}!
         </h1>
 
