@@ -110,13 +110,17 @@ export const GamePage: ComponentFunction = (props) => {
 		if (!user) return;
 		console.log("user:", user);
 		setPlayerId(user.id);
+		if (props.gameId === 'local') {
+			setGame({ id: '', players: [] });
+			return;
+		}
 		getGame(props.gameId).then((data) => {
 			setGame(data);
 		});
 	}, [user]);
 
 	useEffect(() => {
-		if (!game) return;
+		if (!game || props.gameId === 'local') return;
 		const fetchFriends = async () => {
 			try {
 				const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`,
@@ -142,15 +146,16 @@ export const GamePage: ComponentFunction = (props) => {
 	}, [game]);
 
 	const Canvas = () => {
-		if (!game || !playerId)
+		if (props.gameId !== 'local' && (!game || !playerId))
 			return (
 				<div class="flex justify-center min-h-[100vh] items-center">
 					<div class="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
 				</div>
 			);
 
-		return (game && <GameCanvas playerId={playerId} game={game} />);
+		return (game && <GameCanvas playerId={playerId ?? 0} local={props.gameId === 'local'} game={game} />);
 	};
+
 
 	return (
 		<div
@@ -161,11 +166,11 @@ export const GamePage: ComponentFunction = (props) => {
 				<Header />
 			</div>
 			<div className="flex min-h-[80vh] items-center gap-10 my-10 flex-col md:flex-row md:justify-between mx-5">
-				<Online friends={onlineFriends} position='left' gameId={game?.id || ""} />
+				{props.gameId !== 'local' ? <Online friends={onlineFriends} position='left' gameId={game?.id || ""} /> : <div></div>}
 				<div className="w-[90%] md:w-[70%] md:max-w-[1200px]">
 					<Canvas />
 				</div>
-				<Online friends={onlineFriends} position='right' gameId={game?.id || ""} />
+				{props.gameId !== 'local' ? <Online friends={onlineFriends} position='right' gameId={game?.id || ""} /> : <div></div>}
 			</div>
 		</div>
 	);

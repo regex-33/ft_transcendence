@@ -9,8 +9,7 @@ import { GameStatus, GameTeam, GameType, type PrismaClient } from '../../generat
 import { tournamentManager } from '../controllers/tournamentController';
 
 // INIT: { type: init, data: gameId} response: {type: init_ack, players: [], spectator: bool }
-//
-//
+
 const BALL_SPEED = 0.1;
 const SPEED_BALL_SPEED = 1.8;
 const MAX_SCORE = 4;
@@ -46,7 +45,6 @@ function goal(players: PlayerState[], dir: Direction) {
 	}
 	return false;
 }
-
 
 function simPong(gameSession: GameSession, dt: number) {
 	const ball = gameSession.state.ball;
@@ -344,7 +342,6 @@ async function playRoutes(fastify: FastifyInstance) {
 						session.state.players = session.state.players.filter((p) => p.id !== playerId);
 					}
 				}, DISCONNECT_TIMEOUT);
-				// Delete all game ??? and set winner ??
 				socket.removeAllListeners();
 			};
 
@@ -354,9 +351,6 @@ async function playRoutes(fastify: FastifyInstance) {
 					const data = await JSON.parse(raw);
 					const session = connections.get(socket);
 					if (!session) throw new Error('Session not added to map');
-					//console.log('session:', session);
-					//const isSpec = !(playerId in session.state.players);
-					//console.log('isSpec:', isSpec);
 					if (isSpec) {
 						console.log('New Spectator:', playerId);
 						socket.close(1008, 'Unauthorized');

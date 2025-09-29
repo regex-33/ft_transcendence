@@ -2,7 +2,7 @@ import { h } from "../../vdom/createElement";
 import { useState } from "../../hooks/useState";
 import { useRef } from "../../hooks/useRef";
 import { useEffect } from "../../hooks/useEffect";
-import { Game, GameConfig, GameType, GameMode } from "./game";
+import { Game, GameConfig, GameType, GameMode, LocalGame, RemoteGame } from "./game";
 import { Connection } from "./connection";
 import { Player } from "./GamePage";
 import bgTeam from "../../../images/game-assets/bg-team.png";
@@ -94,7 +94,7 @@ const TeamBadge = ({
 	);
 };
 
-export const GameCanvas = (props: { playerId: number; game: any }) => {
+export const GameCanvas = (props: { local: boolean; playerId: number; game: any }) => {
 	const [scores, setScores] = useState([0, 0]);
 	const [players, setPlayers] = useState<Player[]>([]);
 	const [started, setStarted] = useState(false);
@@ -106,7 +106,9 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 	const handleCanvasResize = () => {
 		const canvasEl = canvasRef.current;
 		if (!canvasEl) return;
-		const ratio = window.devicePixelRatio;
+		//const ratio = window.devicePixelRatio || 1;
+		const ratio = 1;
+		console.log('ratio', ratio);
 		canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width * ratio;
 		canvasEl.height = canvasEl.width * GameConfig.canvasRatio * ratio;
 		canvasEl.getContext("2d")?.scale(ratio, ratio)
@@ -120,6 +122,11 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 	};
 
 	useEffect(() => {
+		if (props.local) {
+			setPlayers([{ username: 'Player 1', userId: 0, avatar: '/images/default-avatar.png', score: 0 },
+			{ username: 'Player 2', userId: 1, avatar: '/images/default-avatar.png', score: 0 }]);
+			return;
+		}
 		if (!props.game?.id) return;
 		console.log("gameId:", props.game.id);
 		const players = props.game.players;
@@ -141,6 +148,18 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 
 	const handleStartGame = () => {
 		if (!canvasRef.current) return;
+		if (props.local) {
+			const context = initCanvas(canvasRef.current, handleCanvasResize);
+			const gameData = {
+				id: props.game.id,
+				type: GameType.SOLO,
+				mode: GameMode.CLASSIC,
+			};
+			const game = new LocalGame(context, gameData, setScores, setPlayers);
+			game.start();
+			setStarted(true);
+			return;
+		}
 		const connection = connectionRef.current;
 		if (!connection) return;
 		setStarted(true);
@@ -151,11 +170,11 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 
 	useEffect(() => {
 		if (!canvasRef.current) return;
+
+		const context = initCanvas(canvasRef.current, handleCanvasResize);
+		if (props.local) return;
 		const connection = connectionRef.current;
 		if (!connection) return;
-		if (!canvasRef.current) return;
-		const context = initCanvas(canvasRef.current, handleCanvasResize);
-
 		connection.connect().then(() => {
 			console.log("then connect");
 			const gameData = {
@@ -163,7 +182,7 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 				type: GameType.SOLO,
 				mode: GameMode.CLASSIC,
 			};
-			const game = new Game(context, gameData, setScores, setPlayers);
+			const game = new RemoteGame(context, gameData, setScores, setPlayers);
 			game.start(connection);
 			connection.send({
 				type: "FETCH_PLAYERS",
@@ -186,7 +205,7 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 	const handleClick = () => { };
 	return (
 		<div>
-			<div className="flex justify-center">
+			<div className="flex flex-col justify-center">
 				{Toast}
 				{
 					players?.length > 1 ? (
@@ -206,23 +225,23 @@ export const GameCanvas = (props: { playerId: number; game: any }) => {
 					) : <div className="m-auto text-center text-gray-800 text:sm md:text-xl font-luckiest">waiting for players</div>
 				}
 				<div className="px-3 py-1 rounded-3xl bg-[#91BFBF]">
-				<div className="relative flex justify-center my-2 bg-white p-4 shadow-xs shadow-gray-400 rounded-xl">
-					<div className="w-full flex justify-center">
-						<canvas
-							ref={canvasRef}
-							height="400px"
-							width="800px"
-							id="game-canvas"
-							onClick={handleClick}
-							className="bg-[#91BFBF]"
-						></canvas>
-					</div>
-					{(players?.length === 2 && !started) && <button onClick={handleStartGame} className="absolute flex gap-4 align-center border-2 top-[50%] translate-y-[-50%] text-lg rounded-lg shadow-sm bg-teal-400 hover:bg-teal-300 px-8 py-2 font-poppins font-bold text-white">
-					<i class="fa-solid text-lg fa-table-tennis-paddle-ball"></i>	
-					<div>start</div>
+					<div className="relative flex justify-center my-2 bg-white p-4 shadow-xs shadow-gray-400 rounded-xl">
+						<div className="w-full flex justify-center">
+							<canvas
+								ref={canvasRef}
+								height="400px"
+								width="800px"
+								id="game-canvas"
+								onClick={handleClick}
+								className="bg-[#91BFBF]"
+							></canvas>
+						</div>
+						{(players?.length === 2 && !started) && <button onClick={handleStartGame} className="absolute flex gap-4 align-center border-2 top-[50%] translate-y-[-50%] text-lg rounded-lg shadow-sm bg-teal-400 hover:bg-teal-300 px-8 py-2 font-poppins font-bold text-white">
+							<i class="fa-solid text-lg fa-table-tennis-paddle-ball"></i>
+							<div>start</div>
 						</button>
-					 }
-				</div></div>
+						}
+					</div></div>
 			</div>
 		</div>
 	);
