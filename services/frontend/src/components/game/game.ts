@@ -8,12 +8,12 @@ export class GameConfig {
   static canvasWidth = 0;
   static canvasHeight = 0;
   static paddleWidth = 0;
-  static paddlePercent = 3;
-  static paddleSpeed = 10;
-  static ballSpeed = 5;
+  static paddlePercent = 2;
+  static paddleSpeed = 0.6;
+  static ballSpeed = 0.4;
   static SpeedBallSpeed = 9;
   static ballRadius = 3 * (GameConfig.canvasWidth / 200);
-  static readonly paddleRatio = 15 / 3;
+  static readonly paddleRatio = 20 / 3;
   static readonly canvasRatio = 1 / 2;
   static upKeys = new Set(["ArrowLeft", "ArrowUp", "W", "w", "a", "A"]);
   static downKeys = new Set(["ArrowRight", "ArrowDown", "d", "D", "s", "S"]);
@@ -176,6 +176,7 @@ abstract class Game {
   protected _scores: number[];
   protected _status: "WAITING" | "LIVE" | "ENDED" = "WAITING";
   protected _activeKeys: Set<string>;
+  protected _lastUpdate = Date.now();
   protected _endgameText = "";
 
   constructor(
@@ -231,7 +232,6 @@ abstract class Game {
 }
 
 export class RemoteGame extends Game {
-  private _lastUpdate = Date.now();
   private _connection: Connection | null;
 
   constructor(
@@ -390,11 +390,12 @@ export class LocalGame extends Game {
     console.log(this.paddles);
     window.addEventListener("keydown", this._onKeyDown);
     window.addEventListener("keyup", this._onKeyUp);
+    this._lastUpdate = Date.now();
     requestAnimationFrame(this._renderFrame);
     this._status = "LIVE";
   }
 
-  private _movePaddle(key: string) {
+  private _movePaddle(key: string, dt: number) {
     let paddleIdx = 0;
     let dir: "UP" | "DOWN" = "UP";
     if (
@@ -412,7 +413,7 @@ export class LocalGame extends Game {
     const paddleHeight = GameConfig.paddleRatio * GameConfig.paddleWidth;
     console.log("move:", GameConfig.paddleRatio, GameConfig.paddleWidth);
     this.paddles[paddleIdx]!.y +=
-      dir === "UP" ? -GameConfig.paddleSpeed : GameConfig.paddleSpeed;
+      dir === "UP" ? -GameConfig.paddleSpeed * dt : GameConfig.paddleSpeed * dt;
     if (this.paddles[paddleIdx].y < 0) this.paddles[paddleIdx].y = 0;
     if (this.paddles[paddleIdx].y + paddleHeight > GameConfig.canvasHeight)
       this.paddles[paddleIdx].y = GameConfig.canvasHeight - paddleHeight;
@@ -450,9 +451,10 @@ export class LocalGame extends Game {
     this._activeKeys.add(e.key);
   };
 
-  private calcFrame() {
-    const ballSpeed =
+  private calcFrame(dt: number) {
+    let ballSpeed =
       this.mode === "SPEED" ? GameConfig.SpeedBallSpeed : GameConfig.ballSpeed;
+    ballSpeed *= dt;
     const paddleHeight = GameConfig.paddleRatio * GameConfig.paddleWidth;
     this.ball.x += this.ball.vx * ballSpeed;
     this.ball.y += this.ball.vy * ballSpeed;
@@ -509,12 +511,14 @@ export class LocalGame extends Game {
   }
 
   private _renderFrame = () => {
-    for (const key of this._activeKeys) {
-      this._movePaddle(key);
-    }
     if (this._status === "LIVE") {
-      this.calcFrame();
+      const dt = Date.now() - this._lastUpdate;
+      for (const key of this._activeKeys) {
+        this._movePaddle(key, dt);
+      }
+      this.calcFrame(dt);
       this.draw();
+      this._lastUpdate = Date.now();
     }
     if (this._status === "ENDED") {
       this.ctx.clearRect(0, 0, GameConfig.canvasWidth, GameConfig.canvasHeight);
