@@ -8,7 +8,7 @@ import { Online } from '../chat_front/online';
 interface LeaderboardUser {
   id: number;
   avatar: string;
-  name: string;
+  username: string;
   wins: number;
   online: boolean;
 }
@@ -244,7 +244,7 @@ export const Leaderboard: ComponentFunction = () => {
                             {/* Profile Avatar */}
                             <div 
                               className="relative w-16 h-16 flex-shrink-0 transition-transform duration-200 hover:scale-95 cursor-pointer"
-                              onClick={(e: Event) => handleProfileClick(user.name, e)}
+                              onClick={(e: Event) => handleProfileClick(user.username, e)}
                             >
                               <img
                                 src={user.online ? '/images/home-assests/cir-online.svg' : '/images/home-assests/cir-offline.svg'}
@@ -253,17 +253,17 @@ export const Leaderboard: ComponentFunction = () => {
                               />
                               <img
                                 src={user.avatar}
-                                alt={user.name}
+                                alt={user.username}
                                 className="w-14 h-14 rounded-full border-2 border-white/50 absolute inset-0 m-auto object-cover"
                               />
                             </div>
                             {/* content */}
                             <li
                               className={`grid grid-cols-[1fr_auto_1fr] items-center p-4 rounded-full ${
-                                user.name === me?.username ? 'bg-[#4EBDE6]' : 'bg-[#AE9C8C]'
+                                user.username === me?.username ? 'bg-[#4EBDE6]' : 'bg-[#AE9C8C]'
                               } backdrop-blur-sm w-full`}
                             >
-                              <span className="text-white font-semibold text-lg justify-self-start">{user.name}</span>
+                              <span className="text-white font-semibold text-lg justify-self-start">{user.username}</span>
 
                               <div className="justify-self-start w-[300px]">
                                 <div className="flex items-center gap-1 ">

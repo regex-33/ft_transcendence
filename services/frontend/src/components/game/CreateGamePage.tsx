@@ -48,6 +48,7 @@ const CardButton = (props: { onClick?: CallableFunction }) => {
 export const CreateGamePage: ComponentFunction = () => {
 	const [loading, isAuthenticated, user] = useAuth();
 	const [showToast, Toast] = useToast();
+	const [mode, setMode] = useState<GameMode>(GameMode.CLASSIC);
 
 	useEffect(() => {
 		if (!user)
@@ -87,7 +88,7 @@ export const CreateGamePage: ComponentFunction = () => {
 						<Badge text="local" />
 						<CardContainer>
 							<div className="flex justify-center">
-								<img src={GameLocalImg} className="max-w-[100px]" />
+								<img src={GameLocalImg} className="max-w-[100px] pointer-events-none" />
 							</div>
 							<CardButton onClick={() => {
 								window.history.pushState({}, "", "/game/local");
@@ -99,7 +100,7 @@ export const CreateGamePage: ComponentFunction = () => {
 						<Badge text="remote" />
 						<CardContainer>
 							<div className="flex justify-center">
-								<img src={GameRemoteImg} className="max-w-[100px]" />
+								<img src={GameRemoteImg} className="max-w-[100px] pointer-events-none" />
 							</div>
 							<CardButton onClick={handleClickRemote.bind(null, GameType.SOLO)} />
 							<CardButton onClick={handleClickRemote.bind(null, GameType.TEAM)} />
@@ -109,7 +110,7 @@ export const CreateGamePage: ComponentFunction = () => {
 						<Badge text="tournament" />
 						<CardContainer>
 							<div className="flex justify-center">
-								<img src={GameTournamentImg} className="max-w-[150px]" />
+								<img src={GameTournamentImg} className="max-w-[150px] pointer-events-none" />
 							</div>
 							<div className="flex justify-center">
 								{/* <object type="image/svg+xml" data={TournamentButtonSvg} className="max-w-[150px]"></object> */}
@@ -128,6 +129,7 @@ export const CreateGamePage: ComponentFunction = () => {
 							</div>
 						</CardContainer>
 					</div>
+					{/* <Modes mode={mode} setMode={setMode}></Modes> */}
 				</div>
 			</div>
 		</div>
