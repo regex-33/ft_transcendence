@@ -12,6 +12,7 @@ services/devops/traefik/certs/*
 services/devops/logging/secrets/vault-certs/*
 services/user-service/database.sqlite
 **/.DS_Store
+**/.env
 **/database.sqlite
 generate_test_logs.py
 .DS_Store
