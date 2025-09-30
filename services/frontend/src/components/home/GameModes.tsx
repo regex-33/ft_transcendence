@@ -5,7 +5,11 @@ import { Gold } from "./gameMode/Gold";
 import { h } from '../../vdom/createElement';
 import { ComponentFunction } from "../../types/global";
 
-export const GameModes: ComponentFunction = ({playerPoints}: {playerPoints: number}) => {
+interface GameModesProps {
+  playerPoints: number;
+}
+
+export const GameModes: ComponentFunction<GameModesProps> = ({ playerPoints }) => {
   return (
 <div className="w-full max-w-7xl mx-auto  sm:px-1 lg:px-8  translate-y-20">
   

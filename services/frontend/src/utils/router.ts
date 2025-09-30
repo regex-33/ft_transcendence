@@ -1,5 +1,5 @@
 // ===== src/utils/router.ts (Updated with cleanup) =====
-import { Component } from '../main';
+import { Component } from "./../core/Component";
 
 /**
  * Router class for handling client-side routing in a single-page application.

@@ -1,4 +1,14 @@
 # Ignore all .DS_Store files in any directory
+services/devops/logging/secrets/.env.kibana.token
+services/devops/logging/secrets/certs/ca.zip
+services/devops/logging/secrets/certs/ca/*
+services/devops/logging/secrets/certs/certs.zip
+services/devops/logging/secrets/certs/elasticsearch/*
+services/devops/logging/secrets/certs/kibana/*
+services/devops/logging/secrets/keystore/elasticsearch.keystore
+services/devops/logging/secrets/service_tokens
+services/devops/logging/secrets/vault-certs/*
+services/devops/traefik/certs/*
 services/devops/logging/secrets/vault-certs/*
 services/user-service/database.sqlite
 **/.DS_Store
@@ -15,12 +25,10 @@ dist/
 **/dist/
 node_modules/
 **/node_modules/
-services/devops/traefik/certs/ft-transcendence.key
 services/frontend/.vite
 services/frontend/node_modules
 services/user-service/database.sqlite
 debugging-scripts/nots.md
-node_modules
 secrets/vault-certs
 uploads
 .vscode
