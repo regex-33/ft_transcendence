@@ -48,9 +48,11 @@ const AvatarCircle = ({
 const TeamBadge = ({
 	player,
 	reverse = false,
+	team = false
 }: {
 	player: Player | undefined;
 	reverse: boolean;
+	team: boolean
 }) => {
 	if (!player) return <div></div>;
 	let nameBadge = (
@@ -76,8 +78,9 @@ const TeamBadge = ({
 
 export const GameCanvas = (props: { local: boolean; playerId: number; game: any }) => {
 	const [scores, setScores] = useState([0, 0]);
-	const [players, setPlayers] = useState<Player[]>([]);
 	const [started, setStarted] = useState(false);
+	const [players, setPlayers] = useState<Player[]>([]);
+	const [spectators, setSpectators] = useState<Omit<Player, 'score'>[]>([]);
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	// const [connection, setConnection] = useState<Connection | null>(null);
 	const connectionRef = useRef<Connection | null>(null);
@@ -86,22 +89,18 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 	const handleCanvasResize = () => {
 		const canvasEl = canvasRef.current;
 		if (!canvasEl) return;
-		//const ratio = window.devicePixelRatio || 1;
 		const ratio = 1;
-		console.log('ratio', ratio);
 		canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width * ratio;
 		canvasEl.height = canvasEl.width * GameConfig.canvasRatio * ratio;
 		canvasEl.getContext("2d")?.scale(ratio, ratio)
 		canvasEl.style.width = canvasEl.width / ratio + 'px';
 		canvasEl.style.height = canvasEl.height / ratio + 'px';
 
-		console.log(canvasEl.width);
-		console.log(canvasEl.height);
-		console.log(canvasEl.clientWidth, canvasEl.clientHeight);
 		GameConfig.onResize(canvasEl.width, canvasEl.height);
 	};
 
 	useEffect(() => {
+		console.log('started is', started);
 		if (props.local) {
 			setPlayers([{ username: 'Player 1', userId: 0, avatar: '/images/default-avatar.png', score: 0 },
 			{ username: 'Player 2', userId: 1, avatar: '/images/default-avatar.png', score: 0 }]);
@@ -118,11 +117,17 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 			return () => {
 				console.log("close conn on unmount:", conn);
 				conn.close();
+				if (connectionRef.current === conn) {
+					connectionRef.current = null;
+				}
 			}
 		}
 		return () => {
 			console.log("close connection on unmount:", connection);
 			connection.close();
+			if (connectionRef.current === connection) {
+				connectionRef.current = null;
+			}
 		}
 	}, [props.game]);
 
@@ -133,9 +138,11 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 			const gameData = {
 				id: props.game.id,
 				type: GameType.SOLO,
-				mode: GameMode.CLASSIC,
+				mode: props.game.mode,
 			};
-			const game = new LocalGame(context, gameData, setScores, setPlayers);
+			const game = new LocalGame(context, gameData, setScores, (players: Player[]) => {
+				setPlayers(players);
+			});
 			game.start();
 			setStarted(true);
 			return;
@@ -156,56 +163,90 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 		const connection = connectionRef.current;
 		if (!connection) return;
 		connection.connect().then(() => {
-			console.log("then connect");
 			const gameData = {
 				id: props.game.id,
 				type: GameType.SOLO,
 				mode: GameMode.CLASSIC,
 			};
-			const game = new RemoteGame(context, gameData, setScores, setPlayers);
-			game.start(connection);
-			connection.send({
-				type: "FETCH_PLAYERS",
-			});
+			const game = new RemoteGame(context, gameData, setScores, setPlayers, setSpectators);
+			const isSpec = !props.game.players.find((p: Player) => p.userId === props.playerId);
+			game.start(connection, isSpec);
+			if (props.game.players.map((p: Player) => p.userId).includes(props.playerId)) {
+				console.log('fetch players');
+				connection.send({
+					type: "FETCH_PLAYERS",
+				});
+			}
 			console.log("sent fetch");
 		}).catch(err => {
 			console.log("connect error:", err);
 			connection.close();
+			if (connectionRef.current === connection)
+				connectionRef.current = null;
 		});
 		connection.onClose((e: CloseEvent) => {
 			console.log('socket closed:', e.reason);
-			showToast("Connection closed", "error");
+			if (connectionRef.current === connection) {
+				connectionRef.current = null;
+			}
+			if (!started)
+				showToast('Connection closed');
 		})
 		return () => {
 			console.log("Cleanup called");
 			window.removeEventListener("resize", handleCanvasResize);
+			if (connectionRef.current === connection)
+				connectionRef.current = null;
 		};
 	}, [canvasRef, connectionRef])
 
+
 	const handleClick = () => { };
+	const maxPlayers = props.local ? 2 : props.game.type === 'SOLO' ? 2 : 4;
+	const bgColor = props.game.mode === 'GOLD' || props.game.type === 'TEAM' ? 'bg-[#23444E]' : 'bg-[#91BFBF]';
+	const borderColor = props.game.mode === 'GOLD' || props.game.type === 'TEAM' ? 'bg-[#76A29B]' : 'bg-white';
+
+	const teamBadge = maxPlayers === 2 ? (
+		<div className="flex justify-between items-center">
+			<TeamBadge reverse={false} player={players[0]} />
+			<div className="flex gap-2 items-center">
+				<span className="text-white text-lg font-luckiest">
+					{scores[0]}
+				</span>
+				<img src={ScoreSepImg} className="mb-2 max-w-[30px]" />
+				<span className="text-white text-lg font-luckiest">
+					{scores[1]}
+				</span>
+			</div>
+			<TeamBadge reverse={true} player={players[1]} />
+		</div>) :
+		(<div>
+			<TeamBadge team={true} reverse={false} player={players[0]} />
+			<TeamBadge team={true} reverse={false} player={players[1]} />
+			<div className="flex gap-2 items-center">
+				<span className="text-white text-lg font-luckiest">
+					{scores[0]}
+				</span>
+				<img src={ScoreSepImg} className="mb-2 max-w-[30px]" />
+				<span className="text-white text-lg font-luckiest">
+					{scores[1]}
+				</span>
+			</div>
+			<TeamBadge team={true} reverse={true} player={players[2]} />
+			<TeamBadge team={true} reverse={true} player={players[3]} />
+		</div>);
+
 	return (
 		<div>
 			<div className="flex flex-col justify-center">
 				{Toast}
 				{
-					players?.length > 1 ? (
-						<div className="flex justify-between items-center">
-							<TeamBadge reverse={false} player={players[0]} />
-							<div className="flex gap-2 items-center">
-								<span className="text-white text-lg font-luckiest">
-									{scores[0]}
-								</span>
-								<img src={ScoreSepImg} className="mb-2 max-w-[30px]" />
-								<span className="text-white text-lg font-luckiest">
-									{scores[1]}
-								</span>
-							</div>
-							<TeamBadge reverse={true} player={players[1]} />
-						</div>
+					players?.length === maxPlayers ? (
+						{ teamBadge }
 					) : <div className="m-auto text-center text-gray-800 text:sm md:text-xl font-luckiest">waiting for players</div>
 				}
-				<div className="px-3 py-1 rounded-3xl bg-[#91BFBF]">
-					<div className="relative flex justify-center my-2 bg-white p-4 shadow-xs shadow-gray-400 rounded-xl">
+				<div className={"px-3 py-1 rounded-3xl " + bgColor}>
+					<div className={"relative flex justify-center my-2 p-4 shadow-xs shadow-gray-400 rounded-xl " + borderColor}>
 						<div className="w-full flex justify-center">
 							<canvas
 								ref={canvasRef}
@@ -213,16 +254,22 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 								width="800px"
 								id="game-canvas"
 								onClick={handleClick}
-								className="bg-[#91BFBF]"
+								className={bgColor}
 							></canvas>
 						</div>
-						{(players?.length === 2 && !started) && <button onClick={handleStartGame} className="absolute flex gap-4 align-center border-2 top-[50%] translate-y-[-50%] text-lg rounded-lg shadow-sm bg-teal-400 hover:bg-teal-300 px-8 py-2 font-poppins font-bold text-white">
+						{(players?.length === maxPlayers && !started) ? <button onClick={handleStartGame} className={"absolute flex gap-4 align-center border-2 top-[50%] translate-y-[-50%] text-lg rounded-lg shadow-sm bg-teal-400 hover:bg-teal-300 px-8 py-2 font-poppins font-bold text-white"}>
 							<i class="fa-solid text-lg fa-table-tennis-paddle-ball"></i>
 							<div>start</div>
-						</button>
+						</button> : <div></div>
 						}
 					</div></div>
+				<div className="flex flex-row gap-2">
+					spectators:
+					{
+						spectators?.length ?? 0 > 0 ? spectators?.map(spectator => <AvatarCircle avatarImage={spectator.avatar} key={spectator.username} />) : <div></div>}
+
+				</div>
 			</div>
-		</div>
+		</div >
 	);
 };

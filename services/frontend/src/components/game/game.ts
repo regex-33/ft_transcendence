@@ -1,7 +1,8 @@
 import { Connection } from "./connection";
 import { Player } from "./GamePage";
 import { UpdateMessage } from "./types";
-import koraSVG from "../../../images/kora.svg";
+import koraSVG from "../../../images/game-assets/kora.svg";
+import koraGoldSVG from "../../../images/game-assets/kora-gold.svg";
 import { throttle } from "../../utils/throttle";
 
 const MAX_SCORE = 4;
@@ -12,7 +13,7 @@ export class GameConfig {
   static paddlePercent = 2;
   static paddleSpeed = 0.6;
   static ballSpeed = 0.4;
-  static SpeedBallSpeed = 9;
+  static SpeedBallSpeed = 0.8;
   static ballRadius = 3 * (GameConfig.canvasWidth / 200);
   static readonly paddleRatio = 20 / 3;
   static readonly canvasRatio = 1 / 2;
@@ -81,7 +82,8 @@ export class Paddle {
     //	console.log('draw:', height);
     const radius = (width * 1) / 2;
 
-    const { x, y, options } = paddle;
+    const { x: px, y, options } = paddle;
+    let x = px;
     ctx.beginPath();
 
     if (options.dir === "right") {
@@ -133,20 +135,35 @@ export enum GameMode {
 const koraImg = new Image(GameConfig.ballRadius * 2, GameConfig.ballRadius * 2);
 koraImg.src = koraSVG;
 
-const drawBall = (ctx: CanvasRenderingContext2D, ball: Ball) => {
+const koraGoldImg = new Image(
+  GameConfig.ballRadius * 2,
+  GameConfig.ballRadius * 2,
+);
+koraGoldImg.src = koraGoldSVG;
+
+const drawBall = (
+  ctx: CanvasRenderingContext2D,
+  ball: Ball,
+  alpha = 1,
+  gold = false,
+) => {
   // ctx.beginPath();
-  const radius = GameConfig.ballRadius * 2;
+  const radius = GameConfig.ballRadius * (gold ? 3 : 2);
   // ctx.arc(ball.x, ball.y, radius, 0, 2 * Math.PI);
   // ctx.strokeStyle = ball.color;
   // ctx.fill();
   // ctx.stroke();
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const img = gold ? koraGoldImg : koraImg;
   ctx.drawImage(
-    koraImg,
-    ball.x - GameConfig.ballRadius,
+    img,
+    ball.x - GameConfig.ballRadius - (gold ? 7 : 0),
     ball.y - GameConfig.ballRadius,
     radius,
     radius,
   );
+  ctx.restore();
 };
 
 export type PlayerState = {
@@ -177,8 +194,11 @@ abstract class Game {
   protected _scores: number[];
   protected _status: "WAITING" | "LIVE" | "ENDED" = "WAITING";
   protected _activeKeys: Set<string>;
-  protected _lastUpdate = Date.now();
+  protected _lastUpdate = performance.now();
   protected _endgameText = "";
+  protected ballAlpha: number = 1;
+  protected vanishState: "IN" | "OUT" | "NONE" = "NONE";
+  protected nextVanishTime: number = 0;
 
   constructor(
     ctx: CanvasRenderingContext2D,
@@ -186,8 +206,9 @@ abstract class Game {
     setScores: Function,
     setPlayers: Function,
   ) {
-    this.type = type;
+    console.log("construtor mode:", mode);
     this.mode = mode;
+    this.type = type;
     this._activeKeys = new Set();
     this._setScores = setScores;
     this._setPlayers = setPlayers;
@@ -201,13 +222,31 @@ abstract class Game {
       GameConfig.canvasHeight / 2 - paddleHeight / 2,
       leftPaddleOptions,
     );
+    if (this.mode === GameMode.GOLD || this.type === GameType.TEAM)
+      p1.options.color = "#C9EEF7";
     const p2 = new Paddle(
       GameConfig.canvasWidth - GameConfig.paddleWidth - 10,
       GameConfig.canvasHeight / 2 - paddleHeight / 2,
       rightPaddleOptions,
     );
-    this.paddles = [p1, p2];
+    if (this.mode === GameMode.GOLD || this.type === GameType.TEAM)
+      p2.options.color = "#62BFDD";
+    if (this.type === GameType.TEAM) {
+      const p3 = { ...p1 };
+      const p4 = { ...p2 };
+      p1.y /= 2;
+      p2.y /= 2;
+      this.paddles = [p1, p2, p3, p4];
+    } else this.paddles = [p1, p2];
   }
+
+  protected resetVanish() {
+    console.log("reset vanish");
+    this.vanishState = "NONE";
+    this.ballAlpha = 1;
+    this.nextVanishTime = performance.now() + 1000 + Math.random() * 1000;
+  }
+
   protected _onKeyDown = (e: KeyboardEvent) => {
     let keys;
     if (GameConfig.downKeys.has(e.key)) keys = GameConfig.downKeys;
@@ -224,41 +263,56 @@ abstract class Game {
   };
 
   draw = () => {
+    console.log("mode", this.mode);
+    if (this.mode === GameMode.VANISH || this.mode === GameMode.GOLD) {
+      const now = performance.now();
+
+      if (this.vanishState === "NONE" && now >= this.nextVanishTime) {
+        this.vanishState = "OUT";
+        this.ballAlpha = 1;
+      } else {
+        console.log("its vanish:", this.vanishState);
+        console.log("diff:", now, this.nextVanishTime);
+      }
+      const fadeSpeed = 0.05;
+      if (this.vanishState === "OUT") {
+        this.ballAlpha -= fadeSpeed;
+        if (this.ballAlpha <= 0) {
+          this.ballAlpha = 0;
+          this.vanishState = "IN";
+          this.nextVanishTime = now + 1000 + Math.random() * 1000;
+        }
+      } else if (this.vanishState === "IN" && now >= this.nextVanishTime) {
+        this.ballAlpha += fadeSpeed;
+        if (this.ballAlpha >= 1) {
+          this.ballAlpha = 1;
+          this.vanishState = "NONE";
+          this.nextVanishTime = now + 2000 + Math.random() * 2000;
+        }
+      }
+    }
     this.ctx.clearRect(0, 0, GameConfig.canvasWidth, GameConfig.canvasHeight);
     this.paddles.forEach((paddle) => {
-      paddle.draw(this.ctx);
+      GameType.TEAMpaddle.draw(this.ctx);
     });
-    drawBall(this.ctx, this.ball);
+    drawBall(this.ctx, this.ball, this.ballAlpha, this.mode === GameMode.GOLD);
   };
 }
 
 export class RemoteGame extends Game {
   private _connection: Connection | null;
+  private _setSpectators: Function;
 
   constructor(
     ctx: CanvasRenderingContext2D,
     { id, type, mode }: { id: string; type: GameType; mode: GameMode },
     setScores: Function,
     setPlayers: Function,
+    setSpectators: Function,
   ) {
     super(ctx, { id, type, mode }, setScores, setPlayers);
+    this._setSpectators = setSpectators;
     this._connection = null;
-  }
-
-  async _initConnection() {
-    await this._connection!.connect();
-    const gameId = this.id;
-    const playerId = 10; // TODO use id;
-    this._connection!.send({
-      type: "action",
-      action_type: "INIT",
-      gameId,
-      playerId,
-    });
-    const updateMsg: UpdateMessage = await this._connection!.once("update");
-    if (!updateMsg.message.includes("initialized"))
-      throw new Error("unexpected message");
-    this._connection!.initialized = true;
   }
 
   onServerUpdate = (data: {
@@ -280,21 +334,23 @@ export class RemoteGame extends Game {
       data.players.find((p) => p.paddle.dir === "RIGHT")?.score ||
       this._scores[1];
     if (leftScore !== this._scores[0] || rightScore !== this._scores[1]) {
+      this.resetVanish();
       this._setScores([leftScore, rightScore]);
       this._scores = [leftScore, rightScore];
     }
-    this.paddles[0].x = paddles[0].x * (GameConfig.canvasWidth / 200);
-    this.paddles[0].y = paddles[0].y * (GameConfig.canvasHeight / serverHeight);
-
-    this.paddles[1].x = paddles[1].x * (GameConfig.canvasWidth / 200);
-    this.paddles[1].y = paddles[1].y * (GameConfig.canvasHeight / serverHeight);
-    this._lastUpdate = Date.now();
+    this.paddles.map((paddle, idx) => {
+      paddle.x = paddles[idx].x * (GameConfig.canvasWidth / 200);
+      paddle.y = paddles[idx].y * (GameConfig.canvasHeight / serverHeight);
+    });
+    this._lastUpdate = performance.now();
   };
 
-  start(connection: Connection) {
+  start(connection: Connection, isSpec = false) {
     console.log(this.paddles);
-    window.addEventListener("keydown", this._onKeyDown);
-    window.addEventListener("keyup", this._onKeyUp);
+    if (!isSpec) {
+      window.addEventListener("keydown", this._onKeyDown);
+      window.addEventListener("keyup", this._onKeyUp);
+    }
     requestAnimationFrame(this._renderFrame);
 
     connection.on("PLAYERS_UPDATE", (data) => {
@@ -303,19 +359,22 @@ export class RemoteGame extends Game {
     connection.on("GAME_UPDATE", this.onServerUpdate);
     connection.on("PLAYER_DISCONNECT", this._onPlayerDisconnect);
     connection.on("PLAYER_CONNECT", this._onPlayerConnect);
-    connection.on("GAME_END", (data: { players: Player[], winners: {username: string}[] }) => {
-      this._scores = data.players.map((player) => player.score);
-      const maxScore = Math.max(...this._scores);
-      const winners = data.winners.map(w => w.username);
-      console.log("winners: ", winners);
-      console.log("maxScore: ", maxScore);
-      console.log("data.players: ", data.players);
-      if (winners.length > 1)
-        this._endgameText = "Winners: " + winners.join(" ");
-      else this._endgameText = "Winner: " + winners.join(" ");
-      this._setScores(this._scores);
-      this._status = "ENDED";
-    });
+    connection.on(
+      "GAME_END",
+      (data: { players: Player[]; winners: { username: string }[] }) => {
+        this._scores = data.players.map((player) => player.score);
+        const maxScore = Math.max(...this._scores);
+        const winners = data.winners.map((w) => w.username);
+        console.log("winners: ", winners);
+        console.log("maxScore: ", maxScore);
+        console.log("data.players: ", data.players);
+        if (winners.length > 1)
+          this._endgameText = "Winners: " + winners.join(" ");
+        else this._endgameText = "Winner: " + winners.join(" ");
+        this._setScores(this._scores);
+        this._status = "ENDED";
+      },
+    );
     this._connection = connection;
   }
 
@@ -332,13 +391,16 @@ export class RemoteGame extends Game {
   private _onPlayerConnect = (data: {
     type: string;
     players: Player[];
+    spectators: Omit<Player, "score">[];
     playerId: number;
   }) => {
     const players = data.players.map(
       ({ userId, username, avatar, ...rest }) => ({ userId, username, avatar }),
     );
     console.log("players:", players);
+    console.log("spectators:", data.spectators);
     this._setPlayers(players);
+    this._setSpectators(data.spectators);
     console.log("connect received:", data);
   };
 
@@ -352,13 +414,12 @@ export class RemoteGame extends Game {
     console.log("key:", key);
   }, 20);
 
-
   private _renderFrame = () => {
     for (const key of this._activeKeys) this._sendEvent(key);
     if (this._status === "LIVE") {
-      console.log("dt:", Date.now() - this._lastUpdate);
+      console.log("dt:", performance.now() - this._lastUpdate);
       const speed = 0.1 * (200 / GameConfig.canvasWidth);
-      const dt = Date.now() - this._lastUpdate - 16;
+      const dt = performance.now() - this._lastUpdate - 16;
       if (dt > 0) this.ball.x += this.ball.vx * dt * speed;
       this.ball.y += this.ball.vy * dt * speed;
       this.draw();
@@ -390,7 +451,7 @@ export class LocalGame extends Game {
     console.log(this.paddles);
     window.addEventListener("keydown", this._onKeyDown);
     window.addEventListener("keyup", this._onKeyUp);
-    this._lastUpdate = Date.now();
+    this._lastUpdate = performance.now();
     requestAnimationFrame(this._renderFrame);
     this._status = "LIVE";
   }
@@ -464,6 +525,7 @@ export class LocalGame extends Game {
         this._status = "ENDED";
         this._endgameText = "Player 1 Won";
       }
+      this.resetVanish();
       this._setScores([...this._scores]);
       console.log("score:", this._scores);
       this.ball.x = GameConfig.canvasWidth / 2;
@@ -478,6 +540,7 @@ export class LocalGame extends Game {
         this._status = "ENDED";
         this._endgameText = "Player 2 Won";
       }
+      this.resetVanish();
       console.log("score:", this._scores);
       this._setScores([...this._scores]);
       this.ball.x = GameConfig.canvasWidth / 2;
@@ -508,18 +571,30 @@ export class LocalGame extends Game {
         //ball.vy *= -1;
       }
     });
+    this.paddles.forEach((paddle) => {
+      if (paddle.options.dir === "left") paddle.x = 15;
+      else paddle.x = GameConfig.canvasWidth - GameConfig.paddleWidth - 15;
+    });
   }
 
   private _renderFrame = () => {
+    const now = performance.now();
+    const dt = performance.now() - this._lastUpdate;
     if (this._status === "LIVE") {
-      const dt = Date.now() - this._lastUpdate;
       for (const key of this._activeKeys) {
         this._movePaddle(key, dt);
       }
       this.calcFrame(dt);
+      this._lastUpdate = performance.now();
       this.draw();
-      this._lastUpdate = Date.now();
     }
+    if (dt > 20)
+      console.log(
+        "render/calculation time:",
+        performance.now() - now,
+        "dt (last - now):",
+        dt,
+      );
     if (this._status === "ENDED") {
       this.ctx.clearRect(0, 0, GameConfig.canvasWidth, GameConfig.canvasHeight);
       this.ctx.font = "30px Luckiest Guy";

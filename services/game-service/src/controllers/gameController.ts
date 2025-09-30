@@ -34,37 +34,37 @@ const createGame = async (db: PrismaClient | Prisma.TransactionClient, data: Gam
 		return game;
 	} catch (err) {
 		console.log('error', err);
+		console.log(await db.player.findUnique({ where: { userId: data.player.id } }));
 		return null;
 	}
 };
 
-const createTournamentGame = (db: PrismaClient | Prisma.TransactionClient, tournamentId: string, users: UserData[]) => {
-		return db.game.create({
-			data: {
-				type: GameType.SOLO,
-				mode: GameMode.CLASSIC,
-				tournament:
-				{
-					connect:
-						{ id: tournamentId }
-				},
-				players: {
-					connectOrCreate:
-						users.map(u => ({
-							where: { userId: u.id, activeGameId: { equals: null } },
-							create:
-							{
-								userId: u.id,
-								avatar: u.avatar,
-								username: u.username
-
-							}
-						}))
-				},
+const createTournamentGame = (
+	db: PrismaClient | Prisma.TransactionClient,
+	tournamentId: string,
+	users: UserData[]
+) => {
+	return db.game.create({
+		data: {
+			type: GameType.SOLO,
+			mode: GameMode.CLASSIC,
+			tournament: {
+				connect: { id: tournamentId },
 			},
-			include: { players: true, gamePlayers: true },
-		});
-}
+			players: {
+				connectOrCreate: users.map((u) => ({
+					where: { userId: u.id, activeGameId: { equals: null } },
+					create: {
+						userId: u.id,
+						avatar: u.avatar,
+						username: u.username,
+					},
+				})),
+			},
+		},
+		include: { players: true, gamePlayers: true },
+	});
+};
 
 const joinGame = async (db: PrismaClient, data: { gameId: string; player: UserData }) => {
 	try {

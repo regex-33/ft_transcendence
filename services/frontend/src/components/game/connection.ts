@@ -3,7 +3,7 @@ type MessageHandler = (data: any) => void;
 type CloseHandler = (e: CloseEvent) => any;
 
 export class Connection {
-  private _socket!: WebSocket;
+  private _socket: WebSocket | null = null;
   private _handlers = new Map<string, MessageHandler[]>();
   private _url: string;
   private _onClose: CloseHandler | null;
@@ -17,35 +17,46 @@ export class Connection {
 
   onClose (callback: CloseHandler) {
     this._onClose = callback;
-    if (!this._socket.OPEN)
+    const socket = this._socket;
+    if (!socket || socket.readyState === WebSocket.CLOSED) {
       return;
-    this._socket.onclose = callback;
+    }
+    socket.onclose = callback;
   }
 
   connect(timeoutMs = 15000): Promise<void> {
     console.log("connecting to websocket");
+
+    if (this._socket && (this._socket.readyState === WebSocket.OPEN || this._socket.readyState === WebSocket.CONNECTING)) {
+      return Promise.resolve();
+    }
+
     return new Promise((resolve, reject) => {
-      this._socket = new WebSocket(this._url);
+      const socket = new WebSocket(this._url);
+      this._socket = socket;
 
       const timeout = setTimeout(() => {
-        this._socket.close();
+        socket.close();
+        if (this._socket === socket) {
+          this._socket = null;
+        }
         reject(new Error("WebSocket timeout"));
       }, timeoutMs);
 
-      this._socket.onopen = () => {
+      socket.onopen = () => {
         console.log("connected!!");
         if (this._onClose)
-          this._socket.onclose = this._onClose;
+          socket.onclose = this._onClose;
         clearTimeout(timeout);
         resolve();
       };
 
-      this._socket.onerror = () => {
+      socket.onerror = () => {
         clearTimeout(timeout);
         reject(new Error("WebSocket failed"));
       };
 
-      this._socket.onmessage = (ev) => {
+      socket.onmessage = (ev) => {
         let data;
         try {
           data = JSON.parse(ev.data);
@@ -61,6 +72,9 @@ export class Connection {
   }
 
   send(data: any) {
+    if (!this._socket || this._socket.readyState !== WebSocket.OPEN) {
+      throw new Error("Cannot send message: socket is not open");
+    }
     this._socket.send(JSON.stringify(data));
   }
 
@@ -89,14 +103,16 @@ export class Connection {
   }
 
   close() {
-    if (!this._socket) {
+    const socket = this._socket;
+    if (!socket) {
       console.log("socket is null");
       return;
     }
-    this._socket.close();
+    socket.close();
+    this._socket = null;
     console.log("socket closed");
-    this._socket.onmessage = null;
-    this._socket.onerror = null;
-    this._socket.onopen = null;
+    socket.onmessage = null;
+    socket.onerror = null;
+    socket.onopen = null;
   }
 }

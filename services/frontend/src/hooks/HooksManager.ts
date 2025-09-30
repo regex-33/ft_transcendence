@@ -30,7 +30,32 @@ interface ComponentHooks {
   currentMemoIndex: number;
   /** Current index for useRef hooks */
   currentRefIndex: number;
+  /** Child functional component hook contexts */
+  childContexts: ComponentHooks[];
+  /** Current index for child functional components */
+  currentChildIndex: number;
+  /** Identifier for the component/function that owns this hook bucket */
+  ownerId?: symbol;
 }
+
+interface HookContext {
+  componentInstance: any;
+  hooks: ComponentHooks;
+}
+
+const createEmptyHooks = (ownerId?: symbol): ComponentHooks => ({
+  states: [],
+  effects: [],
+  memos: [],
+  refs: [],
+  currentStateIndex: 0,
+  currentEffectIndex: 0,
+  currentMemoIndex: 0,
+  currentRefIndex: 0,
+  childContexts: [],
+  currentChildIndex: 0,
+  ownerId,
+});
 
 /**
  * Singleton class that manages React-like hooks for components.
@@ -77,8 +102,14 @@ export class HooksManager {
   /** WeakMap storing hooks for each component instance */
   private componentHooks: WeakMap<any, ComponentHooks> = new WeakMap();
   
-  /** Currently rendering component */
+  /** Stack of active hook contexts (supports nested functional components) */
+  private contextStack: HookContext[] = [];
+  
+  /** Currently rendering component (kept for backward compatibility) */
   private currentComponent: any = null;
+  
+  /** Cache of component/function identifiers */
+  private componentIds: WeakMap<Function, symbol> = new WeakMap();
   
   /** Components scheduled for re-render */
   private renderQueue: Set<any> = new Set();
@@ -121,24 +152,25 @@ export class HooksManager {
    * ```
    */
   setCurrentComponent(component: any): void {
-    this.currentComponent = component;
-    if (!this.componentHooks.has(component)) {
-      this.componentHooks.set(component, {
-        states: [],
-        effects: [],
-        memos: [],
-        refs: [],
-        currentStateIndex: 0,
-        currentEffectIndex: 0,
-        currentMemoIndex: 0,
-        currentRefIndex: 0
-      });
+    let hooks = this.componentHooks.get(component);
+    if (!hooks) {
+      hooks = createEmptyHooks();
+      this.componentHooks.set(component, hooks);
     }
-    const hooks = this.componentHooks.get(component)!;
+    if (!hooks.childContexts) {
+      hooks.childContexts = [];
+    }
+    this.resetHookIndices(hooks);
+    this.contextStack.push({ componentInstance: component, hooks });
+    this.currentComponent = component;
+  }
+
+  private resetHookIndices(hooks: ComponentHooks): void {
     hooks.currentStateIndex = 0;
     hooks.currentEffectIndex = 0;
     hooks.currentMemoIndex = 0;
     hooks.currentRefIndex = 0;
+    hooks.currentChildIndex = 0;
   }
 
   /**
@@ -210,10 +242,11 @@ export class HooksManager {
    * ```
    */
   getCurrentComponentHooks(): ComponentHooks {
-    if (!this.currentComponent) {
+    const context = this.contextStack[this.contextStack.length - 1];
+    if (!context) {
       throw new Error('Hooks can only be called inside components during render');
     }
-    return this.componentHooks.get(this.currentComponent)!;
+    return context.hooks;
   }
 
   /**
@@ -232,7 +265,10 @@ export class HooksManager {
    * ```
    */
   getCurrentComponent(): any {
-    return this.currentComponent;
+    if (this.contextStack.length === 0) {
+      return null;
+    }
+    return this.contextStack[this.contextStack.length - 1].componentInstance;
   }
   
   /**
@@ -257,7 +293,61 @@ export class HooksManager {
    * ```
    */
   clearCurrentComponent(): void {
-    this.currentComponent = null;
+    if (this.contextStack.length > 0) {
+      this.contextStack.pop();
+    }
+    this.currentComponent = this.contextStack.length > 0
+      ? this.contextStack[this.contextStack.length - 1].componentInstance
+      : null;
+  }
+
+  /**
+   * Begins a new hook context for a nested functional component
+   */
+  beginFunctionalComponent(componentFn: Function): void {
+    const parentContext = this.contextStack[this.contextStack.length - 1];
+    if (!parentContext) {
+      throw new Error('Functional components must be rendered within an active component context');
+    }
+
+    const ownerId = this.getOrCreateComponentId(componentFn);
+    const parentHooks = parentContext.hooks;
+    const index = parentHooks.currentChildIndex++;
+
+    if (!parentHooks.childContexts[index] || parentHooks.childContexts[index].ownerId !== ownerId) {
+      parentHooks.childContexts[index] = createEmptyHooks(ownerId);
+    }
+
+    const childHooks = parentHooks.childContexts[index];
+    this.resetHookIndices(childHooks);
+
+    this.contextStack.push({
+      componentInstance: parentContext.componentInstance,
+      hooks: childHooks,
+    });
+    this.currentComponent = parentContext.componentInstance;
+  }
+
+  /**
+   * Ends the current nested functional component hook context
+   */
+  endFunctionalComponent(): void {
+    if (this.contextStack.length <= 1) {
+      // The root component context will be cleared via clearCurrentComponent
+      return;
+    }
+
+    this.contextStack.pop();
+    this.currentComponent = this.contextStack[this.contextStack.length - 1]?.componentInstance ?? null;
+  }
+
+  private getOrCreateComponentId(componentFn: Function): symbol {
+    let id = this.componentIds.get(componentFn);
+    if (!id) {
+      id = Symbol(componentFn.name || 'anonymous_component');
+      this.componentIds.set(componentFn, id);
+    }
+    return id;
   }
 
   /**
@@ -322,19 +412,30 @@ export class HooksManager {
   cleanup(component: any): void {
     const hooks = this.componentHooks.get(component);
     if (hooks) {
-      hooks.effects.forEach(effect => {
-        if (effect.cleanup) {
-          try {
-            effect.cleanup();
-          } catch (error) {
-            console.error('Error during effect cleanup:', error);
-          }
-        }
-      });
+      this.cleanupHooksTree(hooks);
       this.componentHooks.delete(component);
     }
-    
     this.renderQueue.delete(component);
+  }
+
+  private cleanupHooksTree(hooks: ComponentHooks): void {
+    hooks.effects.forEach(effect => {
+      if (effect.cleanup) {
+        try {
+          effect.cleanup();
+        } catch (error) {
+          console.error('Error during effect cleanup:', error);
+        }
+      }
+    });
+
+    hooks.childContexts.forEach(childHooks => this.cleanupHooksTree(childHooks));
+
+    hooks.states = [];
+    hooks.effects = [];
+    hooks.memos = [];
+    hooks.refs = [];
+    hooks.childContexts = [];
   }
 
   /**

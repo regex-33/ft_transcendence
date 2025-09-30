@@ -2,13 +2,23 @@ import type { FastifyInstance } from 'fastify';
 import redis from '../redis';
 import { checkAuth } from '../controllers/checkAuth';
 import { getGame } from '../controllers/gameController';
-import type { Ball, Direction, GameMetadata, GameSession, Paddle, PlayerState } from '../gameState';
+import type { Ball, Direction, GameSession, Paddle, PlayerState } from '../gameState';
 import type WebSocket from 'ws';
 import { games, connections, gameConfig, initSession } from '../gameState';
-import { GameStatus, GameTeam, GameType, Prisma, type PrismaClient } from '../../generated/prisma';
+import { GameStatus, GameTeam, Prisma, type PrismaClient } from '../../generated/prisma';
 import { tournamentManager } from '../controllers/tournamentController';
 
 // INIT: { type: init, data: gameId} response: {type: init_ack, players: [], spectator: bool }
+
+function broadcast(session: GameSession, message: any, spectators = true) {
+	session.state.playersSockets.forEach((socket) => {
+		socket.send(JSON.stringify(message));
+	});
+	if (spectators)
+		session.state.spectatorsSockets.forEach((socket) => {
+			socket.send(JSON.stringify(message));
+		});
+}
 
 const BALL_SPEED = 0.1;
 const SPEED_BALL_SPEED = 1.8;
@@ -69,8 +79,10 @@ function simPong(gameSession: GameSession, dt: number) {
 		ball.vy = -1;
 	}
 	if (terminateGame) {
-		gameSession.game.status = 'ENDED';
-		gameSession.onEnd?.();
+		if (gameSession.onEnd) {
+			gameSession.game.status = 'ENDED';
+			gameSession.onEnd();
+		}
 	}
 	if (ball.y + gameConfig.ballRadius > gameConfig.gameHeight) {
 		ball.y = gameConfig.gameHeight - gameConfig.ballRadius;
@@ -95,37 +107,38 @@ function simPong(gameSession: GameSession, dt: number) {
 function createGameRunner(gameSession: GameSession) {
 	const state = gameSession.state;
 	return function () {
-		const game = gameSession.game;
 		// TODO: game logic
 		const now = Date.now();
 		simPong(gameSession, now - state.lastTick);
 		gameSession.state.lastTick = now;
-		const sockets = gameSession.state.playersSockets;
 		const players = gameSession.state.players;
-		sockets.forEach((socket) => {
-			socket.send(
-				JSON.stringify({
-					type: 'GAME_UPDATE',
-					players: players,
-					ball: gameSession.state.ball,
-				})
-			);
+		broadcast(gameSession, {
+			type: 'GAME_UPDATE',
+			players: players,
+			ball: gameSession.state.ball,
 		});
 	};
 }
 
 function sendPlayerUpdate(socket: WebSocket, session: GameSession) {
 	//const players = session.state.players.map(({ socket, ...rest }) => rest);
-	socket.send(JSON.stringify({ type: 'PLAYERS_UPDATE', players: session.state.players }));
+	socket.send(
+		JSON.stringify({
+			type: 'PLAYERS_UPDATE',
+			players: session.state.players,
+			spectators: session.state.spectators,
+		})
+	);
 }
+
 type UpdatedGame = Prisma.GameGetPayload<{
-    include: {
-        players: true,
-        gamePlayers: {
-            include: { player: true }
-        }
-    }
-}>
+	include: {
+		players: true;
+		gamePlayers: {
+			include: { player: true };
+		};
+	};
+}>;
 
 async function endGame(gameSession: GameSession, prismaClient: PrismaClient, sendEnd = false) {
 	const game = gameSession.game;
@@ -140,18 +153,17 @@ async function endGame(gameSession: GameSession, prismaClient: PrismaClient, sen
 	console.log('scoreB:', TeamBScore);
 	const winningTeam =
 		TeamAScore === TeamBScore ? null : TeamAScore > TeamBScore ? GameTeam.TEAM_A : GameTeam.TEAM_B;
-	if (sendEnd)
-	{
-		const winnersStats = gameSession.state.players.filter(p => p.team === winningTeam);
-		const winners = gameSession.game.players.filter(p => !!winnersStats.find(w => w.id === p.userId));
+	if (sendEnd) {
+		const winnersStats = gameSession.state.players.filter((p) => p.team === winningTeam);
+		const winners = gameSession.game.players.filter(
+			(p) => !!winnersStats.find((w) => w.id === p.userId)
+		);
+		broadcast(gameSession, {
+			type: 'GAME_END',
+			players: gameSession.state.players,
+			winners: winners,
+		});
 		gameSession.state.playersSockets.forEach((s) => {
-			s.send(
-				JSON.stringify({
-					type: 'GAME_END',
-					players: gameSession.state.players,
-					winners: winners
-				})
-			);
 			s.close();
 		});
 	}
@@ -189,7 +201,6 @@ async function endGame(gameSession: GameSession, prismaClient: PrismaClient, sen
 			})
 		);
 	}
-	gameSession.game.status = GameStatus.ENDED;
 	const updates = await prismaClient.$transaction([
 		...playerOps,
 		prismaClient.gamePlayer.updateMany({
@@ -219,6 +230,7 @@ async function endGame(gameSession: GameSession, prismaClient: PrismaClient, sen
 			},
 		}),
 	]);
+	gameSession.game.status = GameStatus.ENDED;
 	const updatedGame = updates.at(-1) as UpdatedGame;
 	if (updatedGame && updatedGame.tournamentId) {
 		tournamentManager.onGameEnd(updatedGame);
@@ -228,7 +240,7 @@ async function endGame(gameSession: GameSession, prismaClient: PrismaClient, sen
 function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	const runner = createGameRunner(gameSession);
 	gameSession.game.status = 'LIVE';
-	const promise = prismaClient.game
+	prismaClient.game
 		.update({
 			where: { id: gameSession.game.id },
 			data: {
@@ -252,8 +264,7 @@ function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	gameSession.intervalId = setInterval(runner, gameConfig.tick);
 	gameSession.onEnd = () => {
 		console.log('ENDING GAME');
-		if (gameSession.intervalId)
-			clearInterval(gameSession.intervalId);
+		if (gameSession.intervalId) clearInterval(gameSession.intervalId);
 		// gameSession.state.playersSockets.forEach((s) => {
 		// 	s.send(
 		// 		JSON.stringify({
@@ -264,7 +275,7 @@ function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
 		// 	s.close();
 		// });
 		//gameSession.state.playersSockets.forEach((s) => s.close());
-		gameSession.state.spectators.forEach((s) => s.close());
+		gameSession.state.spectatorsSockets.forEach((s) => s.close());
 		endGame(gameSession, prismaClient, true);
 	};
 	gameSession.startAt = Date.now();
@@ -299,23 +310,23 @@ function handlePlayerUpdate(
 	action: ActionType
 ) {
 	const players = session.state.players;
-	const player = players.find((p) => p.id === playerId);
+	const playerIndex = players.findIndex((p) => p.id === playerId);
+	const player = players[playerIndex];
+	let limitUp, limitDown;
+	if (session.game.type === 'TEAM') {
+		limitUp = playerIndex % 2 === 0 ? 0 : gameConfig.gameHeight / 2;
+		limitDown = playerIndex % 2 === 0 ? gameConfig.gameHeight / 2 : gameConfig.gameHeight;
+	} else {
+		limitUp = 0;
+		limitDown = gameConfig.gameHeight;
+	}
 	if (!player) return kickSpectator(socket, playerId);
 	if (action === 'KEY_UP') player.paddle.y -= gameConfig.paddleSpeed;
 	if (action === 'KEY_DOWN') player.paddle.y += gameConfig.paddleSpeed;
-	if (player.paddle.y < 0) player.paddle.y = 0;
-	if (player.paddle.y + gameConfig.paddleHeight > gameConfig.gameHeight)
-		player.paddle.y = gameConfig.gameHeight - gameConfig.paddleHeight;
+	if (player.paddle.y < limitUp) player.paddle.y = limitUp;
+	if (player.paddle.y + gameConfig.paddleHeight > limitDown)
+		player.paddle.y = limitDown - gameConfig.paddleHeight;
 }
-
-const getPlayerGame = async (db: PrismaClient, playerId: number) => {
-	const player = await db.player.findUnique({
-		where: { userId: playerId },
-		include: { activeGame: true },
-	});
-	if (!player) return null;
-	return player.activeGame;
-};
 
 async function playRoutes(fastify: FastifyInstance) {
 	fastify.addHook('preHandler', checkAuth);
@@ -325,11 +336,11 @@ async function playRoutes(fastify: FastifyInstance) {
 		'/:gameId',
 		{ websocket: true },
 		async (socket, request) => {
-			const playerId = (request as any)?.user?.id;
+			const user = request.user;
 			if (!request.params?.gameId) {
 				console.log('no param gameId');
 			}
-			console.log('[NEW CONNECTION] playerId:', playerId);
+			console.log('[NEW CONNECTION] playerId:', user.id);
 			// const currentGame = await getPlayerGame(fastify.prisma, playerId);
 			// console.log(playerId, ' currentGame', currentGame);
 			const game = await getGame(fastify.prisma, request.params.gameId);
@@ -342,39 +353,49 @@ async function playRoutes(fastify: FastifyInstance) {
 			}
 			const session = initSession(game);
 			connections.set(socket, session);
-			const isSpec = !session.game.players.some((p) => p.userId === playerId);
+			const isSpec = !session.game.players.some((p) => p.userId === user.id);
 
 			if (!isSpec) session.state.playersSockets.push(socket);
-			else session.state.spectators.push(socket);
-			//const onOpen = (event: WebSocket.Event) => {
-			//console.log('[WEBSOCKET] player ' + playerId + ' opened connection');
-			//console.log('on open:', event.type);
-			//console.log('event type:', event.type);
-			//};
+			else {
+				session.state.spectatorsSockets.push(socket);
+				if (session.state.spectators.findIndex((spectator) => spectator.id === user.id) === -1)
+					session.state.spectators.push({
+						id: user.id,
+						avatar: user.avatar,
+						username: user.username,
+					});
+			}
 
-			//socket.addEventListener('open', onOpen);
-			session.state.playersSockets.forEach((s) => {
-				if (s === socket) return;
-				s.send(
-					JSON.stringify({
-						type: 'PLAYER_CONNECT',
-						players: session.game.players,
-						playerId: playerId,
-					})
-				);
+			//	session.state.playersSockets.forEach((s) => {
+			//		if (s === socket) return;
+			//		s.send(
+			//			JSON.stringify({
+			//			})
+			//		);
+			//	});
+			broadcast(session, {
+				type: 'PLAYER_CONNECT',
+				players: session.game.players,
+				spectators: session.state.spectators,
+				playerId: user.id,
 			});
 
 			socket.onclose = () => {
-				console.log('[WEBSOCKET] player ' + playerId + ' closed connection');
+				console.log('[WEBSOCKET] player ' + user.id + ' closed connection');
 				connections.delete(socket);
-				session.state.spectators = session.state.spectators.filter((s) => s !== socket);
+				session.state.spectatorsSockets = session.state.spectatorsSockets.filter(
+					(s) => s !== socket
+				);
+				session.state.spectators = session.state.spectators.filter(
+					(spectator) => spectator.id !== user.id
+				);
 				session.state.playersSockets = session.state.playersSockets.filter((s) => {
 					if (s === socket) return false;
 					s.send(
 						JSON.stringify({
 							type: 'PLAYER_DISCONNECT',
 							players: session.state.players,
-							playerId: playerId,
+							playerId: user.id,
 							timeout: DISCONNECT_TIMEOUT,
 						})
 					);
@@ -390,7 +411,7 @@ async function playRoutes(fastify: FastifyInstance) {
 						session.runner = null;
 						console.log('[TIMEOUT] Clearing game', session.game.id);
 						endGame(session, fastify.prisma);
-						session.state.players = session.state.players.filter((p) => p.id !== playerId);
+						session.state.players = session.state.players.filter((p) => p.id !== user.id);
 					}
 				}, DISCONNECT_TIMEOUT);
 				socket.removeAllListeners();
@@ -403,20 +424,20 @@ async function playRoutes(fastify: FastifyInstance) {
 					const session = connections.get(socket);
 					if (!session) throw new Error('Session not added to map');
 					if (isSpec) {
-						console.log('New Spectator:', playerId);
+						console.log('New Spectator:', user.id);
 						socket.close(1008, 'Unauthorized');
 						return;
 					}
 					console.log('[RECV] data:', data);
 					if (data.type == 'INIT') {
-						if (session.state.players.find((p) => p.id === playerId) !== undefined)
+						if (session.state.players.find((p) => p.id === user.id) !== undefined)
 							console.log('already initialized');
 						else {
-							const pIdx = session.game.players.findIndex(p => p.userId === playerId);
+							const pIdx = session.game.players.findIndex((p) => p.userId === user.id);
 							const paddleDir: Direction = pIdx % 2 === 0 ? 'RIGHT' : 'LEFT';
 							const playerTeam = paddleDir === 'LEFT' ? GameTeam.TEAM_A : GameTeam.TEAM_B;
 							const playerState: PlayerState = {
-								id: playerId,
+								id: user.id,
 								score: 0,
 								paddle: createPaddle(paddleDir),
 								team: playerTeam,
@@ -434,13 +455,13 @@ async function playRoutes(fastify: FastifyInstance) {
 						}
 					} else if (data.type === 'UPDATE') {
 						console.log('UPDATE RECEIVED');
-						handlePlayerUpdate(socket, session, playerId, data.action);
+						handlePlayerUpdate(socket, session, user.id, data.action);
 					} else if (data.type === 'FETCH_PLAYERS') {
 						console.log('PLAYERS UPDATE!');
 						sendPlayerUpdate(socket, session);
 					}
 				} catch (err) {
-					console.log('invalid socket message from player ' + playerId);
+					console.log('invalid socket message from player ' + user.id);
 					console.log('error: ', err);
 					socket.close(1008, 'Invalid message');
 				}

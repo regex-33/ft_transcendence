@@ -8,6 +8,7 @@ import bgTeam from "../../../images/game-assets/bg-team.png";
 import { GameCanvas } from "./GameCanvas";
 import { useAuth } from "../../hooks/useAuth";
 import { Online } from "../chat_front/online";
+import { GameMode } from "./game";
 
 interface Friend {
 	online?: boolean
@@ -101,7 +102,7 @@ const getGame = async (gameId: string) => {
 export const GamePage: ComponentFunction = (props) => {
 	//	const [players, setPlayers] = useState<Player[]>([]);
 	const [onlineFriends, setOnlineFriends] = useState<Friend[]>([]);
-	const [game, setGame] = useState<{ id: string; players: Player[] } | null>(
+	const [game, setGame] = useState<{ id: string; mode: GameMode; players: Player[] } | null>(
 		null
 	);
 	const [playerId, setPlayerId] = useState<number | null>(null);
@@ -111,7 +112,8 @@ export const GamePage: ComponentFunction = (props) => {
 		console.log("user:", user);
 		setPlayerId(user.id);
 		if (props.gameId === 'local') {
-			setGame({ id: '', players: [] });
+			const gameMode = localStorage.getItem('gameMode') as GameMode ?? GameMode.CLASSIC;
+			setGame({ id: '', players: [], mode: gameMode });
 			return;
 		}
 		getGame(props.gameId).then((data) => {
@@ -145,16 +147,24 @@ export const GamePage: ComponentFunction = (props) => {
 		fetchFriends();
 	}, [game]);
 
-	const Canvas = () => {
-		if (props.gameId !== 'local' && (!game || !playerId))
-			return (
-				<div class="flex justify-center min-h-[100vh] items-center">
-					<div class="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-				</div>
-			);
-
-		return (game && <GameCanvas playerId={playerId ?? 0} local={props.gameId === 'local'} game={game} />);
-	};
+	let canvasContent;
+	if (props.gameId !== 'local' && (!game || !playerId)) {
+		canvasContent = (
+			<div class="flex justify-center min-h-[100vh] items-center">
+				<div class="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+			</div>
+		);
+	} else if (game) {
+		canvasContent = (
+			<GameCanvas
+				playerId={playerId ?? 0}
+				local={props.gameId === 'local'}
+				game={game}
+			/>
+		);
+	} else {
+		canvasContent = <div></div>;
+	}
 
 
 	return (
@@ -168,7 +178,7 @@ export const GamePage: ComponentFunction = (props) => {
 			<div className="flex min-h-[80vh] items-center gap-10 my-10 flex-col md:flex-row md:justify-between mx-5">
 				{props.gameId !== 'local' ? <Online friends={onlineFriends} position='left' gameId={game?.id || ""} /> : <div></div>}
 				<div className="w-[90%] md:w-[70%] md:max-w-[1200px]">
-					<Canvas />
+					{canvasContent}
 				</div>
 				{props.gameId !== 'local' ? <Online friends={onlineFriends} position='right' gameId={game?.id || ""} /> : <div></div>}
 			</div>

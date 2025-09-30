@@ -1,5 +1,6 @@
 import { VirtualDOM } from "./diff";
 import { ComponentFunction, PatchOperation, VNode, VNodeProps } from "../types/global";
+import { HooksManager } from "../hooks/HooksManager";
 
 /**
  * Renderer class responsible for converting virtual DOM nodes to real DOM elements
@@ -36,10 +37,26 @@ export class Renderer {
     }
 
     if (typeof vnode.type === 'function') {
-      const componentVNode = (vnode.type as ComponentFunction)(vnode.props);
-      const element = this.createElement(componentVNode);
-      vnode.element = element as HTMLElement;
-      return element;
+      const hooksManager = HooksManager.getInstance();
+      let began = false;
+      try {
+        hooksManager.beginFunctionalComponent(vnode.type as ComponentFunction);
+        began = true;
+      } catch (err) {
+        // If there's no active component context we still attempt to render,
+        // but nested hooks inside this component will throw with clearer error messages.
+      }
+
+      try {
+        const componentVNode = (vnode.type as ComponentFunction)(vnode.props);
+        const element = this.createElement(componentVNode);
+        vnode.element = element as HTMLElement;
+        return element;
+      } finally {
+        if (began) {
+          hooksManager.endFunctionalComponent();
+        }
+      }
     }
 
     const element = document.createElement(vnode.type as string);

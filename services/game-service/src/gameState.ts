@@ -28,7 +28,9 @@ export interface PlayerState {
 
 export interface GameState {
 	players: PlayerState[];
-	spectators: WebSocket[];
+	spectatorsSockets: WebSocket[];
+	//s: WebSocket[];
+	spectators: { id: number; username: string; avatar: string }[];
 	playersSockets: WebSocket[];
 	ball: Ball;
 	lastTick: number;
@@ -49,6 +51,7 @@ export function initSession(game: GameMetadata) {
 		const state = {
 			ball: { x: gameConfig.gameWidth / 2, y: gameConfig.gameHeight / 2, vx: 1, vy: 1 },
 			players: [],
+			spectatorsSockets: [],
 			spectators: [],
 			playersSockets: [],
 			lastTick: -1,
@@ -57,7 +60,7 @@ export function initSession(game: GameMetadata) {
 			game,
 			state,
 			startAt: Date.now(),
-			runner: null
+			runner: null,
 		};
 		games.set(game.id, session);
 	}
