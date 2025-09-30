@@ -115,8 +115,6 @@ export const GamePage: ComponentFunction = (props) => {
 			return;
 		}
 		getGame(props.gameId).then((data) => {
-
-			//console.log('game data:', data);
 			setGame(data);
 		});
 	}, [user]);
@@ -134,6 +132,7 @@ export const GamePage: ComponentFunction = (props) => {
 				if (!response.ok) {
 					throw new Error(`Failed to fetch friends: ${response.status} ${response.statusText}`);
 				}
+
 				const data: Friend[] = await response.json();
 				let f: Friend[] = data.map(({ online, ...rest }) => ({ online: true, ...rest }));
 
@@ -146,16 +145,24 @@ export const GamePage: ComponentFunction = (props) => {
 		fetchFriends();
 	}, [game]);
 
-	const Canvas = () => {
-		if (props.gameId !== 'local' && (!game || !playerId))
-			return (
-				<div class="flex justify-center min-h-[100vh] items-center">
-					<div class="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-				</div>
-			);
-
-		return (game && <GameCanvas playerId={playerId ?? 0} local={props.gameId === 'local'} game={game} />);
-	};
+	let canvasContent;
+	if (props.gameId !== 'local' && (!game || !playerId)) {
+		canvasContent = (
+			<div class="flex justify-center min-h-[100vh] items-center">
+				<div class="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+			</div>
+		);
+	} else if (game) {
+		canvasContent = (
+			<GameCanvas
+				playerId={playerId ?? 0}
+				local={props.gameId === 'local'}
+				game={game}
+			/>
+		);
+	} else {
+		canvasContent = <div></div>;
+	}
 
 
 	return (
@@ -169,7 +176,7 @@ export const GamePage: ComponentFunction = (props) => {
 			<div className="flex min-h-[80vh] items-center gap-10 my-10 flex-col md:flex-row md:justify-between mx-5">
 				{props.gameId !== 'local' ? <Online friends={onlineFriends} position='left' gameId={game?.id || ""} /> : <div></div>}
 				<div className="w-[90%] md:w-[70%] md:max-w-[1200px]">
-					<Canvas />
+					{canvasContent}
 				</div>
 				{props.gameId !== 'local' ? <Online friends={onlineFriends} position='right' gameId={game?.id || ""} /> : <div></div>}
 			</div>
