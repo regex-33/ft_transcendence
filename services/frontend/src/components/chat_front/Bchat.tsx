@@ -6,6 +6,8 @@ import { useRef } from '../../hooks/useRef';
 import { Online } from './online';
 import { Barre } from './barre_friend';
 import { FriendItem } from '../home/ChatPanel'
+import { createNewGame } from '../game/utils';
+import { GameType } from '../game/game';
 
 export interface Friend {
 	id: number;
@@ -35,6 +37,32 @@ export const Bchat: ComponentFunction = () => {
 	const [showinfo, setbareinfo] = useState<boolean>(false);
 	const [onlinefriends, onlinefriendssetFriends] = useState<Friend[]>([]);
 	const [name, setname] = useState<number | null>(null);
+
+	const handleGameInvite = async (playerId: number) => {
+		const game = await createNewGame(GameType.SOLO);
+		if (!game)
+			return;
+		console.log("New game created:", game.id);
+		const gameId = game.id;
+		const response = await fetch(`${import.meta.env.VITE_GAME_SERVICE_HOST}:${import.meta.env.VITE_GAME_SERVICE_PORT}/api/game/invite`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			credentials: 'include',
+			body: JSON.stringify({
+				playerId,
+				gameId
+			})
+		});
+		if (!response.ok)
+			console.log("failed to invite friend to game");
+		window.history.pushState({}, "", "/game/" + game.id);
+		window.dispatchEvent(new PopStateEvent("popstate"));
+		setbareinfo(false);
+		setNameFriend(null);
+		console.log("Player invited to game");
+	}
 
 	useEffect(() => {
 		socket.current = new WebSocket(`${import.meta.env.VITE_WS_CHAT_SERVICE_HOST}/ws/chat`);
@@ -265,7 +293,7 @@ export const Bchat: ComponentFunction = () => {
 						{[
 							{ src: "/images/chat/close.png", alt: "close", onClick: () => setbareinfo(false) },
 							{ src: "/images/chat/profilchat.png", alt: "profilchat", onClick: (e: Event) => { if (nameFriend) handleProfileClick(nameFriend.name, e) } },
-							{ src: "/images/chat/gamechat.png", alt: "chatgame", onClick: () => {/* invite game */ } },
+							{ src: "/images/chat/gamechat.png", alt: "chatgame", onClick: () => {handleGameInvite} },
 							{ src: "/images/chat/block.png", alt: "blockchat", onClick: handleBlockUser }
 						].map((btn, i) => (
 							<button
