@@ -91,7 +91,7 @@ const Dialog = (props: { ref: { current: HTMLDialogElement | null }, tournamentI
 			credentials: 'include',
 			body: JSON.stringify({
 				playerId,
-				gameId: props.tournamentId
+				tournamentId: props.tournamentId
 			})
 		});
 		if (!response.ok)
