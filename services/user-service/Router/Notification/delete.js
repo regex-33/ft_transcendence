@@ -11,12 +11,7 @@ module.exports = async (req, reply) => {
     }
 
     try {
-        const notification = await Notification.findOne({ where: { gameId, [Op.or]: [{ userId: payload.id }, { notifierId: payload.id }] } });
-        if (!notification) {
-            return reply.status(404).send({ error: "Notification not found." });
-        }
-
-        await notification.destroy();
+        await Notification.destroy({ where: { gameId, [Op.or]: [{ userId: payload.id }, { notifierId: payload.id }] } });
         return reply.status(204).send();
     } catch (error) {
         require(`${process.env.PROJECT_PATH}/util/catch`)(error);
