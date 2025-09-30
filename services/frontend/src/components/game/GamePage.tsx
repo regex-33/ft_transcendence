@@ -8,6 +8,7 @@ import bgTeam from "../../../images/game-assets/bg-team.png";
 import { GameCanvas } from "./GameCanvas";
 import { useAuth } from "../../hooks/useAuth";
 import { Online } from "../chat_front/online";
+import { GameMode } from "./game";
 
 interface Friend {
 	online?: boolean
@@ -101,7 +102,7 @@ const getGame = async (gameId: string) => {
 export const GamePage: ComponentFunction = (props) => {
 	//	const [players, setPlayers] = useState<Player[]>([]);
 	const [onlineFriends, setOnlineFriends] = useState<Friend[]>([]);
-	const [game, setGame] = useState<{ id: string; players: Player[] } | null>(
+	const [game, setGame] = useState<{ id: string; mode: GameMode; players: Player[] } | null>(
 		null
 	);
 	const [playerId, setPlayerId] = useState<number | null>(null);
@@ -111,7 +112,8 @@ export const GamePage: ComponentFunction = (props) => {
 		console.log("user:", user);
 		setPlayerId(user.id);
 		if (props.gameId === 'local') {
-			setGame({ id: '', players: [] });
+			const gameMode = localStorage.getItem('gameMode') as GameMode ?? GameMode.CLASSIC;
+			setGame({ id: '', players: [], mode: gameMode });
 			return;
 		}
 		getGame(props.gameId).then((data) => {

@@ -6,9 +6,9 @@ export const useToast = (): [Function, VNode] => {
 	const [toast, setToast] = useState({
 		show: false,
 		content: "",
-		type: 'primary'
+		type: 'info'
 	});
-	const showToast = (content: string, type = 'primary', delay = 2000) => {
+	const showToast = (content: string, type = 'info', delay = 2000) => {
 		setToast({
 			show: true,
 			content: content,
@@ -21,7 +21,7 @@ export const useToast = (): [Function, VNode] => {
 
 	let bgColor: string;
 	switch (toast?.type) {
-		case "primary":
+		case "info":
 			bgColor = "bg-blue-400";
 			break;
 		case "error":
@@ -34,6 +34,7 @@ export const useToast = (): [Function, VNode] => {
 	return [showToast, toast ? (
 		<div
 			class={(toast.show ? "fixed" : "hidden") + " z-[99999] bottom-10 left-1/2 transform -translate-x-1/2 " + bgColor + " text-white px-6 py-3 rounded shadow-lg translate-y-4 pointer-events-none"}
-		>{toast.content}
-		</div>): <div></div>];
+		>
+			{toast.content}
+		</div>) : <div></div>];
 }

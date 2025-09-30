@@ -37,13 +37,12 @@ async function tournamentRoutes(fastify: FastifyInstance) {
 			try {
 				const tournament = await getTournament(fastify.prisma, tournamentId);
 				if (!tournament) throw new Error();
-				if (tournament.status === TournamentStatus.ENDED)
-				{
+				if (tournament.status === TournamentStatus.ENDED) {
 					const data = JSON.stringify(tournament);
 					reply.raw.write(`event: UPDATE\n`);
 					reply.raw.write(`data: ${data}\n\n`);
 					reply.raw.end();
-					return ;
+					return;
 				}
 				await tournamentManager.subscribeToUpdate(tournamentId, reply);
 				if (!tournamentManager.playerHasTournament(user.id)) {
@@ -77,10 +76,11 @@ async function tournamentRoutes(fastify: FastifyInstance) {
 		const user = request.user;
 		try {
 			if (tournamentManager.playerHasTournament(user.id)) {
-				return reply.code(400).send({ error: 'Player already in a tournament', });
+				return reply.code(400).send({ error: 'Player already in a tournament' });
 			}
 			const tournament = await createTournament(fastify.prisma, user);
-			if (!tournament) return reply.code(404).send({ error: 'Failed to create tournament. tournament is null' });
+			if (!tournament)
+				return reply.code(404).send({ error: 'Failed to create tournament. tournament is null' });
 			tournamentManager.addTournament(tournament);
 			//tournamentManager.joinTournament(tournament.id, user);
 			return reply.code(200).send(tournament);
@@ -107,6 +107,43 @@ async function tournamentRoutes(fastify: FastifyInstance) {
 			return reply.code(404).send({ error: 'Failed to join tournament. try again later.' });
 		}
 	});
+
+	fastify.post<{ Body: { tournamentId: string; playerId: number } }>(
+		'/invite',
+		async (request, reply) => {
+			const sessionId = request.cookies?.session_id;
+			const token = request.cookies?.token;
+			if (!sessionId || !token)
+				return reply.code(401).send({ error: 'Unauthorized: session not found' });
+			const user = request.user;
+			const { tournamentId, playerId } = request.body;
+			if (user.id === playerId) return reply.code(403).send({ error: 'cannot invite this player' });
+			try {
+				const cookies = 'session_id=' + sessionId + ';token=' + token;
+				const response = await fetch('http://user-service:8001/api/notifications/create', {
+					method: 'POST',
+					headers: {
+						Cookie: cookies,
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						gameId: tournamentId,
+						userId: playerId,
+						type: 'TOURNAMENT_NOTIFICATION',
+					}),
+				});
+				if (!response.ok) {
+					const text = await response.text();
+					console.log('fetch err:', response.status, text);
+					return reply.code(403).send({ error: 'Could not invite player to this tournament' });
+				}
+				return reply.code(204).send();
+			} catch (err) {
+				if (err instanceof Error) return reply.code(404).send({ error: err.message });
+				return reply.code(404).send({ error: 'Failed to invite player. try again later.' });
+			}
+		}
+	);
 }
 
 export default tournamentRoutes;

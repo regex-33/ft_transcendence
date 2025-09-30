@@ -79,8 +79,24 @@ interface Friend {
 	username: string
 }
 
-const Dialog = (props: { ref: { current: HTMLDialogElement | null } }) => {
+const Dialog = (props: { ref: { current: HTMLDialogElement | null }, tournamentId: string }) => {
 	const [friends, setFriends] = useState<Friend[]>([]);
+
+	const handlePlayerInvite = async (playerId: number) => {
+		const response = await fetch(`${import.meta.env.VITE_GAME_SERVICE_HOST}:${import.meta.env.VITE_GAME_SERVICE_PORT}/api/tournament/invite`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			credentials: 'include',
+			body: JSON.stringify({
+				playerId,
+				gameId: props.tournamentId
+			})
+		});
+		if (!response.ok)
+			console.log("failed to invite friend to game");
+	}
 
 	useEffect(() => {
 		console.log('dialog useeffect');
@@ -131,13 +147,16 @@ const Dialog = (props: { ref: { current: HTMLDialogElement | null } }) => {
 				</div>
 				<div className="text-white font-bold text-xl font-poppins">{friend.username}</div>
 				<button
+					onclick={() => {
+						handlePlayerInvite(friend.id)
+					}}
 					type="button"
 					className="
-				    flex items-center gap-2 px-3 h-[30px]
-				    bg-[url('/images/home-assests/bg-FriendsAdd.svg')]
-				    bg-no-repeat bg-center bg-contain
-				    text-white font-semibold text-lg
-				    transition-transform duration-200 hover:scale-95 pl-1
+				flex items-center gap-2 px-3 h-[30px]
+				bg-[url('/images/home-assests/bg-FriendsAdd.svg')]
+				bg-no-repeat bg-center bg-contain
+				text-white font-semibold text-lg
+				transition-transform duration-200 hover:scale-95 pl-1
 				  ">
 					<img
 						src="/images/setting-assests/plus-friends.svg"
@@ -149,7 +168,7 @@ const Dialog = (props: { ref: { current: HTMLDialogElement | null } }) => {
 			</div>)
 
 		})}
-	</dialog>
+	</dialog >
 }
 
 
@@ -184,10 +203,6 @@ export const TournamentPage = (props: { tournamentId: string }) => {
 			}
 		}
 		fetchTournament();
-
-		const onHealth = (e: MessageEvent) => {
-			console.log('health check:', e.data);
-		}
 
 		const onUpdate = async (e: MessageEvent) => {
 			const data: TournamentState = JSON.parse(e.data);
@@ -248,7 +263,6 @@ export const TournamentPage = (props: { tournamentId: string }) => {
 		console.log('useEffect');
 		if (eventRef.current !== null) {
 			eventRef.current.close();
-			eventRef.current.removeEventListener('HEALTH', onHealth);
 			eventRef.current.removeEventListener('UPDATE', onUpdate);
 			eventRef.current.removeEventListener('START', onStart);
 			eventRef.current.onmessage = null;
@@ -260,7 +274,6 @@ export const TournamentPage = (props: { tournamentId: string }) => {
 		eventRef.current.onmessage = (ev: MessageEvent) => {
 			console.log('received message:', ev.data);
 		};
-		eventRef.current.addEventListener('HEALTH', onHealth);
 		eventRef.current.addEventListener('UPDATE', onUpdate);
 		eventRef.current.addEventListener('START', onStart);
 		console.log('sse is set', eventRef.current);
@@ -268,7 +281,6 @@ export const TournamentPage = (props: { tournamentId: string }) => {
 			console.log('cleanup called');
 			if (!eventRef.current) return;
 			eventRef.current.close();
-			eventRef.current.removeEventListener('HEALTH', onHealth);
 			eventRef.current.removeEventListener('UPDATE', onUpdate);
 			eventRef.current.removeEventListener('START', onStart);
 			eventRef.current.onmessage = null;
@@ -291,7 +303,7 @@ export const TournamentPage = (props: { tournamentId: string }) => {
 			className="relative flex flex-col overflow-hidden h-screen w-screen"
 			style={{ backgroundColor: 'rgba(94, 156, 171, 0.4)' }}
 		>
-			<Dialog ref={dialogRef} />
+			<Dialog tournamentId={tournament?.id ?? ''} ref={dialogRef} />
 			<div className="relative z-10">
 				<Header />
 			</div>

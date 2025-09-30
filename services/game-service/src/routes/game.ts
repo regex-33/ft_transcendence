@@ -11,7 +11,7 @@ const MODE_POINTS = {
 	[GameMode.SPEED]: 300,
 	[GameMode.VANISH]: 550,
 	[GameMode.GOLD]: 1000,
-}
+};
 
 async function gameRoutes(fastify: FastifyInstance) {
 	fastify.addHook('preHandler', checkAuth);
@@ -24,16 +24,29 @@ async function gameRoutes(fastify: FastifyInstance) {
 			const user = (request as any).user;
 			const { gameType, gameMode } = request.body as any;
 			const db = fastify.prisma;
-			const player = await getOrCreatePlayer(db, user);
+			let player = await getOrCreatePlayer(db, user);
 			const modePoints = MODE_POINTS[gameMode as GameMode];
 			if (player.points < modePoints)
 				return reply.code(401).send({ error: 'not enough points for this game mode' });
+			if (player.activeGameId !== null) {
+				if (player?.activeGame?.status === GameStatus.ENDED) {
+					player = await db.player.update({
+						where: { userId: user.id },
+						data: {
+							activeGameId: null,
+						},
+					});
+				}
+				else
+					return reply.code(401).send({ error: 'Player already has an active game' });
+			}
 			const game = await createGame(db, {
 				type: gameType,
 				mode: gameMode,
 				player: user,
 			});
-			if (!game) return reply.code(401).send({ error: 'Player already has an active game' });
+			if (!game)
+				return reply.code(401).send({ error: 'Could not create game, retry again later.' });
 			const gameId = game.id;
 			const gameInvites = invites.get(gameId);
 			if (!gameInvites) invites.set(gameId, [user.id]);

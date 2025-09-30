@@ -17,6 +17,13 @@ import { fetchGameApi } from './fetch';
 import { Modes } from './Modes';
 import { ToggleButton } from './ToggleButton';
 
+export const MODE_POINTS = {
+	[GameMode.CLASSIC]: 150,
+	[GameMode.SPEED]: 300,
+	[GameMode.VANISH]: 550,
+	[GameMode.GOLD]: 1000,
+}
+
 const Badge = (props: { text: string }) => {
 	return (
 		<div className="flex justify-center items-center object-fit leading-none">
@@ -51,6 +58,7 @@ export const CreateGamePage: ComponentFunction = () => {
 	const [loading, isAuthenticated, user] = useAuth();
 	const [showToast, Toast] = useToast();
 	const [mode, setMode] = useState<GameMode>(GameMode.CLASSIC);
+
 	console.log("mode: ", mode);
 	useEffect(() => {
 		if (!user)
@@ -65,8 +73,10 @@ export const CreateGamePage: ComponentFunction = () => {
 	const handleClickRemote = async (type: GameType, e: Event) => {
 		console.log(e);
 		console.log(type);
-		const game = await createNewGame(type);
-		if (!game)
+		const { status, game, error } = await createNewGame(type, mode);
+		if (status !== 'ok')
+			return showToast(error, 'error');
+		else if (!game)
 			return showToast("Failed to create game!", "error");
 		showToast("[!] Game created successfully: " + game.id);
 		setTimeout(() => {
@@ -84,55 +94,58 @@ export const CreateGamePage: ComponentFunction = () => {
 			<div className="relative z-10">
 				<Header />
 			</div>
-		<div className="gap-10 my-10 m-auto grid md:grid-rows-1 md:grid-cols-3 w-[80%] md:w-full items-center md:justify-between  px-7">
-					<div>
-						<Badge text="local" />
-						<CardContainer>
-							<div className="flex justify-center">
-								<img src={GameLocalImg} className="max-w-[100px] pointer-events-none" />
-							</div>
-							<CardButton onClick={() => {
-								window.history.pushState({}, "", "/game/local");
-								window.dispatchEvent(new PopStateEvent("popstate"));
-							}} />
-						</CardContainer>
-					</div>
-					<div className="justify-center">
-						<Badge text="remote" />
-						<CardContainer>
-							<div className="flex justify-center">
-								<img src={GameRemoteImg} className="max-w-[100px] pointer-events-none" />
-							</div>
-							<ToggleButton onStart={(type: GameType) => handleClickRemote(type, new Event("click"))} />
-						</CardContainer>
-					</div>
-					<div>
-						<Badge text="tournament" />
-						<CardContainer>
-							<div className="flex justify-center">
-								<img src={GameTournamentImg} className="max-w-[150px] pointer-events-none" />
-							</div>
-							<div className="flex justify-center">
-								{/* <object type="image/svg+xml" data={TournamentButtonSvg} className="max-w-[150px]"></object> */}
-								<button onClick={async () => {
-									try {
-										const tournament = await fetchGameApi('/tournament/create', 'POST');
-										window.history.pushState({}, "", "/tournament/" + tournament.id);
-										window.dispatchEvent(new PopStateEvent("popstate"));
-									}
-									catch (err) {
-										console.log("create tournament error: ", err)
-									}
-								}}>
-									<img src={TournamentButtonSvg} className="hover:scale-[0.96]" />
-								</button>
-							</div>
-						</CardContainer>
-					</div>
+			<div className="gap-10 my-10 m-auto grid md:grid-rows-1 md:grid-cols-3 w-[80%] md:w-full items-center md:justify-between  px-7">
+				<div>
+					<Badge text="local" />
+					<CardContainer>
+						<div className="flex justify-center">
+							<img src={GameLocalImg} className="max-w-[100px] pointer-events-none" />
+						</div>
+						<CardButton onClick={() => {
+							localStorage.setItem('gameMode', mode);
+							window.history.pushState({}, "", "/game/local");
+							window.dispatchEvent(new PopStateEvent("popstate"));
+						}} />
+					</CardContainer>
 				</div>
-				<div className="flex justify-center w-full">
-					<Modes modes={mode} setModes={setMode}></Modes>
+				<div className="justify-center">
+					<Badge text="remote" />
+					<CardContainer>
+						<div className="flex justify-center">
+							<img src={GameRemoteImg} className="max-w-[100px] pointer-events-none" />
+						</div>
+						<ToggleButton onStart={(type: GameType) => handleClickRemote(type, new Event("click"))} />
+					</CardContainer>
 				</div>
+				<div>
+					<Badge text="tournament" />
+					<CardContainer>
+						<div className="flex justify-center">
+							<img src={GameTournamentImg} className="max-w-[150px] pointer-events-none" />
+						</div>
+						<div className="flex justify-center">
+							{/* <object type="image/svg+xml" data={TournamentButtonSvg} className="max-w-[150px]"></object> */}
+							<button onClick={async () => {
+								try {
+									const tournament = await fetchGameApi('/tournament/create', 'POST');
+									window.history.pushState({}, "", "/tournament/" + tournament.id);
+									window.dispatchEvent(new PopStateEvent("popstate"));
+								}
+								catch (err) {
+									console.log("create tournament error: ", err)
+								}
+							}}>
+								<img src={TournamentButtonSvg} className="hover:scale-[0.96]" />
+							</button>
+						</div>
+					</CardContainer>
+				</div>
+			</div>
+			<div className="flex justify-center w-full">
+				<Modes modes={mode} setModes={(mode: GameMode) => {
+					setMode(mode)
+				}}></Modes>
+			</div>
 		</div>
 	);
 };

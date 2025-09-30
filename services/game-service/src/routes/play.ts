@@ -79,8 +79,10 @@ function simPong(gameSession: GameSession, dt: number) {
 		ball.vy = -1;
 	}
 	if (terminateGame) {
-		gameSession.game.status = 'ENDED';
-		gameSession.onEnd?.();
+		if (gameSession.onEnd) {
+			gameSession.game.status = 'ENDED';
+			gameSession.onEnd();
+		}
 	}
 	if (ball.y + gameConfig.ballRadius > gameConfig.gameHeight) {
 		ball.y = gameConfig.gameHeight - gameConfig.ballRadius;
@@ -199,7 +201,6 @@ async function endGame(gameSession: GameSession, prismaClient: PrismaClient, sen
 			})
 		);
 	}
-	gameSession.game.status = GameStatus.ENDED;
 	const updates = await prismaClient.$transaction([
 		...playerOps,
 		prismaClient.gamePlayer.updateMany({
@@ -229,6 +230,7 @@ async function endGame(gameSession: GameSession, prismaClient: PrismaClient, sen
 			},
 		}),
 	]);
+	gameSession.game.status = GameStatus.ENDED;
 	const updatedGame = updates.at(-1) as UpdatedGame;
 	if (updatedGame && updatedGame.tournamentId) {
 		tournamentManager.onGameEnd(updatedGame);
@@ -308,13 +310,22 @@ function handlePlayerUpdate(
 	action: ActionType
 ) {
 	const players = session.state.players;
-	const player = players.find((p) => p.id === playerId);
+	const playerIndex = players.findIndex((p) => p.id === playerId);
+	const player = players[playerIndex];
+	let limitUp, limitDown;
+	if (session.game.type === 'TEAM') {
+		limitUp = playerIndex % 2 === 0 ? 0 : gameConfig.gameHeight / 2;
+		limitDown = playerIndex % 2 === 0 ? gameConfig.gameHeight / 2 : gameConfig.gameHeight;
+	} else {
+		limitUp = 0;
+		limitDown = gameConfig.gameHeight;
+	}
 	if (!player) return kickSpectator(socket, playerId);
 	if (action === 'KEY_UP') player.paddle.y -= gameConfig.paddleSpeed;
 	if (action === 'KEY_DOWN') player.paddle.y += gameConfig.paddleSpeed;
-	if (player.paddle.y < 0) player.paddle.y = 0;
-	if (player.paddle.y + gameConfig.paddleHeight > gameConfig.gameHeight)
-		player.paddle.y = gameConfig.gameHeight - gameConfig.paddleHeight;
+	if (player.paddle.y < limitUp) player.paddle.y = limitUp;
+	if (player.paddle.y + gameConfig.paddleHeight > limitDown)
+		player.paddle.y = limitDown - gameConfig.paddleHeight;
 }
 
 async function playRoutes(fastify: FastifyInstance) {
@@ -347,7 +358,7 @@ async function playRoutes(fastify: FastifyInstance) {
 			if (!isSpec) session.state.playersSockets.push(socket);
 			else {
 				session.state.spectatorsSockets.push(socket);
-				if (session.state.spectators.findIndex(spectator => spectator.id === user.id) === -1)
+				if (session.state.spectators.findIndex((spectator) => spectator.id === user.id) === -1)
 					session.state.spectators.push({
 						id: user.id,
 						avatar: user.avatar,
@@ -355,13 +366,13 @@ async function playRoutes(fastify: FastifyInstance) {
 					});
 			}
 
-		//	session.state.playersSockets.forEach((s) => {
-		//		if (s === socket) return;
-		//		s.send(
-		//			JSON.stringify({
-		//			})
-		//		);
-		//	});
+			//	session.state.playersSockets.forEach((s) => {
+			//		if (s === socket) return;
+			//		s.send(
+			//			JSON.stringify({
+			//			})
+			//		);
+			//	});
 			broadcast(session, {
 				type: 'PLAYER_CONNECT',
 				players: session.game.players,
@@ -375,7 +386,9 @@ async function playRoutes(fastify: FastifyInstance) {
 				session.state.spectatorsSockets = session.state.spectatorsSockets.filter(
 					(s) => s !== socket
 				);
-				session.state.spectators = session.state.spectators.filter(spectator => spectator.id !== user.id);
+				session.state.spectators = session.state.spectators.filter(
+					(spectator) => spectator.id !== user.id
+				);
 				session.state.playersSockets = session.state.playersSockets.filter((s) => {
 					if (s === socket) return false;
 					s.send(

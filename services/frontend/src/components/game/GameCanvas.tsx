@@ -48,9 +48,11 @@ const AvatarCircle = ({
 const TeamBadge = ({
 	player,
 	reverse = false,
+	team = false
 }: {
 	player: Player | undefined;
 	reverse: boolean;
+	team: boolean
 }) => {
 	if (!player) return <div></div>;
 	let nameBadge = (
@@ -136,7 +138,7 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 			const gameData = {
 				id: props.game.id,
 				type: GameType.SOLO,
-				mode: GameMode.CLASSIC,
+				mode: props.game.mode,
 			};
 			const game = new LocalGame(context, gameData, setScores, (players: Player[]) => {
 				setPlayers(players);
@@ -200,32 +202,51 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 
 
 	const handleClick = () => { };
-	const maxPlayers = props.game.type === 'SOLO' ? 2 : 4;
+	const maxPlayers = props.local ? 2 : props.game.type === 'SOLO' ? 2 : 4;
+	const bgColor = props.game.mode === 'GOLD' || props.game.type === 'TEAM' ? 'bg-[#23444E]' : 'bg-[#91BFBF]';
+	const borderColor = props.game.mode === 'GOLD' || props.game.type === 'TEAM' ? 'bg-[#76A29B]' : 'bg-white';
 
+	const teamBadge = maxPlayers === 2 ? (
+		<div className="flex justify-between items-center">
+			<TeamBadge reverse={false} player={players[0]} />
+			<div className="flex gap-2 items-center">
+				<span className="text-white text-lg font-luckiest">
+					{scores[0]}
+				</span>
+				<img src={ScoreSepImg} className="mb-2 max-w-[30px]" />
+				<span className="text-white text-lg font-luckiest">
+					{scores[1]}
+				</span>
+			</div>
+			<TeamBadge reverse={true} player={players[1]} />
+		</div>) :
+		(<div>
+			<TeamBadge team={true} reverse={false} player={players[0]} />
+			<TeamBadge team={true} reverse={false} player={players[1]} />
+			<div className="flex gap-2 items-center">
+				<span className="text-white text-lg font-luckiest">
+					{scores[0]}
+				</span>
+				<img src={ScoreSepImg} className="mb-2 max-w-[30px]" />
+				<span className="text-white text-lg font-luckiest">
+					{scores[1]}
+				</span>
+			</div>
+			<TeamBadge team={true} reverse={true} player={players[2]} />
+			<TeamBadge team={true} reverse={true} player={players[3]} />
+		</div>);
 
 	return (
 		<div>
 			<div className="flex flex-col justify-center">
 				{Toast}
 				{
-					players?.length > 1 ? (
-						<div className="flex justify-between items-center">
-							<TeamBadge reverse={false} player={players[0]} />
-							<div className="flex gap-2 items-center">
-								<span className="text-white text-lg font-luckiest">
-									{scores[0]}
-								</span>
-								<img src={ScoreSepImg} className="mb-2 max-w-[30px]" />
-								<span className="text-white text-lg font-luckiest">
-									{scores[1]}
-								</span>
-							</div>
-							<TeamBadge reverse={true} player={players[1]} />
-						</div>
+					players?.length === maxPlayers ? (
+						{ teamBadge }
 					) : <div className="m-auto text-center text-gray-800 text:sm md:text-xl font-luckiest">waiting for players</div>
 				}
-				<div className="px-3 py-1 rounded-3xl bg-[#91BFBF]">
-					<div className="relative flex justify-center my-2 bg-white p-4 shadow-xs shadow-gray-400 rounded-xl">
+				<div className={"px-3 py-1 rounded-3xl " + bgColor}>
+					<div className={"relative flex justify-center my-2 p-4 shadow-xs shadow-gray-400 rounded-xl " + borderColor}>
 						<div className="w-full flex justify-center">
 							<canvas
 								ref={canvasRef}
@@ -233,10 +254,10 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 								width="800px"
 								id="game-canvas"
 								onClick={handleClick}
-								className="bg-[#91BFBF]"
+								className={bgColor}
 							></canvas>
 						</div>
-						{(players?.length === maxPlayers && !started) ? <button onClick={handleStartGame} className="absolute flex gap-4 align-center border-2 top-[50%] translate-y-[-50%] text-lg rounded-lg shadow-sm bg-teal-400 hover:bg-teal-300 px-8 py-2 font-poppins font-bold text-white">
+						{(players?.length === maxPlayers && !started) ? <button onClick={handleStartGame} className={"absolute flex gap-4 align-center border-2 top-[50%] translate-y-[-50%] text-lg rounded-lg shadow-sm bg-teal-400 hover:bg-teal-300 px-8 py-2 font-poppins font-bold text-white"}>
 							<i class="fa-solid text-lg fa-table-tennis-paddle-ball"></i>
 							<div>start</div>
 						</button> : <div></div>

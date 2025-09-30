@@ -6,11 +6,15 @@ export type UserData = {
 	username: string;
 };
 
-export const getOrCreatePlayer = async (db: PrismaClient | Prisma.TransactionClient, data: UserData) => {
+export const getOrCreatePlayer = async (
+	db: PrismaClient | Prisma.TransactionClient,
+	data: UserData
+) => {
 	const player = await db.player.upsert({
 		where: { userId: data.id },
 		update: {},
 		create: { userId: data.id, avatar: data.avatar, username: data.username },
+		include: { activeGame: true },
 	});
 	return player;
 };
@@ -28,9 +32,9 @@ const getPlayerStats = async (db: PrismaClient | Prisma.TransactionClient, playe
 		include: {
 			games: {
 				include: {
-					game: true
-				}
-			}
+					game: true,
+				},
+			},
 		},
 	});
 
@@ -58,20 +62,18 @@ const getPlayerGames = async (
 			type: true,
 			winningTeam: true,
 			gamePlayers: {
-				select:
-				{
-					player:
-					{
+				select: {
+					player: {
 						select: {
 							avatar: true,
 							username: true,
-							userId: true
-						}
+							userId: true,
+						},
 					},
 					team: true,
-					score: true
-				}
-			}
+					score: true,
+				},
+			},
 		},
 	});
 	// const games = games.map(game => {

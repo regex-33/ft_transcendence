@@ -40,15 +40,16 @@ export const createNewGame = async (
         credentials: "include",
       },
     );
+    const data = await response.json();
     if (!response.ok) {
       //const data = await response.json();
       if (response.status === 401) {
         if (redirectOnError) redirectToActiveGame();
       }
-      return null;
+      return { status: "error", ...data };
     }
-    return await response.json();
-  } catch (err) {
-    return null;
+    return { status: "ok", game: data };
+  } catch (error) {
+    return { status: "error", error };
   }
 };
