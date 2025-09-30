@@ -293,7 +293,7 @@ abstract class Game {
     }
     this.ctx.clearRect(0, 0, GameConfig.canvasWidth, GameConfig.canvasHeight);
     this.paddles.forEach((paddle) => {
-      GameType.TEAMpaddle.draw(this.ctx);
+      paddle.draw(this.ctx);
     });
     drawBall(this.ctx, this.ball, this.ballAlpha, this.mode === GameMode.GOLD);
   };
