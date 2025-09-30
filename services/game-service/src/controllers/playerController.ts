@@ -53,7 +53,7 @@ const getPlayerGames = async (
 	data: { id: number }
 ) => {
 	const games = await db.game.findMany({
-		where: { gamePlayers: { some: { playerId: data.id } } },
+		where: { players: { some: { userId: data.id } } },
 		select: {
 			duration: true,
 			id: true,

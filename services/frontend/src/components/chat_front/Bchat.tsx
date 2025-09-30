@@ -39,8 +39,8 @@ export const Bchat: ComponentFunction = () => {
 	const [name, setname] = useState<number | null>(null);
 
 	const handleGameInvite = async (playerId: number) => {
-		const game = await createNewGame(GameType.SOLO);
-		if (!game)
+		const {status, game, error} = await createNewGame(GameType.SOLO);
+		if (status !== 'ok')
 			return;
 		console.log("New game created:", game.id);
 		const gameId = game.id;
@@ -293,7 +293,7 @@ export const Bchat: ComponentFunction = () => {
 						{[
 							{ src: "/images/chat/close.png", alt: "close", onClick: () => setbareinfo(false) },
 							{ src: "/images/chat/profilchat.png", alt: "profilchat", onClick: (e: Event) => { if (nameFriend) handleProfileClick(nameFriend.name, e) } },
-							{ src: "/images/chat/gamechat.png", alt: "chatgame", onClick: () => {handleGameInvite} },
+							{ src: "/images/chat/gamechat.png", alt: "chatgame", onClick: () => {handleGameInvite(nameFriend.id)} },
 							{ src: "/images/chat/block.png", alt: "blockchat", onClick: handleBlockUser }
 						].map((btn, i) => (
 							<button
