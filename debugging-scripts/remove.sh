@@ -1,20 +1,20 @@
 #!/bin/bash
 set -e
 
-echo " Stopping all containers..."
-docker ps -aq | xargs -r docker stop
+echo "Stopping all running containers..."
+docker ps -q | xargs -r docker stop
 
 echo "Removing all containers..."
-docker ps -aq | xargs -r docker rm -f
+docker ps -aq | xargs -r docker rm
 
-echo "🖼 Removing all images..."
-docker images -aq | xargs -r docker rmi -f
+echo "Removing all volumes..."
+docker volume ls -q | xargs -r docker volume rm
 
-echo " Removing all volumes..."
-docker volume ls -q | xargs -r docker volume rm -f
+echo "Removing all unused networks..."
+docker network prune -f
 
-docker secret rm app-role-id app-secret-id logging-role-id logging-secret-id monitoring-role-id monitoring-secret-id || true
+echo "Removing all images..."
+docker images -q | xargs -r docker rmi -f
 
-docker volume rm $(docker volume ls -q | grep vault) || true
+echo "Done. Docker is cleaned."
 
-echo "✓ Cleanup complete!"

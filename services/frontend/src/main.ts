@@ -1,6 +1,6 @@
 import './assets/styles/main.css';
 
-const ws = new WebSocket(`${window.location.protocol == 'https:' ? 'wss' : 'ws'}://${window.location.host}/api/users/online-tracker`);
+const ws = new WebSocket(`${import.meta.env.VITE_WS_CHAT_SERVICE_HOST}/api/users/online-tracker`);
 
 if (!(window as any).__APP_INITIALIZED__) {
   (window as any).__APP_INITIALIZED__ = true;
@@ -8,7 +8,6 @@ if (!(window as any).__APP_INITIALIZED__) {
   let appInstance: any = null;
 
   const initializeApp = async () => {
-    // Double-check to prevent race conditions
     if (appInstance) {
       console.warn('App already initialized, skipping duplicate initialization');
       return;

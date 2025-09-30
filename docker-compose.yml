@@ -15,8 +15,6 @@ services:
       - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-regex-33}
       - REDIS_PORT=${REDIS_PORT:-6379}
-    ports:
-      - "9000:3000"
     volumes:
       - ./services/game-service/src:/game-service/src
     networks:
@@ -43,12 +41,10 @@ services:
       - VITE_USER_SERVICE_PORT=80
       - VITE_GAME_SERVICE_HOST=http://localhost
       - VITE_GAME_SERVICE_PORT=80
-      - VITE_WS_USER_SERVICE_HOST=ws://localhost:8001
       - VITE_WS_CHAT_SERVICE_HOST=ws://localhost
       - VITE_WS_GAME_SERVICE_HOST=ws://localhost
       - VITE_CHAT_SERVICE_HOST=http://localhost
 
-      # - VITE_WS_USER_SERVICE_HOST=wss://ft-transcendence.com
       # - VITE_WS_CHAT_SERVICE_HOST=wss://ft-transcendence.com
       # - VITE_USER_SERVICE_HOST=https://ft-transcendence.com
       # - VITE_CHAT_SERVICE_HOST=https://ft-transcendence.com
@@ -63,8 +59,6 @@ services:
       context: ./services/user-service
       dockerfile: Dockerfile
     container_name: transcendence-user-service
-    ports:
-      - "${USER_SERVICE_PORT:-8001}:${USER_SERVICE_PORT:-8001}"
     networks:
       - transcendence-network
     volumes:
@@ -102,8 +96,6 @@ services:
       context: ./services/chat-service
       dockerfile: Dockerfile
     container_name: transcendence-chat-service
-    ports:
-      - "${CHAT_SERVICE_PORT:-8002}:${CHAT_SERVICE_PORT:-8002}"
     networks:
       - transcendence-network
     volumes:
@@ -150,8 +142,6 @@ services:
       - redis_data:/data
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
     networks:
       - transcendence-network
       # - elk-network
@@ -162,8 +152,6 @@ services:
       dockerfile: Dockerfile
     container_name: transcendence-xo-game
     restart: unless-stopped
-    ports:
-      - "${XO_GAME_PORT:-8083}:${XO_GAME_PORT:-8083}"
     networks:
       - transcendence-network
     volumes:
