@@ -1,4 +1,5 @@
 import { VNode, VNodeProps, VNodeType } from "../types/global";
+import { HooksManager } from "../hooks/HooksManager";
 
 export function createElement(
   type: VNodeType,
@@ -7,7 +8,13 @@ export function createElement(
 ): VNode {
 
   if (typeof type === "function") {
-    return type({ ...props, children }); // this triggers hook registration
+    const hooksManager = HooksManager.getInstance();
+    hooksManager.beginFunctionalComponent(type);
+    try {
+      return type({ ...props, children }); // this triggers hook registration
+    } finally {
+      hooksManager.endFunctionalComponent();
+    }
   }
   // console.log('Creating element:', type, props, children);
     // .flat() => this flattens only one level, for deeply nested arrayes i use infinity

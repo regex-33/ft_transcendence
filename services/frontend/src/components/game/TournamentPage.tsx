@@ -114,7 +114,7 @@ const Dialog = (props: { ref: { current: HTMLDialogElement | null } }) => {
 		}}
 	>
 		{friends?.map(friend => {
-			return (<div className="flex flex-row mb-2 justify-between items-center gap-2">
+			return (<div className="flex flex-row mb-2 scroll-pb-4 justify-between items-center gap-2">
 				<div
 					className="relative w-14 h-14 flex items-center 
                           justify-center bg-no-repeat bg-contain transition-transform duration-200 hover:scale-95"
@@ -129,7 +129,7 @@ const Dialog = (props: { ref: { current: HTMLDialogElement | null } }) => {
 						alt="Avatar"
 					/>
 				</div>
-				<div className="text-shadow-lg text-shadow-black text-white font-bold text-xl font-poppins">{friend.username}</div>
+				<div className="text-white font-bold text-xl font-poppins">{friend.username}</div>
 				<button
 					type="button"
 					className="

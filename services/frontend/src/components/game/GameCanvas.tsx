@@ -123,7 +123,7 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 			console.log("close connection on unmount:", connection);
 			connection.close();
 		}
-	}, [props.game]);
+	}, []);
 
 	const handleStartGame = () => {
 		if (!canvasRef.current) return;
@@ -175,6 +175,8 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 		}).catch(err => {
 			console.log("connect error:", err);
 			connection.close();
+			if (connectionRef.current === connection)
+				connectionRef.current = null;
 		});
 		connection.onClose((e: CloseEvent) => {
 			if (!started)
@@ -184,8 +186,10 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 		return () => {
 			console.log("Cleanup called");
 			window.removeEventListener("resize", handleCanvasResize);
+			if (connectionRef.current === connection)
+				connectionRef.current = null;
 		};
-	}, [canvasRef, connectionRef])
+	}, [])
 
 	const handleClick = () => { };
 	const maxPlayers = props.game.type === 'SOLO' ? 2 : 4;

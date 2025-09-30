@@ -3,7 +3,7 @@ type MessageHandler = (data: any) => void;
 type CloseHandler = (e: CloseEvent) => any;
 
 export class Connection {
-  private _socket!: WebSocket;
+  private _socket!: WebSocket | null;
   private _handlers = new Map<string, MessageHandler[]>();
   private _url: string;
   private _onClose: CloseHandler | null;
@@ -15,27 +15,29 @@ export class Connection {
     this.initialized = false;
   }
 
-  onClose (callback: CloseHandler) {
+  onClose(callback: CloseHandler) {
     this._onClose = callback;
-    if (!this._socket.OPEN)
-      return;
+    if (!this._socket || this._socket.readyState === WebSocket.CLOSED) return;
     this._socket.onclose = callback;
   }
 
   connect(timeoutMs = 15000): Promise<void> {
+    if (this._socket && this._socket.readyState === WebSocket.OPEN)
+      return Promise.resolve();
     console.log("connecting to websocket");
     return new Promise((resolve, reject) => {
-      this._socket = new WebSocket(this._url);
+      const socket = new WebSocket(this._url);
+      this._socket = socket;
 
       const timeout = setTimeout(() => {
-        this._socket.close();
+        socket.close();
+        if (this._socket === socket) this._socket = null;
         reject(new Error("WebSocket timeout"));
       }, timeoutMs);
 
       this._socket.onopen = () => {
         console.log("connected!!");
-        if (this._onClose)
-          this._socket.onclose = this._onClose;
+        if (this._onClose) socket.onclose = this._onClose;
         clearTimeout(timeout);
         resolve();
       };
@@ -61,7 +63,7 @@ export class Connection {
   }
 
   send(data: any) {
-    this._socket.send(JSON.stringify(data));
+    this._socket?.send(JSON.stringify(data));
   }
 
   on(type: string, handler: MessageHandler) {
