@@ -45,7 +45,7 @@ export class Router {
    */
   private handlePopState(): void {
     this.currentRoute = window.location.pathname;
-    console.log('Router: Handling popstate, new route:', this.currentRoute);
+    //console.log('Router: Handling popstate, new route:', this.currentRoute);
     this.renderCurrentRoute();
   }
 
@@ -92,7 +92,7 @@ export class Router {
   private render(component: Component): void {
     //  CLEANUP: Unmount previous component before mounting new one
     if (this.currentComponent && this.currentComponent.isMountedComponent()) {
-      console.log('Router: Unmounting previous component');
+      //console.log('Router: Unmounting previous component');
       this.currentComponent.unmount();
     }
 
@@ -105,7 +105,7 @@ export class Router {
     
     this.currentComponent = component;
     
-    // console.log('Router: Mounted new component for route:', this.currentRoute);
+    // //console.log('Router: Mounted new component for route:', this.currentRoute);
   }
 
   /**

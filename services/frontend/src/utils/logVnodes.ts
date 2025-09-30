@@ -96,8 +96,8 @@ function formatProps(props: any, indent: number): string {
  * Enhanced console logging function for VNodes
  */
 export function logVNode(vnode: VNode | null, label: string = 'VNode'): void {
-  // console.log(`// ${label.toUpperCase()}`);
-  // console.log(`const ${label.toLowerCase().replace(/\s+/g, '')} = ${formatVNode(vnode)};`);
+  // //console.log(`// ${label.toUpperCase()}`);
+  // //console.log(`const ${label.toLowerCase().replace(/\s+/g, '')} = ${formatVNode(vnode)};`);
 }
 
 /**
@@ -107,15 +107,15 @@ export function logDiffComparison(oldVNode: VNode | null, newVNode: VNode | null
   if (oldVNode) {
     logVNode(oldVNode, 'OLD VNODE TREE');
   } else {
-    console.log('// OLD VNODE TREE\nconst oldVNode = null;');
+    //console.log('// OLD VNODE TREE\nconst oldVNode = null;');
   }
   
-  console.log('');
+  //console.log('');
   
   if (newVNode) {
     logVNode(newVNode, 'NEW VNODE TREE');
   } else {
-    console.log('// NEW VNODE TREE\nconst newVNode = null;');
+    //console.log('// NEW VNODE TREE\nconst newVNode = null;');
   }
 }
 

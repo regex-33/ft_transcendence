@@ -51,7 +51,7 @@ async function gameRoutes(fastify: FastifyInstance) {
 			const gameInvites = invites.get(gameId);
 			if (!gameInvites) invites.set(gameId, [user.id]);
 			else gameInvites.push(user.id);
-			console.log('game created');
+			//console.log('game created');
 			//notify
 			reply.code(201).send(game);
 		}
@@ -71,8 +71,8 @@ async function gameRoutes(fastify: FastifyInstance) {
 			if (user.id === playerId) return reply.code(403).send({ error: 'cannot invite this player' });
 			const game = await getGame(fastify.prisma, gameId);
 			if (!game) return reply.code(404).send({ error: 'game not found' });
-			console.log('userId:', user.id);
-			console.log('game players:', game.players);
+			//console.log('userId:', user.id);
+			//console.log('game players:', game.players);
 			if (!game.players.some((p) => p.userId === user.id))
 				return reply.code(403).send({ error: 'cannot invite to this game' }); // Keep same message ??
 			const cookies = 'session_id=' + sessionId + ';token=' + token;
@@ -82,9 +82,17 @@ async function gameRoutes(fastify: FastifyInstance) {
 				invites.set(gameId, gameInvites);
 			}
 			if (gameInvites.includes(playerId))
+			{
+				fetch('http://user-service:8001/api/notifications/' + gameId, {
+					method: 'DELETE',
+					headers: {
+						Cookie: cookies,
+					},
+				});
 				return reply.code(403).send({
 					error: 'player is already invited to this game',
 				}); // Keep same message ??
+			}
 			const response = await fetch('http://user-service:8001/api/notifications/create', {
 				method: 'POST',
 				headers: {
@@ -99,12 +107,12 @@ async function gameRoutes(fastify: FastifyInstance) {
 			});
 			if (!response.ok) {
 				const text = await response.text();
-				console.log('fetch err:', response.status, text);
+				//console.log('fetch err:', response.status, text);
 				return reply.code(403).send({ error: 'Could not invite player to this game' });
 			}
 			gameInvites.push(playerId);
-			console.log('game invites:', invites.get(gameId));
-			console.log('invited players:', invites.get(gameId));
+			//console.log('game invites:', invites.get(gameId));
+			//console.log('invited players:', invites.get(gameId));
 			return reply.code(204).send();
 		}
 	);
@@ -132,7 +140,7 @@ async function gameRoutes(fastify: FastifyInstance) {
 			});
 			if (!response.ok) {
 				const text = await response.text();
-				console.log('fetch err:', response.status, text);
+				//console.log('fetch err:', response.status, text);
 				return reply.code(403).send({ error: 'Something went wrong! try again later.' });
 			}
 			reply.code(204).send();

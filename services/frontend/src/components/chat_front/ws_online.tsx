@@ -11,7 +11,7 @@ export const Wsonline: ComponentFunction = () => {
         socket.current = new WebSocket(`${import.meta.env.VITE_WS_CHAT_SERVICE_HOST}/ws/api/users/online-tracker`);
         
         socket.current.onopen = async () => {
-        console.log("WebSocket for online chat connected");
+        //console.log("WebSocket for online chat connected");
 
         heartbeatInterval.current = setInterval(() => {
           }, 30000);

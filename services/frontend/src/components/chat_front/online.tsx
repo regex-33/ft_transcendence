@@ -55,7 +55,7 @@ export const Online: ComponentFunction<OnlineProps> = ({ friends, position = 'ri
 			const game = await createNewGame(GameType.SOLO);
 			if (!game)
 				return;
-			console.log("New game created:", game.id);
+			//console.log("New game created:", game.id);
 			id = game.id;
 		}
 		const response = await fetch(`${import.meta.env.VITE_GAME_SERVICE_HOST}:${import.meta.env.VITE_GAME_SERVICE_PORT}/api/game/invite`, {
@@ -70,10 +70,10 @@ export const Online: ComponentFunction<OnlineProps> = ({ friends, position = 'ri
 			})
 		});
 		if (!response.ok)
-			console.log("failed to invite friend to game");
+			//console.log("failed to invite friend to game");
 		setbareinfo(false);
 		setNameFriend(null);
-		console.log("Player invited to game");
+		//console.log("Player invited to game");
 	}
 
 	const handleBlockUser = async (username: string, action: 'block') => {

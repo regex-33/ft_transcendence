@@ -94,12 +94,12 @@ const Dialog = (props: { ref: { current: HTMLDialogElement | null }, tournamentI
 				tournamentId: props.tournamentId
 			})
 		});
-		if (!response.ok)
-			console.log("failed to invite friend to game");
+		// if (!response.ok)
+		// 	console.log("failed to invite friend to game");
 	}
 
 	useEffect(() => {
-		console.log('dialog useeffect');
+		//console.log('dialog useeffect');
 		const fetchFriends = async () => {
 			try {
 				const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`,
@@ -113,7 +113,7 @@ const Dialog = (props: { ref: { current: HTMLDialogElement | null }, tournamentI
 				}
 
 				const data: Friend[] = await response.json();
-				console.log('data', data);
+				//console.log('data', data);
 				setFriends(data);
 			} catch (err) {
 				console.error('Error fetching friends:', err);
@@ -206,17 +206,17 @@ export const TournamentPage = (props: { tournamentId: string }) => {
 
 		const onUpdate = async (e: MessageEvent) => {
 			const data: TournamentState = JSON.parse(e.data);
-			// console.log('update:', data);
+			// //console.log('update:', data);
 			let _players;
-			console.log('datastatus: ', data.status)
+			//console.log('datastatus: ', data.status)
 			if (data?.status === 'ENDED') {
-				console.log('ended:', data.games);
+				//console.log('ended:', data.games);
 				_players = [data.games[0], data.games[1]].flatMap((game: GameData) => {
 					if (!game) return;
-					console.log("game:", game);
+					//console.log("game:", game);
 					return game.gamePlayers.map(gp => gp.player);
 				});
-				console.log("_players:", _players);
+				//console.log("_players:", _players);
 			}
 			else {
 				_players = data.players;
@@ -229,7 +229,7 @@ export const TournamentPage = (props: { tournamentId: string }) => {
 				winnerId: data.winnerId,
 				games: data.games
 			});
-			console.log('set players', _players);
+			//console.log('set players', _players);
 			setPlayers([..._players]);
 			const games: GameData[] = data.games;
 			setGames(games);
@@ -244,7 +244,7 @@ export const TournamentPage = (props: { tournamentId: string }) => {
 		}
 
 		const onStart = async (e: MessageEvent) => {
-			console.log('start:', e.data);
+			//console.log('start:', e.data);
 			const data = JSON.parse(e.data);
 
 			const games: GameData[] = data.games;
@@ -260,7 +260,7 @@ export const TournamentPage = (props: { tournamentId: string }) => {
 			setGames(games);
 		}
 
-		console.log('useEffect');
+		//console.log('useEffect');
 		if (eventRef.current !== null) {
 			eventRef.current.close();
 			eventRef.current.removeEventListener('UPDATE', onUpdate);
@@ -268,17 +268,17 @@ export const TournamentPage = (props: { tournamentId: string }) => {
 			eventRef.current.onmessage = null;
 			eventRef.current = null;
 		}
-		console.log('sse is:', eventRef.current);
+		//console.log('sse is:', eventRef.current);
 		eventRef.current = new EventSource('/api/tournament/' + props.tournamentId + '/updates');
 
 		eventRef.current.onmessage = (ev: MessageEvent) => {
-			console.log('received message:', ev.data);
+			//console.log('received message:', ev.data);
 		};
 		eventRef.current.addEventListener('UPDATE', onUpdate);
 		eventRef.current.addEventListener('START', onStart);
-		console.log('sse is set', eventRef.current);
+		//console.log('sse is set', eventRef.current);
 		return () => {
-			console.log('cleanup called');
+			//console.log('cleanup called');
 			if (!eventRef.current) return;
 			eventRef.current.close();
 			eventRef.current.removeEventListener('UPDATE', onUpdate);

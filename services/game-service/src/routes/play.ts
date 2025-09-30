@@ -5,7 +5,7 @@ import { getGame } from '../controllers/gameController';
 import type { Ball, Direction, GameSession, Paddle, PlayerState } from '../gameState';
 import type WebSocket from 'ws';
 import { games, connections, gameConfig, initSession } from '../gameState';
-import { GameStatus, GameTeam, Prisma, type PrismaClient } from '../../generated/prisma';
+import { GameStatus, GameTeam, GameType, Prisma, type PrismaClient } from '../../generated/prisma';
 import { tournamentManager } from '../controllers/tournamentController';
 
 // INIT: { type: init, data: gameId} response: {type: init_ack, players: [], spectator: bool }
@@ -60,7 +60,7 @@ function simPong(gameSession: GameSession, dt: number) {
 	const ball = gameSession.state.ball;
 	const players = gameSession.state.players;
 	const ballSpeed = gameSession.game.mode === 'SPEED' ? SPEED_BALL_SPEED : BALL_SPEED;
-	console.log('dt:', dt);
+	//console.log('dt:', dt);
 	let terminateGame = false;
 	ball.x += ball.vx * ballSpeed * dt;
 	ball.y += ball.vy * ballSpeed * dt;
@@ -149,8 +149,8 @@ async function endGame(gameSession: GameSession, prismaClient: PrismaClient, sen
 
 	const TeamAScore = gameSession.state.players.find((p) => p.team == GameTeam.TEAM_A)?.score || 0;
 	const TeamBScore = gameSession.state.players.find((p) => p.team == GameTeam.TEAM_B)?.score || 0;
-	console.log('scoreA:', TeamAScore);
-	console.log('scoreB:', TeamBScore);
+	//console.log('scoreA:', TeamAScore);
+	//console.log('scoreB:', TeamBScore);
 	const winningTeam =
 		TeamAScore === TeamBScore ? null : TeamAScore > TeamBScore ? GameTeam.TEAM_A : GameTeam.TEAM_B;
 	if (sendEnd) {
@@ -263,7 +263,7 @@ function startGame(gameSession: GameSession, prismaClient: PrismaClient) {
 	gameSession.state.lastTick = Date.now();
 	gameSession.intervalId = setInterval(runner, gameConfig.tick);
 	gameSession.onEnd = () => {
-		console.log('ENDING GAME');
+		//console.log('ENDING GAME');
 		if (gameSession.intervalId) clearInterval(gameSession.intervalId);
 		// gameSession.state.playersSockets.forEach((s) => {
 		// 	s.send(
@@ -286,10 +286,19 @@ function gameFull(gameSession: GameSession) {
 	return gameSession.state.players.length === maxPlayers;
 }
 
-function createPaddle(dir: Direction): Paddle {
+function createPaddle(dir: Direction, type: GameType, ypos: 'TOP' | 'BOTTOM' = 'TOP'
+): Paddle {
+	let y;
+	if (type === 'SOLO')
+		y = gameConfig.gameHeight / 2 - gameConfig.paddleHeight / 2;
+	else if (ypos === 'TOP')
+		y = gameConfig.gameHeight / 4 - gameConfig.paddleHeight / 2;
+	else
+		y = gameConfig.gameHeight / 2 + gameConfig.gameHeight / 4 - gameConfig.paddleHeight / 2;
+
 	return {
 		x: dir === 'LEFT' ? 5 : gameConfig.gameWidth - 5 - gameConfig.paddleWidth,
-		y: gameConfig.gameHeight / 2 - gameConfig.paddleHeight / 2,
+		y: y,
 		dir,
 	};
 }
@@ -314,8 +323,8 @@ function handlePlayerUpdate(
 	const player = players[playerIndex];
 	let limitUp, limitDown;
 	if (session.game.type === 'TEAM') {
-		limitUp = playerIndex % 2 === 0 ? 0 : gameConfig.gameHeight / 2;
-		limitDown = playerIndex % 2 === 0 ? gameConfig.gameHeight / 2 : gameConfig.gameHeight;
+		limitUp = playerIndex < 2 ? 0 : gameConfig.gameHeight / 2;
+		limitDown = playerIndex < 2 ? gameConfig.gameHeight / 2 : gameConfig.gameHeight;
 	} else {
 		limitUp = 0;
 		limitDown = gameConfig.gameHeight;
@@ -338,16 +347,16 @@ async function playRoutes(fastify: FastifyInstance) {
 		async (socket, request) => {
 			const user = request.user;
 			if (!request.params?.gameId) {
-				console.log('no param gameId');
+				//console.log('no param gameId');
 			}
-			console.log('[NEW CONNECTION] playerId:', user.id);
+			//console.log('[NEW CONNECTION] playerId:', user.id);
 			// const currentGame = await getPlayerGame(fastify.prisma, playerId);
-			// console.log(playerId, ' currentGame', currentGame);
+			// //console.log(playerId, ' currentGame', currentGame);
 			const game = await getGame(fastify.prisma, request.params.gameId);
 			if (!game || game.status === GameStatus.ENDED) {
 				//socket.send(JSON.stringify({ error: 'Invalid gameId' }));
-				if (game) console.log('Game has ended');
-				console.log('invalid game');
+				if (game) //console.log('Game has ended');
+				//console.log('invalid game');
 				socket.close(1008, 'Invalid game');
 				return;
 			}
@@ -381,7 +390,7 @@ async function playRoutes(fastify: FastifyInstance) {
 			});
 
 			socket.onclose = () => {
-				console.log('[WEBSOCKET] player ' + user.id + ' closed connection');
+				//console.log('[WEBSOCKET] player ' + user.id + ' closed connection');
 				connections.delete(socket);
 				session.state.spectatorsSockets = session.state.spectatorsSockets.filter(
 					(s) => s !== socket
@@ -402,14 +411,14 @@ async function playRoutes(fastify: FastifyInstance) {
 					return true;
 				});
 				setTimeout(() => {
-					console.log('[timeout] sstart');
+					//console.log('[timeout] sstart');
 					if (
 						session.game.status !== GameStatus.ENDED &&
 						session.state.playersSockets.length === 0
 					) {
 						if (session.intervalId) clearInterval(session.intervalId);
 						session.runner = null;
-						console.log('[TIMEOUT] Clearing game', session.game.id);
+						//console.log('[TIMEOUT] Clearing game', session.game.id);
 						endGame(session, fastify.prisma);
 						session.state.players = session.state.players.filter((p) => p.id !== user.id);
 					}
@@ -424,11 +433,11 @@ async function playRoutes(fastify: FastifyInstance) {
 					const session = connections.get(socket);
 					if (!session) throw new Error('Session not added to map');
 					if (isSpec) {
-						console.log('New Spectator:', user.id);
+						//console.log('New Spectator:', user.id);
 						socket.close(1008, 'Unauthorized');
 						return;
 					}
-					console.log('[RECV] data:', data);
+					//console.log('[RECV] data:', data);
 					if (data.type == 'INIT') {
 						if (session.state.players.find((p) => p.id === user.id) !== undefined)
 							console.log('already initialized');
@@ -439,30 +448,30 @@ async function playRoutes(fastify: FastifyInstance) {
 							const playerState: PlayerState = {
 								id: user.id,
 								score: 0,
-								paddle: createPaddle(paddleDir),
+								paddle: createPaddle(paddleDir, session.game.type, pIdx < 2 ? 'TOP' : 'BOTTOM'),
 								team: playerTeam,
 							};
 							session.state.players.splice(pIdx, 0, playerState);
 						}
-						// console.log(session.state);
+						// //console.log(session.state);
 						const connectedPlayers = session.state.players.map((p) => p.id);
-						console.log('connectedPlayers:', connectedPlayers);
-						console.log('games:', games.size);
-						console.log('connections:', connections.size);
+						//console.log('connectedPlayers:', connectedPlayers);
+						//console.log('games:', games.size);
+						//console.log('connections:', connections.size);
 						if (!session.runner && gameFull(session)) {
-							console.log('game is full');
+							//console.log('game is full');
 							startGame(session, fastify.prisma);
 						}
 					} else if (data.type === 'UPDATE') {
-						console.log('UPDATE RECEIVED');
+						//console.log('UPDATE RECEIVED');
 						handlePlayerUpdate(socket, session, user.id, data.action);
 					} else if (data.type === 'FETCH_PLAYERS') {
-						console.log('PLAYERS UPDATE!');
+						//console.log('PLAYERS UPDATE!');
 						sendPlayerUpdate(socket, session);
 					}
 				} catch (err) {
-					console.log('invalid socket message from player ' + user.id);
-					console.log('error: ', err);
+					//console.log('invalid socket message from player ' + user.id);
+					//console.log('error: ', err);
 					socket.close(1008, 'Invalid message');
 				}
 			};

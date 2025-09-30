@@ -21,35 +21,35 @@ export const PongLoginPage: ComponentFunction = () => {
   // Input change handler
 
   // const handleInputChange = useCallback((field: string, value: string) => {
-  //   console.log('Input changing:', field, value); // Add this debug line
+  //   //console.log('Input changing:', field, value); // Add this debug line
   //   setFormData(prev => ({ ...prev, [field]: value }));
   // }, []);
   // Form submission handlers
   const handleLoginSubmit = useCallback((e: Event) => {
     e.preventDefault();
-    console.log('Login attempt:', { email: formData.email, password: formData.password });
+    //console.log('Login attempt:', { email: formData.email, password: formData.password });
     // Add your login logic here
   }, [formData]);
 
   const handleRegisterSubmit = useCallback((e: Event) => {
     e.preventDefault();
-    console.log('Register attempt:', formData);
+    //console.log('Register attempt:', formData);
     // Add your registration logic here
   }, [formData]);
 
   // Social login handlers
   const handleGoogleLogin = useCallback(() => {
-    console.log('Google login');
+    //console.log('Google login');
     // Add Google OAuth logic
   }, []);
 
   const handleDiscordLogin = useCallback(() => {
-    console.log('Discord login');
+    //console.log('Discord login');
     // Add Discord OAuth logic
   }, []);
 
   const handle42Login = useCallback(() => {
-    console.log('42 login');
+    //console.log('42 login');
     // Add 42 OAuth logic
   }, []);
 

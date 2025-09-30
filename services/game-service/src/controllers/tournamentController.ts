@@ -9,7 +9,7 @@ export const createTournament = async (db: PrismaClient, data: UserData) => {
 	try {
 		const player = await getOrCreatePlayer(db, data);
 		if (player.activeGameId) {
-			console.log("[ERROR]: player has a game", player.activeGameId);
+			//console.log("[ERROR]: player has a game", player.activeGameId);
 			return null;
 		}
 		const tournament = await db.tournament.create({
@@ -18,11 +18,11 @@ export const createTournament = async (db: PrismaClient, data: UserData) => {
 				games: { include: { players: true } },
 			},
 		});
-		if (!tournament) console.log("tournament is NULL");
-		console.log("tournament is:", tournament);
+		if (!tournament) //console.log("tournament is NULL");
+		//console.log("tournament is:", tournament);
 		return tournament;
 	} catch (err) {
-		console.log('[ERROR] createTournament: ', err);
+		//console.log('[ERROR] createTournament: ', err);
 		return null;
 	}
 };
@@ -96,6 +96,17 @@ class TournamentManager {
 		return allPlayers.includes(playerId);
 	}
 
+	getPlayerTournament(playerId: number)
+	{
+		const states = this._tournaments.values();
+		for (const state of states)
+		{
+			if (state.players.map(p => p.id).includes(playerId))
+				return state;
+		}
+		return null;
+	}
+
 	async getTournamentState(tournamentId: string) {
 		const tournamentState = this._tournaments.get(tournamentId);
 		if (tournamentState) return tournamentState;
@@ -141,7 +152,7 @@ class TournamentManager {
 	private async _endTournament(tournamentId: string, lastGame: GameWithPlayers | null) {
 		const winnerId =
 			lastGame?.gamePlayers.find((gp) => gp.team === lastGame.winningTeam)?.player.userId ?? null;
-		console.log('[END TOURNAMENT]: ', tournamentId, 'winner:', winnerId);
+		//console.log('[END TOURNAMENT]: ', tournamentId, 'winner:', winnerId);
 		try {
 			await this._db.tournament.update({
 				where: { id: tournamentId },
@@ -153,13 +164,8 @@ class TournamentManager {
 			this._tournaments.delete(tournamentId);
 		}
 		catch (err) {
-			console.log('[END TOURNAMENT ERROR:', err);
+			//console.log('[END TOURNAMENT ERROR:', err);
 		}
-	}
-	private async getPlayerTournament(playerId: number)
-	{
-		// const tournamentState = this._tournaments.values().find(tournamentState => tournamentState.players.find());
-		// return tournamentState ?? null;
 	}
 
 	private async _nextBracket(tournamentState: TournamentState) {
@@ -170,8 +176,8 @@ class TournamentManager {
 			const { userId, ...w } = winner.player;
 			winners.push({ ...w, id: userId });
 		});
-		console.log('[WINNERS] length === ', winners.length);
-		console.log('[WINNERS] winners:', winners);
+		//console.log('[WINNERS] length === ', winners.length);
+		//console.log('[WINNERS] winners:', winners);
 		if (winners.length < 2) {
 			this._endTournament(
 				tournamentState.id,
@@ -190,7 +196,7 @@ class TournamentManager {
 		const tournamentId = game.tournamentId;
 		const tournamentState = this._tournaments.get(tournamentId);
 		if (!tournamentState) {
-			console.log('UNEXPECTED: Game has no tournamentState')
+			//console.log('UNEXPECTED: Game has no tournamentState')
 			return;
 		}
 		tournamentState.endedGames.push(game);
@@ -205,7 +211,7 @@ class TournamentManager {
 		}
 		// last game
 		else if (tournamentState.endedGames.length === 3) {
-			console.log(' ====> [END TOURNAMENT]')
+			//console.log(' ====> [END TOURNAMENT]')
 			this._endTournament(tournamentId, game);
 		}
 	}

@@ -78,8 +78,8 @@ export class Paddle {
     const paddle = this;
     const width = GameConfig.paddleWidth;
     const height = width * GameConfig.paddleRatio;
-    //	console.log('draw:', GameConfig.paddleRatio, GameConfig.paddleWidth);
-    //	console.log('draw:', height);
+    //	//console.log('draw:', GameConfig.paddleRatio, GameConfig.paddleWidth);
+    //	//console.log('draw:', height);
     const radius = (width * 1) / 2;
 
     const { x: px, y, options } = paddle;
@@ -206,7 +206,7 @@ abstract class Game {
     setScores: Function,
     setPlayers: Function,
   ) {
-    console.log("construtor mode:", mode);
+    //console.log("construtor mode:", mode);
     this.mode = mode;
     this.type = type;
     this._activeKeys = new Set();
@@ -232,16 +232,25 @@ abstract class Game {
     if (this.mode === GameMode.GOLD || this.type === GameType.TEAM)
       p2.options.color = "#62BFDD";
     if (this.type === GameType.TEAM) {
-      const p3 = { ...p1 };
-      const p4 = { ...p2 };
+    const p4 = new Paddle(
+      GameConfig.canvasWidth - GameConfig.paddleWidth - 10,
+      GameConfig.canvasHeight / 2 - paddleHeight / 2,
+      rightPaddleOptions,
+    );
+    const p3 = new Paddle(
+      GameConfig.canvasWidth - GameConfig.paddleWidth - 10,
+      GameConfig.canvasHeight / 2 - paddleHeight / 2,
+      leftPaddleOptions,
+    );
       p1.y /= 2;
       p2.y /= 2;
       this.paddles = [p1, p2, p3, p4];
+      //console.log('paddles', this.paddles);
     } else this.paddles = [p1, p2];
   }
 
   protected resetVanish() {
-    console.log("reset vanish");
+    //console.log("reset vanish");
     this.vanishState = "NONE";
     this.ballAlpha = 1;
     this.nextVanishTime = performance.now() + 1000 + Math.random() * 1000;
@@ -263,7 +272,7 @@ abstract class Game {
   };
 
   draw = () => {
-    console.log("mode", this.mode);
+    //console.log("mode", this.mode);
     if (this.mode === GameMode.VANISH || this.mode === GameMode.GOLD) {
       const now = performance.now();
 
@@ -271,8 +280,8 @@ abstract class Game {
         this.vanishState = "OUT";
         this.ballAlpha = 1;
       } else {
-        console.log("its vanish:", this.vanishState);
-        console.log("diff:", now, this.nextVanishTime);
+        //console.log("its vanish:", this.vanishState);
+        //console.log("diff:", now, this.nextVanishTime);
       }
       const fadeSpeed = 0.05;
       if (this.vanishState === "OUT") {
@@ -338,6 +347,7 @@ export class RemoteGame extends Game {
       this._setScores([leftScore, rightScore]);
       this._scores = [leftScore, rightScore];
     }
+    //console.log('received paddles', paddles);
     this.paddles.map((paddle, idx) => {
       paddle.x = paddles[idx].x * (GameConfig.canvasWidth / 200);
       paddle.y = paddles[idx].y * (GameConfig.canvasHeight / serverHeight);
@@ -346,7 +356,7 @@ export class RemoteGame extends Game {
   };
 
   start(connection: Connection, isSpec = false) {
-    console.log(this.paddles);
+    //console.log(this.paddles);
     if (!isSpec) {
       window.addEventListener("keydown", this._onKeyDown);
       window.addEventListener("keyup", this._onKeyUp);
@@ -354,7 +364,7 @@ export class RemoteGame extends Game {
     requestAnimationFrame(this._renderFrame);
 
     connection.on("PLAYERS_UPDATE", (data) => {
-      //console.log("fetch data:", data);
+      ////console.log("fetch data:", data);
     });
     connection.on("GAME_UPDATE", this.onServerUpdate);
     connection.on("PLAYER_DISCONNECT", this._onPlayerDisconnect);
@@ -365,9 +375,9 @@ export class RemoteGame extends Game {
         this._scores = data.players.map((player) => player.score);
         const maxScore = Math.max(...this._scores);
         const winners = data.winners.map((w) => w.username);
-        console.log("winners: ", winners);
-        console.log("maxScore: ", maxScore);
-        console.log("data.players: ", data.players);
+        //console.log("winners: ", winners);
+        //console.log("maxScore: ", maxScore);
+        //console.log("data.players: ", data.players);
         if (winners.length > 1)
           this._endgameText = "Winners: " + winners.join(" ");
         else this._endgameText = "Winner: " + winners.join(" ");
@@ -384,7 +394,7 @@ export class RemoteGame extends Game {
     playerId: number;
     timeout: number;
   }) => {
-    console.log("DISCONNECT RECEIVED: ", data);
+    //console.log("DISCONNECT RECEIVED: ", data);
     // data.players.filter(p => )
   };
 
@@ -397,27 +407,27 @@ export class RemoteGame extends Game {
     const players = data.players.map(
       ({ userId, username, avatar, ...rest }) => ({ userId, username, avatar }),
     );
-    console.log("players:", players);
-    console.log("spectators:", data.spectators);
+    //console.log("players:", players);
+    //console.log("spectators:", data.spectators);
     this._setPlayers(players);
     this._setSpectators(data.spectators);
-    console.log("connect received:", data);
+    //console.log("connect received:", data);
   };
 
   private _sendEvent = throttle((key: string) => {
-    console.log("send event:", key);
+    //console.log("send event:", key);
     if (GameConfig.upKeys.has(key)) {
       this._connection!.send({ type: "UPDATE", action: "KEY_UP" });
     } else if (GameConfig.downKeys.has(key)) {
       this._connection!.send({ type: "UPDATE", action: "KEY_DOWN" });
     }
-    console.log("key:", key);
+    //console.log("key:", key);
   }, 20);
 
   private _renderFrame = () => {
     for (const key of this._activeKeys) this._sendEvent(key);
     if (this._status === "LIVE") {
-      console.log("dt:", performance.now() - this._lastUpdate);
+      //console.log("dt:", performance.now() - this._lastUpdate);
       const speed = 0.1 * (200 / GameConfig.canvasWidth);
       const dt = performance.now() - this._lastUpdate - 16;
       if (dt > 0) this.ball.x += this.ball.vx * dt * speed;
@@ -448,7 +458,7 @@ export class LocalGame extends Game {
   }
 
   start() {
-    console.log(this.paddles);
+    //console.log(this.paddles);
     window.addEventListener("keydown", this._onKeyDown);
     window.addEventListener("keyup", this._onKeyUp);
     this._lastUpdate = performance.now();
@@ -472,17 +482,17 @@ export class LocalGame extends Game {
       paddleIdx = 1;
     }
     const paddleHeight = GameConfig.paddleRatio * GameConfig.paddleWidth;
-    console.log("move:", GameConfig.paddleRatio, GameConfig.paddleWidth);
+    //console.log("move:", GameConfig.paddleRatio, GameConfig.paddleWidth);
     this.paddles[paddleIdx]!.y +=
       dir === "UP" ? -GameConfig.paddleSpeed * dt : GameConfig.paddleSpeed * dt;
     if (this.paddles[paddleIdx].y < 0) this.paddles[paddleIdx].y = 0;
     if (this.paddles[paddleIdx].y + paddleHeight > GameConfig.canvasHeight)
       this.paddles[paddleIdx].y = GameConfig.canvasHeight - paddleHeight;
-    console.log("move:", paddleHeight, GameConfig.canvasHeight);
-    console.log(
-      this.paddles[paddleIdx].y,
-      this.paddles[paddleIdx].y + paddleHeight,
-    );
+    //console.log("move:", paddleHeight, GameConfig.canvasHeight);
+    //console.log(
+    //   this.paddles[paddleIdx].y,
+    //   this.paddles[paddleIdx].y + paddleHeight,
+    // );
   }
 
   protected _onKeyDown = (e: KeyboardEvent) => {
@@ -527,7 +537,7 @@ export class LocalGame extends Game {
       }
       this.resetVanish();
       this._setScores([...this._scores]);
-      console.log("score:", this._scores);
+      //console.log("score:", this._scores);
       this.ball.x = GameConfig.canvasWidth / 2;
       this.ball.y = GameConfig.canvasHeight / 2;
       this.ball.vx *= -1;
@@ -541,7 +551,7 @@ export class LocalGame extends Game {
         this._endgameText = "Player 2 Won";
       }
       this.resetVanish();
-      console.log("score:", this._scores);
+      //console.log("score:", this._scores);
       this._setScores([...this._scores]);
       this.ball.x = GameConfig.canvasWidth / 2;
       this.ball.y = GameConfig.canvasHeight / 2;
@@ -588,13 +598,13 @@ export class LocalGame extends Game {
       this._lastUpdate = performance.now();
       this.draw();
     }
-    if (dt > 20)
-      console.log(
-        "render/calculation time:",
-        performance.now() - now,
-        "dt (last - now):",
-        dt,
-      );
+    // if (dt > 20)
+      //console.log(
+      //   "render/calculation time:",
+      //   performance.now() - now,
+      //   "dt (last - now):",
+      //   dt,
+      // );
     if (this._status === "ENDED") {
       this.ctx.clearRect(0, 0, GameConfig.canvasWidth, GameConfig.canvasHeight);
       this.ctx.font = "30px Luckiest Guy";

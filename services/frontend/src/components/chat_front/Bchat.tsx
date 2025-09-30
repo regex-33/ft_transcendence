@@ -39,10 +39,10 @@ export const Bchat: ComponentFunction = () => {
 	const [name, setname] = useState<number | null>(null);
 
 	const handleGameInvite = async (playerId: number) => {
-		const game = await createNewGame(GameType.SOLO);
-		if (!game)
+		const {status, game, error} = await createNewGame(GameType.SOLO);
+		if (status !== 'ok')
 			return;
-		console.log("New game created:", game.id);
+		//console.log("New game created:", game.id);
 		const gameId = game.id;
 		const response = await fetch(`${import.meta.env.VITE_GAME_SERVICE_HOST}:${import.meta.env.VITE_GAME_SERVICE_PORT}/api/game/invite`, {
 			method: 'POST',
@@ -56,19 +56,19 @@ export const Bchat: ComponentFunction = () => {
 			})
 		});
 		if (!response.ok)
-			console.log("failed to invite friend to game");
+			//console.log("failed to invite friend to game");
 		window.history.pushState({}, "", "/game/" + game.id);
 		window.dispatchEvent(new PopStateEvent("popstate"));
 		setbareinfo(false);
 		setNameFriend(null);
-		console.log("Player invited to game");
+		//console.log("Player invited to game");
 	}
 
 	useEffect(() => {
 		socket.current = new WebSocket(`${import.meta.env.VITE_WS_CHAT_SERVICE_HOST}/ws/chat`);
 
 		socket.current.onopen = async () => {
-			console.log("WebSocket connected");
+			//console.log("WebSocket connected");
 
 			try {
 				const resUser = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/chat/me`, {
@@ -77,7 +77,7 @@ export const Bchat: ComponentFunction = () => {
 				});
 				if (!resUser.ok) throw new Error('Cannot fetch user');
 				const user = await resUser.json();
-				console.log("user us : ", user);
+				//console.log("user us : ", user);
 				setname(user.username)
 				setId(user.id);
 
@@ -87,7 +87,7 @@ export const Bchat: ComponentFunction = () => {
 				});
 
 				const friendsList = await resFriends.json();
-				console.log("friend is : ", friendsList);
+				//console.log("friend is : ", friendsList);
 				setFriends(friendsList);
 				setallfriend(friendsList)
 				socket.current?.send(JSON.stringify({ type: 'user-info', ...user, friends: friendsList }));
@@ -155,7 +155,7 @@ export const Bchat: ComponentFunction = () => {
 			else {
 				setIsBlocked(false);
 			}
-			console.log("blocked is : ", blockedsList.status)
+			//console.log("blocked is : ", blockedsList.status)
 			socket.current.send(data);
 			setMessage('');
 		}
@@ -293,7 +293,7 @@ export const Bchat: ComponentFunction = () => {
 						{[
 							{ src: "/images/chat/close.png", alt: "close", onClick: () => setbareinfo(false) },
 							{ src: "/images/chat/profilchat.png", alt: "profilchat", onClick: (e: Event) => { if (nameFriend) handleProfileClick(nameFriend.name, e) } },
-							{ src: "/images/chat/gamechat.png", alt: "chatgame", onClick: () => {handleGameInvite} },
+							{ src: "/images/chat/gamechat.png", alt: "chatgame", onClick: () => {handleGameInvite(nameFriend.id)} },
 							{ src: "/images/chat/block.png", alt: "blockchat", onClick: handleBlockUser }
 						].map((btn, i) => (
 							<button

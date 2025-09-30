@@ -18,6 +18,8 @@ export const fetchGameApi = async (endpoint: string, method: 'POST' | 'GET' | 'D
         credentials: 'include',
         ...(data ? {body: JSON.stringify(data)} : {})
     });
+    if (response.ok && response.status === 204)
+        return null;
     const responseData = await response.json();
     if (!response.ok)
         throw new Error(responseData.error)

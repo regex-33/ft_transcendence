@@ -5,6 +5,7 @@ import { useState } from '../../hooks/useState';
 import { useRef } from '../../hooks/useRef';
 import { ws } from '../../main'
 import { redirectToActiveGame } from '../game/utils';
+import { fetchGameApi } from '../game/fetch';
 
 type NotificationType = 'MATCH_NOTIFICATION' | 'FRIEND_REQUEST' | 'TOURNAMENT_NOTIFICATION';
 
@@ -110,6 +111,23 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 		}
 	};
 
+	const handleAcceptTournament = async (gameId: string, redirect = true) => {
+		try {
+			await fetchGameApi('/tournament/remove-notification/', 'POST', {gameId: gameId})
+			if (redirect)
+			{
+				window.history.pushState({}, "", "/tournament/" + gameId);
+				window.dispatchEvent(new PopStateEvent("popstate"));
+			}
+			else 
+				fetchNotifications();
+		}
+		catch (err)
+		{
+			//console.log('error:', err)
+		}
+	}
+
 	const renderActionButton = (notification: Notification) => {
 		if (notification.type === 'FRIEND_REQUEST') {
 			return (
@@ -176,6 +194,10 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 			return (
 				<div className="flex ">
 					<button
+					onClick={() => {
+						//console.log('notif gameId is:',notification.gameId)
+						handleAcceptTournament(notification.gameId ?? '');
+					}}
 						className="
             flex items-center gap-1 px-4 h-[20px] min-w-[65px]
             bg-[url('/images/setting-assests/bg-accept.svg')]
@@ -187,6 +209,10 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 						<span>Join</span>
 					</button>
 					<button
+					onClick={() => {
+						//console.log('notif gameId is:',notification.gameId)
+						handleAcceptTournament(notification.gameId ?? '', false);
+					}}
 						className="
             flex items-center gap-1 px-4 h-[20px] min-w-[65px]
             bg-[url('/images/setting-assests/bg-decline.svg')]

@@ -12,7 +12,7 @@ type GameData = {
 const createGame = async (db: PrismaClient | Prisma.TransactionClient, data: GameData) => {
 	try {
 		// const player = await getOrCreatePlayer(db, { id: data.player.id, avatar: data.player.avatar, username: data.player.username });
-		//console.log('player:', player);
+		////console.log('player:', player);
 
 		const game = await db.game.create({
 			data: {
@@ -33,8 +33,8 @@ const createGame = async (db: PrismaClient | Prisma.TransactionClient, data: Gam
 		});
 		return game;
 	} catch (err) {
-		console.log('error', err);
-		console.log(await db.player.findUnique({ where: { userId: data.player.id } }));
+		//console.log('error', err);
+		//console.log(await db.player.findUnique({ where: { userId: data.player.id } }));
 		return null;
 	}
 };
@@ -70,7 +70,7 @@ const joinGame = async (db: PrismaClient, data: { gameId: string; player: UserDa
 	try {
 		const gameInvitedPlayers = invites.get(data.gameId);
 		if (!gameInvitedPlayers || !gameInvitedPlayers.includes(data.player.id)) {
-			console.log('player is not invited 22', gameInvitedPlayers);
+			//console.log('player is not invited 22', gameInvitedPlayers);
 			return null;
 		}
 		const game = await db.$transaction(async (tx) => {
@@ -80,7 +80,7 @@ const joinGame = async (db: PrismaClient, data: { gameId: string; player: UserDa
 				username: data.player.username,
 			});
 			if (!player || player.activeGameId) {
-				console.log('player error:', player);
+				//console.log('player error:', player);
 				return null;
 			}
 			const game = await tx.game.findFirst({
@@ -95,7 +95,7 @@ const joinGame = async (db: PrismaClient, data: { gameId: string; player: UserDa
 				(game.type === GameType.TEAM && game.players.length > 3) ||
 				game.status === GameStatus.ENDED
 			) {
-				console.log('game error:', game);
+				//console.log('game error:', game);
 				return null;
 			}
 			const updatedGame = await tx.game.update({
@@ -117,7 +117,7 @@ const joinGame = async (db: PrismaClient, data: { gameId: string; player: UserDa
 		);
 		return game;
 	} catch (err) {
-		console.log('error:', err);
+		//console.log('error:', err);
 		return null;
 	}
 };

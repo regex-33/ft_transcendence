@@ -116,7 +116,7 @@ export abstract class Component<
       const newElement = this.renderer.createElement(newVNode);
 
       if (newVNode.props.ref && typeof newVNode.props.ref === "object") {
-        console.log("Setting ref for new VNode:", newVNode.props.ref);
+        //console.log("Setting ref for new VNode:", newVNode.props.ref);
         newVNode.props.ref.current = newElement; // <-- where domNode is the rendered element
       }
 
@@ -129,17 +129,17 @@ export abstract class Component<
       this.element = newElement;
       this.currentVNode = newVNode;
       
-      // console.log("FIRST VDOM RENDER: Replaced placeholder with actual element");
+      // //console.log("FIRST VDOM RENDER: Replaced placeholder with actual element");
     } else {
       // Subsequent updates - use diffing
-      // console.log("DIFFING: oldVNode exists, comparing...");
-      // console.log("Old VNode:", this.currentVNode);
-      // console.log("New VNode:", newVNode);
+      // //console.log("DIFFING: oldVNode exists, comparing...");
+      // //console.log("Old VNode:", this.currentVNode);
+      // //console.log("New VNode:", newVNode);
       
       const patches = this.vdom.diff(this.currentVNode, newVNode);
-      // console.log("PATCHES GENERATED:", patches.length, patches);
+      // //console.log("PATCHES GENERATED:", patches.length, patches);
         if (newVNode.props.ref && typeof newVNode.props.ref === "object") {
-                  console.log("Setting ref for existing VNode:", newVNode.props.ref);
+                  //console.log("Setting ref for existing VNode:", newVNode.props.ref);
 
         newVNode.props.ref.current = this.element; // <-- where domNode is the rendered element
       }

@@ -57,13 +57,13 @@ const reset = (setMap: any) => {
     }).then(data => {
         if (data?.map)
             setMap(data.map)
-    }).catch(error => console.log("error"))
+    }).catch(error => console.error("error"))
 }
 
 const handlepvp = (map: string[][], setMap: any, state: number, setState: any) => {
     ws = new WebSocket(`${import.meta.env.WS_PROTOCOL}://${location.host}/xo-game/pvp/handler`);
     ws.onopen = () => {
-        console.log('WebSocket connection established');
+        //console.log('WebSocket connection established');
     };
     ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -107,7 +107,7 @@ const handlepvp = (map: string[][], setMap: any, state: number, setState: any) =
         }
     };
     ws.onclose = () => {
-        console.log('WebSocket connection closed');
+        //console.log('WebSocket connection closed');
     };
     ws.onerror = (error) => {
         console.error('WebSocket error: ', error);
@@ -137,7 +137,7 @@ const History: ComponentFunction = ({ close }) => {
                 safeFetch(`history/${data.id}`, {
                     method: 'GET'
                 }).then(data => {
-                    console.log(data);
+                    //console.log(data);
                     if (data)
                         setHistory(data);
                 }).catch(error => console.log("error"));
@@ -146,7 +146,7 @@ const History: ComponentFunction = ({ close }) => {
         try {
             fetching();
         } catch (error) {
-            console.log(error);
+            //console.log(error);
         }
     }, []);
     return (
@@ -260,7 +260,7 @@ const Xo: ComponentFunction = ({ mode }) => {
                     setMap(response.map);
                 }
             } catch (error) {
-                console.log(error);
+                //console.log(error);
             }
         };
         if (mode == 'ai')

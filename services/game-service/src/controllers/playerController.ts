@@ -41,8 +41,8 @@ const getPlayerStats = async (db: PrismaClient | Prisma.TransactionClient, playe
 	const games = await db.gamePlayer.findMany({
 		where: { playerId: playerId },
 	});
-	console.log('playergames', games);
-	console.log(playerGames);
+	//console.log('playergames', games);
+	//console.log(playerGames);
 
 	if (!playerGames) return null;
 	return playerGames;
@@ -53,7 +53,7 @@ const getPlayerGames = async (
 	data: { id: number }
 ) => {
 	const games = await db.game.findMany({
-		where: { gamePlayers: { some: { playerId: data.id } } },
+		where: { players: { some: { userId: data.id } } },
 		select: {
 			duration: true,
 			id: true,
@@ -80,7 +80,7 @@ const getPlayerGames = async (
 
 	// }
 	// );
-	console.log(games);
+	//console.log(games);
 	return games;
 };
 
