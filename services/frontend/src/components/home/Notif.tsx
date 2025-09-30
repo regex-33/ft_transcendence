@@ -144,59 +144,57 @@ export const NotificationPanel: ComponentFunction<NotificationPanelProps> = ({ m
 
 		if (notification.type === 'MATCH_NOTIFICATION' && notification.gameId) {
 			return (
-				<div className="flex gap-1 justify-end">
+				<div className="flex ">
 					<button
-						onClick={() => notification.gameId && handleMatchAction(notification.gameId, 'accept')}
-						className="
-            flex items-center gap-1 px-2 h-[20px] min-w-[70px]
+					onClick={() => notification.gameId && handleMatchAction(notification.gameId, 'accept')}
+					className="
+            flex items-center gap-1 px-4 h-[20px] min-w-[65px]
             bg-[url('/images/setting-assests/bg-accept.svg')]
             bg-no-repeat bg-center bg-contain
-            text-white font-semibold text-[10px]
+            text-white font-semibold text-xs
             transition-transform duration-200 hover:scale-95 
-          ">
+			">
 						<i className="fa-solid fa-table-tennis-paddle-ball text-red-500 text-[10px]"></i>
-						<span>Play match</span>
+						<span>PLay</span>
 					</button>
 					<button
-						onClick={() => notification.gameId && handleMatchAction(notification.gameId, 'refuse')}
+			  		onClick={() => notification.gameId && handleMatchAction(notification.gameId, 'refuse')}
 						className="
-            flex items-center gap-1 px-2 h-[20px] min-w-[50px]
+            flex items-center gap-1 px-4 h-[20px] min-w-[65px]
             bg-[url('/images/setting-assests/bg-decline.svg')]
             bg-no-repeat bg-center bg-contain
-            text-white font-semibold text-[10px]
+            text-white font-semibold text-xs
             transition-transform duration-200 hover:scale-95 
           ">
-						<i className="fa-solid fa-xmark text-[10px]"></i>
+						<i className="fa-solid fa-xmark text-xs"></i>
 						<span>refuse</span>
 					</button>
 				</div>
 			);
 		}
-		if (notification.type === 'TOURNAMENT_NOTIFICATION' && notification.gameId) {
+		if (notification.type === 'TOURNAMENT_NOTIFICATION' ) {
 			return (
-				<div className="flex gap-1 justify-end">
+				<div className="flex ">
 					<button
-						onClick={() => notification.gameId && handleMatchAction(notification.gameId, 'accept')}
 						className="
-            flex items-center gap-1 px-2 h-[20px] min-w-[70px]
+            flex items-center gap-1 px-4 h-[20px] min-w-[65px]
             bg-[url('/images/setting-assests/bg-accept.svg')]
             bg-no-repeat bg-center bg-contain
-            text-white font-semibold text-[10px]
+            text-white font-semibold text-xs
             transition-transform duration-200 hover:scale-95 
           ">
-						<i className="fa-solid fa-table-tennis-paddle-ball text-red-500 text-[10px]"></i>
-						<span>Join tournament</span>
+						<i className="fa-solid fa-trophy text-yellow-500 text-[10px] flex-shrink-0"></i>
+						<span>Join</span>
 					</button>
 					<button
-						onClick={() => notification.gameId && handleMatchAction(notification.gameId, 'refuse')}
 						className="
-            flex items-center gap-1 px-2 h-[20px] min-w-[50px]
+            flex items-center gap-1 px-4 h-[20px] min-w-[65px]
             bg-[url('/images/setting-assests/bg-decline.svg')]
             bg-no-repeat bg-center bg-contain
-            text-white font-semibold text-[10px]
+            text-white font-semibold text-xs
             transition-transform duration-200 hover:scale-95 
           ">
-						<i className="fa-solid fa-xmark text-[10px]"></i>
+						<i className="fa-solid fa-xmark text-xs"></i>
 						<span>refuse</span>
 					</button>
 				</div>

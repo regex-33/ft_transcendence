@@ -186,15 +186,6 @@ export const AuthForm: ComponentFunction = () => {
                 onInput={(e: Event) => handleInputChange('username', (e.target as HTMLInputElement).value)}
                 required
               />
-              {isLoginMode && (
-                <input
-                  type='text'
-                  placeholder='2FA (if enabled)'
-                  className='w-full mb-3 px-4 bg-[#F2F0F0] py-3 rounded-3xl border outline-none focus:border-[#3F99B4]'
-                  value={formData.twoFA}
-                  onInput={(e: Event) => handleInputChange('twoFA', (e.target as HTMLInputElement).value)}
-                />
-              )}
 
               <input
                 type='password'
@@ -203,7 +194,16 @@ export const AuthForm: ComponentFunction = () => {
                 value={formData.password}
                 onInput={(e: Event) => handleInputChange('password', (e.target as HTMLInputElement).value)}
                 required
-              />
+                />
+                {isLoginMode && (
+                  <input
+                    type='text'
+                    placeholder='2FA (if enabled)'
+                    className='w-full mb-3 px-4 bg-[#F2F0F0] py-3 rounded-3xl border outline-none focus:border-[#3F99B4]'
+                    value={formData.twoFA}
+                    onInput={(e: Event) => handleInputChange('twoFA', (e.target as HTMLInputElement).value)}
+                  />
+                )}
 
               {!isLoginMode && (
                 <input
