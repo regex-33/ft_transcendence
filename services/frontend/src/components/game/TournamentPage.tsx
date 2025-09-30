@@ -24,18 +24,17 @@ type GameData = {
 	id: string;
 	winningTeam: string;
 	status: 'LIVE' | 'WAITING' | 'ENDED';
-	players: { userId: number; username: string;  }[]
+	players: { userId: number; username: string; }[]
 	gamePlayers: { player: { userId: number; username: string; }; team: string }[]
 }
 
-export type TournamentState = Omit<Tournament, 'games'> & {games: GameData[], players: any};
+export type TournamentState = Omit<Tournament, 'games'> & { games: GameData[], players: any };
 
-const CardButton = ({ game }: {game: GameData | null }) => {
+const CardButton = ({ game }: { game: GameData | null }) => {
 	let p1, p2 = null;
 	let winnerId = null;
 
-	if (game?.status === 'ENDED')
-	{
+	if (game?.status === 'ENDED') {
 		p1 = game?.gamePlayers[0]?.player ?? null;
 		p2 = game?.gamePlayers[1]?.player ?? null;
 		winnerId = game?.gamePlayers.find(p => p.team === game.winningTeam)?.player?.userId ?? null;
@@ -53,7 +52,7 @@ const CardButton = ({ game }: {game: GameData | null }) => {
 	)
 }
 
-const PlayerAvatar = ({ userId, avatar, username }: Player) => {
+const PlayerAvatar = ({ userId, avatar, username }: Omit<Player, 'score'>) => {
 	return (
 
 		<div
@@ -73,6 +72,86 @@ const PlayerAvatar = ({ userId, avatar, username }: Player) => {
 	);
 }
 
+interface Friend {
+	id: number;
+	avatar: string;
+	online: boolean;
+	username: string
+}
+
+const Dialog = (props: { ref: { current: HTMLDialogElement | null } }) => {
+	const [friends, setFriends] = useState<Friend[]>([]);
+
+	useEffect(() => {
+		console.log('dialog useeffect');
+		const fetchFriends = async () => {
+			try {
+				const response = await fetch(`${import.meta.env.VITE_USER_SERVICE_HOST}:${import.meta.env.VITE_USER_SERVICE_PORT}/api/friends/friends`,
+					{
+						credentials: 'include',
+						method: "GET",
+					}
+				);
+				if (!response.ok) {
+					throw new Error(`Failed to fetch friends: ${response.status} ${response.statusText}`);
+				}
+
+				const data: Friend[] = await response.json();
+				console.log('data', data);
+				setFriends(data);
+			} catch (err) {
+				console.error('Error fetching friends:', err);
+			}
+		};
+		fetchFriends();
+	}, []);
+
+	return <dialog ref={props.ref} closedby='any' className="min-w-[500px] max-h-[200px] bg-blue-300/80 shadow-lg rounded-lg px-10 py-8"
+
+		style={{
+			scrollbarColor: '#64B0C5 transparent',
+			msOverflowStyle: 'auto',
+		}}
+	>
+		{friends?.map(friend => {
+			return (<div className="flex flex-row mb-2 justify-between items-center gap-2">
+				<div
+					className="relative w-14 h-14 flex items-center 
+                          justify-center bg-no-repeat bg-contain transition-transform duration-200 hover:scale-95"
+					style={{
+						backgroundImage: 'url("/images/home-assests/cir-online.svg")'
+					}}
+
+				>
+					<img
+						src={friend.avatar}
+						className="w-10 h-10 rounded-full object-cover"
+						alt="Avatar"
+					/>
+				</div>
+				<div className="text-shadow-lg text-shadow-black text-white font-bold text-xl font-poppins">{friend.username}</div>
+				<button
+					type="button"
+					className="
+				    flex items-center gap-2 px-3 h-[30px]
+				    bg-[url('/images/home-assests/bg-FriendsAdd.svg')]
+				    bg-no-repeat bg-center bg-contain
+				    text-white font-semibold text-lg
+				    transition-transform duration-200 hover:scale-95 pl-1
+				  ">
+					<img
+						src="/images/setting-assests/plus-friends.svg"
+						alt="Add"
+						className="w-7 h-7"
+					/>
+					<span>Invite</span>
+				</button>
+			</div>)
+
+		})}
+	</dialog>
+}
+
 
 export const TournamentPage = (props: { tournamentId: string }) => {
 	const [tournament, setTournament] = useState<Tournament | null>(null);
@@ -81,6 +160,7 @@ export const TournamentPage = (props: { tournamentId: string }) => {
 	const [games, setGames] = useState<GameData[]>([]);
 	const [showToast, Toast] = useToast();
 	const [showButton, setShowButton] = useState(false);
+	const dialogRef = useRef<HTMLDialogElement | null>(null);
 
 	const eventRef = useRef<EventSource | null>(null);
 
@@ -123,8 +203,7 @@ export const TournamentPage = (props: { tournamentId: string }) => {
 				});
 				console.log("_players:", _players);
 			}
-			else
-			{
+			else {
 				_players = data.players;
 				_players.forEach((p: { id?: number }) => delete Object.assign(p, { userId: p.id }).id);
 			}
@@ -201,11 +280,18 @@ export const TournamentPage = (props: { tournamentId: string }) => {
 
 	}, [tournament]);
 
+	const handleAddClick = (e: Event) => {
+		e.preventDefault();
+		if (!dialogRef.current) return;
+		dialogRef.current.showModal();
+	}
+
 	return (
 		<div
 			className="relative flex flex-col overflow-hidden h-screen w-screen"
 			style={{ backgroundColor: 'rgba(94, 156, 171, 0.4)' }}
 		>
+			<Dialog ref={dialogRef} />
 			<div className="relative z-10">
 				<Header />
 			</div>
@@ -215,14 +301,14 @@ export const TournamentPage = (props: { tournamentId: string }) => {
 				<div className="flex justify-center gap-3 mb-4 w-[100%]">
 					{players.length !== 0 ? (players.map(p => <PlayerAvatar avatar={p.avatar} username={p.username} userId={p.userId} />)) : <div></div>}
 					{players.length < 4 ?
-						<button className="rounded-full w-14 h-14 border-4 text-center align-middle text-2xl text-white">+</button>
+						<button onClick={handleAddClick} className="rounded-full w-14 h-14 border-4 text-center align-middle text-2xl text-white">+</button>
 						: <div></div>}
 				</div>
 				{showButton && <button onClick={handleStartGame} className="border-2 rounded-lg shadow-lg bg-teal-200 hover:bg-teal-300 px-7 py-3 font-luckiest text-white">start</button>}
 				<div className="bg-[#58D7DFAD]/30 flex flex-col justify-center py-20 mt-2 px-10 rounded-2xl border-white-100 border-2" >
 					<div className="text-white font-luckiest text-lg mb-4 text-center w-[100%]">{tournament?.status}</div>
 					<div class="grid grid-flow-col grid-rows-2 ">
-						<div class="row-span-2 flex justify-center items-center tournament-game1-card"><CardButton game={games.at(0) ?? null } /></div>
+						<div class="row-span-2 flex justify-center items-center tournament-game1-card"><CardButton game={games.at(0) ?? null} /></div>
 						<div class="col-span-1 flex justify-center items-center">
 							<img src={GameTournamentImg} className="max-w-[150px]" />
 						</div>

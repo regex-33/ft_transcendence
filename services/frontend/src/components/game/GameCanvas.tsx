@@ -76,8 +76,9 @@ const TeamBadge = ({
 
 export const GameCanvas = (props: { local: boolean; playerId: number; game: any }) => {
 	const [scores, setScores] = useState([0, 0]);
-	const [players, setPlayers] = useState<Player[]>([]);
 	const [started, setStarted] = useState(false);
+	const [players, setPlayers] = useState<Player[]>([]);
+	const [spectators, setSpectators] = useState<Omit<Player, 'score'>[]>([]);
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	// const [connection, setConnection] = useState<Connection | null>(null);
 	const connectionRef = useRef<Connection | null>(null);
@@ -86,22 +87,18 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 	const handleCanvasResize = () => {
 		const canvasEl = canvasRef.current;
 		if (!canvasEl) return;
-		//const ratio = window.devicePixelRatio || 1;
 		const ratio = 1;
-		console.log('ratio', ratio);
 		canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width * ratio;
 		canvasEl.height = canvasEl.width * GameConfig.canvasRatio * ratio;
 		canvasEl.getContext("2d")?.scale(ratio, ratio)
 		canvasEl.style.width = canvasEl.width / ratio + 'px';
 		canvasEl.style.height = canvasEl.height / ratio + 'px';
 
-		console.log(canvasEl.width);
-		console.log(canvasEl.height);
-		console.log(canvasEl.clientWidth, canvasEl.clientHeight);
 		GameConfig.onResize(canvasEl.width, canvasEl.height);
 	};
 
 	useEffect(() => {
+		console.log('started is', started);
 		if (props.local) {
 			setPlayers([{ username: 'Player 1', userId: 0, avatar: '/images/default-avatar.png', score: 0 },
 			{ username: 'Player 2', userId: 1, avatar: '/images/default-avatar.png', score: 0 }]);
@@ -109,6 +106,8 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 		}
 		if (!props.game?.id) return;
 		console.log("gameId:", props.game.id);
+		console.log("playerId:", props.playerId);
+		console.log("game players:", props.game.players);
 		const players = props.game.players;
 		setPlayers(players);
 		const connection = connectionRef.current;
@@ -135,7 +134,9 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 				type: GameType.SOLO,
 				mode: GameMode.CLASSIC,
 			};
-			const game = new LocalGame(context, gameData, setScores, setPlayers);
+			const game = new LocalGame(context, gameData, setScores, (players: Player[]) => {
+				setPlayers(players);
+			});
 			game.start();
 			setStarted(true);
 			return;
@@ -156,25 +157,29 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 		const connection = connectionRef.current;
 		if (!connection) return;
 		connection.connect().then(() => {
-			console.log("then connect");
 			const gameData = {
 				id: props.game.id,
 				type: GameType.SOLO,
 				mode: GameMode.CLASSIC,
 			};
-			const game = new RemoteGame(context, gameData, setScores, setPlayers);
-			game.start(connection);
-			connection.send({
-				type: "FETCH_PLAYERS",
-			});
+			const game = new RemoteGame(context, gameData, setScores, setPlayers, setSpectators);
+			const isSpec = !props.game.players.find((p: Player) => p.userId === props.playerId);
+			game.start(connection, isSpec);
+			if (props.game.players.map((p: Player) => p.userId).includes(props.playerId)) {
+				console.log('fetch players');
+				connection.send({
+					type: "FETCH_PLAYERS",
+				});
+			}
 			console.log("sent fetch");
 		}).catch(err => {
 			console.log("connect error:", err);
 			connection.close();
 		});
 		connection.onClose((e: CloseEvent) => {
+			if (!started)
+				showToast('Connection closed');
 			console.log('socket closed:', e.reason);
-			showToast("Connection closed", "error");
 		})
 		return () => {
 			console.log("Cleanup called");
@@ -183,6 +188,9 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 	}, [canvasRef, connectionRef])
 
 	const handleClick = () => { };
+	const maxPlayers = props.game.type === 'SOLO' ? 2 : 4;
+
+
 	return (
 		<div>
 			<div className="flex flex-col justify-center">
@@ -216,13 +224,19 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 								className="bg-[#91BFBF]"
 							></canvas>
 						</div>
-						{(players?.length === 2 && !started) && <button onClick={handleStartGame} className="absolute flex gap-4 align-center border-2 top-[50%] translate-y-[-50%] text-lg rounded-lg shadow-sm bg-teal-400 hover:bg-teal-300 px-8 py-2 font-poppins font-bold text-white">
+						{(players?.length === maxPlayers && !started) ? <button onClick={handleStartGame} className="absolute flex gap-4 align-center border-2 top-[50%] translate-y-[-50%] text-lg rounded-lg shadow-sm bg-teal-400 hover:bg-teal-300 px-8 py-2 font-poppins font-bold text-white">
 							<i class="fa-solid text-lg fa-table-tennis-paddle-ball"></i>
 							<div>start</div>
-						</button>
+						</button> : <div></div>
 						}
 					</div></div>
+				<div className="flex flex-row gap-2">
+					spectators:
+					{
+						spectators?.length ?? 0 > 0 ? spectators?.map(spectator => <AvatarCircle avatarImage={spectator.avatar} key={spectator.username} />) : <div></div>}
+
+				</div>
 			</div>
-		</div>
+		</div >
 	);
 };

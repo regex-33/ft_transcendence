@@ -115,6 +115,8 @@ export const GamePage: ComponentFunction = (props) => {
 			return;
 		}
 		getGame(props.gameId).then((data) => {
+
+			//console.log('game data:', data);
 			setGame(data);
 		});
 	}, [user]);
@@ -132,7 +134,6 @@ export const GamePage: ComponentFunction = (props) => {
 				if (!response.ok) {
 					throw new Error(`Failed to fetch friends: ${response.status} ${response.statusText}`);
 				}
-
 				const data: Friend[] = await response.json();
 				let f: Friend[] = data.map(({ online, ...rest }) => ({ online: true, ...rest }));
 

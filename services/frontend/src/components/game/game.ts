@@ -234,31 +234,18 @@ abstract class Game {
 
 export class RemoteGame extends Game {
   private _connection: Connection | null;
+  private _setSpectators: Function;
 
   constructor(
     ctx: CanvasRenderingContext2D,
     { id, type, mode }: { id: string; type: GameType; mode: GameMode },
     setScores: Function,
     setPlayers: Function,
+    setSpectators: Function,
   ) {
     super(ctx, { id, type, mode }, setScores, setPlayers);
+    this._setSpectators = setSpectators;
     this._connection = null;
-  }
-
-  async _initConnection() {
-    await this._connection!.connect();
-    const gameId = this.id;
-    const playerId = 10; // TODO use id;
-    this._connection!.send({
-      type: "action",
-      action_type: "INIT",
-      gameId,
-      playerId,
-    });
-    const updateMsg: UpdateMessage = await this._connection!.once("update");
-    if (!updateMsg.message.includes("initialized"))
-      throw new Error("unexpected message");
-    this._connection!.initialized = true;
   }
 
   onServerUpdate = (data: {
@@ -291,10 +278,12 @@ export class RemoteGame extends Game {
     this._lastUpdate = Date.now();
   };
 
-  start(connection: Connection) {
+  start(connection: Connection, isSpec = false) {
     console.log(this.paddles);
-    window.addEventListener("keydown", this._onKeyDown);
-    window.addEventListener("keyup", this._onKeyUp);
+    if (!isSpec) {
+      window.addEventListener("keydown", this._onKeyDown);
+      window.addEventListener("keyup", this._onKeyUp);
+    }
     requestAnimationFrame(this._renderFrame);
 
     connection.on("PLAYERS_UPDATE", (data) => {
@@ -303,19 +292,22 @@ export class RemoteGame extends Game {
     connection.on("GAME_UPDATE", this.onServerUpdate);
     connection.on("PLAYER_DISCONNECT", this._onPlayerDisconnect);
     connection.on("PLAYER_CONNECT", this._onPlayerConnect);
-    connection.on("GAME_END", (data: { players: Player[], winners: {username: string}[] }) => {
-      this._scores = data.players.map((player) => player.score);
-      const maxScore = Math.max(...this._scores);
-      const winners = data.winners.map(w => w.username);
-      console.log("winners: ", winners);
-      console.log("maxScore: ", maxScore);
-      console.log("data.players: ", data.players);
-      if (winners.length > 1)
-        this._endgameText = "Winners: " + winners.join(" ");
-      else this._endgameText = "Winner: " + winners.join(" ");
-      this._setScores(this._scores);
-      this._status = "ENDED";
-    });
+    connection.on(
+      "GAME_END",
+      (data: { players: Player[]; winners: { username: string }[] }) => {
+        this._scores = data.players.map((player) => player.score);
+        const maxScore = Math.max(...this._scores);
+        const winners = data.winners.map((w) => w.username);
+        console.log("winners: ", winners);
+        console.log("maxScore: ", maxScore);
+        console.log("data.players: ", data.players);
+        if (winners.length > 1)
+          this._endgameText = "Winners: " + winners.join(" ");
+        else this._endgameText = "Winner: " + winners.join(" ");
+        this._setScores(this._scores);
+        this._status = "ENDED";
+      },
+    );
     this._connection = connection;
   }
 
@@ -332,13 +324,16 @@ export class RemoteGame extends Game {
   private _onPlayerConnect = (data: {
     type: string;
     players: Player[];
+    spectators: Omit<Player, 'score'>[];
     playerId: number;
   }) => {
     const players = data.players.map(
       ({ userId, username, avatar, ...rest }) => ({ userId, username, avatar }),
     );
     console.log("players:", players);
+    console.log("spectators:", data.spectators);
     this._setPlayers(players);
+    this._setSpectators(data.spectators);
     console.log("connect received:", data);
   };
 
@@ -351,7 +346,6 @@ export class RemoteGame extends Game {
     }
     console.log("key:", key);
   }, 20);
-
 
   private _renderFrame = () => {
     for (const key of this._activeKeys) this._sendEvent(key);
@@ -511,8 +505,8 @@ export class LocalGame extends Game {
   }
 
   private _renderFrame = () => {
-      const now = performance.now();
-      const dt = performance.now() - this._lastUpdate;
+    const now = performance.now();
+    const dt = performance.now() - this._lastUpdate;
     if (this._status === "LIVE") {
       for (const key of this._activeKeys) {
         this._movePaddle(key, dt);
@@ -522,7 +516,12 @@ export class LocalGame extends Game {
       this.draw();
     }
     if (dt > 20)
-      console.log('render/calculation time:', performance.now() - now, 'dt (last - now):', dt)
+      console.log(
+        "render/calculation time:",
+        performance.now() - now,
+        "dt (last - now):",
+        dt,
+      );
     if (this._status === "ENDED") {
       this.ctx.clearRect(0, 0, GameConfig.canvasWidth, GameConfig.canvasHeight);
       this.ctx.font = "30px Luckiest Guy";
