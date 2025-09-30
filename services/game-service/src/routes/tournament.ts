@@ -57,7 +57,7 @@ async function tournamentRoutes(fastify: FastifyInstance) {
 				reply.raw.write(`data: first\n\n`);
 				// }, 2000);
 				request.raw.on('close', () => {
-					console.log('[CLOSE] update closed by: ' + user.id);
+					//console.log('[CLOSE] update closed by: ' + user.id);
 					tournamentManager.unsubscribe(tournamentId, reply);
 					// clearInterval(interval);
 				});
@@ -76,7 +76,10 @@ async function tournamentRoutes(fastify: FastifyInstance) {
 		const user = request.user;
 		try {
 			if (tournamentManager.playerHasTournament(user.id)) {
-				return reply.code(400).send({ error: 'Player already in a tournament' });
+				const tournamentState = tournamentManager.getPlayerTournament(user.id);
+				if (!tournamentState)
+					return reply.code(404).send({ error: 'Failed to create tournament. try again later' });
+				return reply.code(200).send({id: tournamentState.id});
 			}
 			const tournament = await createTournament(fastify.prisma, user);
 			if (!tournament)
@@ -117,7 +120,7 @@ async function tournamentRoutes(fastify: FastifyInstance) {
 				return reply.code(401).send({ error: 'Unauthorized: session not found' });
 			const user = request.user;
 			const { tournamentId, playerId } = request.body;
-			console.log('tournamentID:', tournamentId);
+			//console.log('tournamentID:', tournamentId);
 			if (user.id === playerId) return reply.code(403).send({ error: 'cannot invite this player' });
 			try {
 				const cookies = 'session_id=' + sessionId + ';token=' + token;
@@ -135,7 +138,7 @@ async function tournamentRoutes(fastify: FastifyInstance) {
 				});
 				if (!response.ok) {
 					const text = await response.text();
-					console.log('fetch err:', response.status, text);
+					//console.log('fetch err:', response.status, text);
 					return reply.code(403).send({ error: 'Could not invite player to this tournament' });
 				}
 				return reply.code(204).send();
@@ -147,14 +150,14 @@ async function tournamentRoutes(fastify: FastifyInstance) {
 	);
 	
 	fastify.post<{ Body: { gameId: string } }>(
-		'/remove-notification',
+		'/remove-notification/',
 		async (request, reply) => {
 			const sessionId = request.cookies.session_id!;
 			const token = request.cookies.token!;
 			const user = (request as any).user;
-			const playerId = user.id;
 			const { gameId } = request.body;
 			const cookies = 'session_id=' + sessionId + ';token=' + token;
+			//console.log('gameId:', gameId)
 			const response = await fetch('http://user-service:8001/api/notifications/' + gameId, {
 				method: 'DELETE',
 				headers: {
@@ -163,7 +166,7 @@ async function tournamentRoutes(fastify: FastifyInstance) {
 			});
 			if (!response.ok) {
 				const text = await response.text();
-				console.log('fetch err:', response.status, text);
+				//console.log('fetch err:', response.status, text);
 				return reply.code(403).send({ error: 'Something went wrong! try again later.' });
 			}
 			reply.code(204).send();

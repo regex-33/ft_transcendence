@@ -59,7 +59,7 @@ export const CreateGamePage: ComponentFunction = () => {
 	const [showToast, Toast] = useToast();
 	const [mode, setMode] = useState<GameMode>(GameMode.CLASSIC);
 
-	console.log("mode: ", mode);
+	//console.log("mode: ", mode);
 	useEffect(() => {
 		if (!user)
 			return;
@@ -71,8 +71,8 @@ export const CreateGamePage: ComponentFunction = () => {
 	}, [user]);
 
 	const handleClickRemote = async (type: GameType, e: Event) => {
-		console.log(e);
-		console.log(type);
+		//console.log(e);
+		//console.log(type);
 		const { status, game, error } = await createNewGame(type, mode);
 		if (status !== 'ok')
 			return showToast(error, 'error');
@@ -132,7 +132,7 @@ export const CreateGamePage: ComponentFunction = () => {
 									window.dispatchEvent(new PopStateEvent("popstate"));
 								}
 								catch (err) {
-									console.log("create tournament error: ", err)
+									//console.log("create tournament error: ", err)
 								}
 							}}>
 								<img src={TournamentButtonSvg} className="hover:scale-[0.96]" />

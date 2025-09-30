@@ -15,9 +15,9 @@ const initCanvas = (
 ) => {
 	canvasEl.width = canvasEl.parentElement!.getBoundingClientRect().width;
 	canvasEl.height = canvasEl.width * GameConfig.canvasRatio;
-	console.log(canvasEl.width);
-	console.log(canvasEl.height);
-	console.log(canvasEl.clientWidth, canvasEl.clientHeight);
+	//console.log(canvasEl.width);
+	//console.log(canvasEl.height);
+	//console.log(canvasEl.clientWidth, canvasEl.clientHeight);
 	GameConfig.onResize(canvasEl.width, canvasEl.height);
 	const context = canvasEl.getContext("2d");
 	if (!context) throw new Error("could not get canvas context");
@@ -70,7 +70,9 @@ const TeamBadge = ({
 
 	return (
 		<div className={reverse ? "flex gap-1 flex-row-reverse" : "flex gap-1"}>
-			<AvatarCircle avatarImage={player.avatar} key={"" + player.userId} />{" "}
+			{!team &&
+				<AvatarCircle avatarImage={player.avatar} key={"" + player.userId} />
+			}
 			{nameBadge}
 		</div>
 	);
@@ -100,14 +102,14 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 	};
 
 	useEffect(() => {
-		console.log('started is', started);
+		//console.log('started is', started);
 		if (props.local) {
 			setPlayers([{ username: 'Player 1', userId: 0, avatar: '/images/default-avatar.png', score: 0 },
 			{ username: 'Player 2', userId: 1, avatar: '/images/default-avatar.png', score: 0 }]);
 			return;
 		}
 		if (!props.game?.id) return;
-		console.log("gameId:", props.game.id);
+		//console.log("gameId:", props.game.id);
 		const players = props.game.players;
 		setPlayers(players);
 		const connection = connectionRef.current;
@@ -115,7 +117,7 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 			const conn = new Connection(`${import.meta.env.VITE_WS_GAME_SERVICE_HOST}/play/${props.game.id}`);
 			connectionRef.current = conn;
 			return () => {
-				console.log("close conn on unmount:", conn);
+				//console.log("close conn on unmount:", conn);
 				conn.close();
 				if (connectionRef.current === conn) {
 					connectionRef.current = null;
@@ -123,7 +125,7 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 			}
 		}
 		return () => {
-			console.log("close connection on unmount:", connection);
+			//console.log("close connection on unmount:", connection);
 			connection.close();
 			if (connectionRef.current === connection) {
 				connectionRef.current = null;
@@ -165,27 +167,27 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 		connection.connect().then(() => {
 			const gameData = {
 				id: props.game.id,
-				type: GameType.SOLO,
-				mode: GameMode.CLASSIC,
+				type: props.game.type,
+				mode: props.game.mode,
 			};
 			const game = new RemoteGame(context, gameData, setScores, setPlayers, setSpectators);
 			const isSpec = !props.game.players.find((p: Player) => p.userId === props.playerId);
 			game.start(connection, isSpec);
 			if (props.game.players.map((p: Player) => p.userId).includes(props.playerId)) {
-				console.log('fetch players');
+				//console.log('fetch players');
 				connection.send({
 					type: "FETCH_PLAYERS",
 				});
 			}
-			console.log("sent fetch");
+			//console.log("sent fetch");
 		}).catch(err => {
-			console.log("connect error:", err);
+			//console.log("connect error:", err);
 			connection.close();
 			if (connectionRef.current === connection)
 				connectionRef.current = null;
 		});
 		connection.onClose((e: CloseEvent) => {
-			console.log('socket closed:', e.reason);
+			//console.log('socket closed:', e.reason);
 			if (connectionRef.current === connection) {
 				connectionRef.current = null;
 			}
@@ -193,7 +195,7 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 				showToast('Connection closed');
 		})
 		return () => {
-			console.log("Cleanup called");
+			//console.log("Cleanup called");
 			window.removeEventListener("resize", handleCanvasResize);
 			if (connectionRef.current === connection)
 				connectionRef.current = null;
@@ -207,7 +209,7 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 	const borderColor = props.game.mode === 'GOLD' || props.game.type === 'TEAM' ? 'bg-[#76A29B]' : 'bg-white';
 
 	const Teams = ((maxPlayers === 2) ? (
-		<div className="flex justify-between items-center">
+		<div className="flex justify-between items-center mb-4">
 			<TeamBadge team={false} reverse={false} player={players[0]} />
 			<div className="flex gap-2 items-center">
 				<span className="text-white text-lg font-luckiest">
@@ -220,9 +222,11 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 			</div>
 			<TeamBadge team={false} reverse={true} player={players[1]} />
 		</div>) :
-		(<div>
+		(<div className="flex flex-row justify-between mb-4">
+			<div className="inline-flex flex-row gap-2">
 			<TeamBadge team={true} reverse={false} player={players[0]} />
 			<TeamBadge team={true} reverse={false} player={players[1]} />
+			</div>
 			<div className="flex gap-2 items-center">
 				<span className="text-white text-lg font-luckiest">
 					{scores[0]}
@@ -232,8 +236,10 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 					{scores[1]}
 				</span>
 			</div>
-			<TeamBadge team={true} reverse={true} player={players[2]} />
-			<TeamBadge team={true} reverse={true} player={players[3]} />
+			<div className="flex flex-row gap-2">
+				<TeamBadge team={true} reverse={true} player={players[2]} />
+				<TeamBadge team={true} reverse={true} player={players[3]} />
+			</div>
 		</div>));
 
 	return (
@@ -263,8 +269,8 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 						</button> : <div></div>
 						}
 					</div></div>
-				<div className="flex flex-row gap-2">
-					spectators:
+				<div className="flex justify-center mt-4 items-center flex-row gap-2">
+					<i class="text-gray-600 fa-solid fa-eye"></i>
 					{
 						spectators?.length ?? 0 > 0 ? spectators?.map(spectator => <AvatarCircle avatarImage={spectator.avatar} key={spectator.username} />) : <div></div>}
 

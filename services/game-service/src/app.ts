@@ -80,7 +80,7 @@ fastify.listen(
 	},
 	function (err) {
 		if (err) {
-			console.log('something went wrong:', err);
+			//console.log('something went wrong:', err);
 			fastify.log.error(err);
 			process.exit(1);
 		}

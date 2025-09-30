@@ -89,7 +89,7 @@ const getGame = async (gameId: string) => {
 			window.history.pushState({}, "", "/game");
 			window.dispatchEvent(new PopStateEvent("popstate"));
 		}
-		console.log(data);
+		//console.log(data);
 		return data;
 	} catch (err) {
 		window.history.pushState({}, "", "/home");
@@ -109,7 +109,7 @@ export const GamePage: ComponentFunction = (props) => {
 	const [loading, isAuthenticated, user] = useAuth();
 	useEffect(() => {
 		if (!user) return;
-		console.log("user:", user);
+		//console.log("user:", user);
 		setPlayerId(user.id);
 		if (props.gameId === 'local') {
 			const gameMode = localStorage.getItem('gameMode') as GameMode ?? GameMode.CLASSIC;
@@ -139,7 +139,7 @@ export const GamePage: ComponentFunction = (props) => {
 				let f: Friend[] = data.map(({ online, ...rest }) => ({ online: true, ...rest }));
 
 				setOnlineFriends(f);
-				console.log("friends:", data);
+				//console.log("friends:", data);
 			} catch (err) {
 				console.error('Error fetching friends:', err);
 			}

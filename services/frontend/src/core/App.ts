@@ -113,7 +113,7 @@ export class App {
         error: null,
       };
 
-      // console.log("Application started successfully");
+      // //console.log("Application started successfully");
     } catch (error) {
       this.state.error = error instanceof Error ? error.message : "Unknown error";
       this.state.loading = false;
@@ -124,7 +124,7 @@ export class App {
   }
 
   async stop(): Promise<void> {
-    // console.log("Stopping application...");
+    // //console.log("Stopping application...");
 
     // if (this.performanceMonitor) {
     //   this.performanceMonitor();
@@ -154,7 +154,7 @@ export class App {
 
   private async cleanupServices(): Promise<void> {
     try {
-      console.log("i am in cleanupSrevices\n")
+      //console.log("i am in cleanupSrevices\n")
     } catch (error) {
       console.warn("Service cleanup error:", error);
     }
@@ -218,15 +218,15 @@ export class App {
       }
 
       componentDidMount(): void {
-        // console.log("FUNCTIONAL COMPONENT: Mounted");
+        // //console.log("FUNCTIONAL COMPONENT: Mounted");
       }
 
       componentDidUpdate(): void {
-        // console.log("FUNCTIONAL COMPONENT: Updated");
+        // //console.log("FUNCTIONAL COMPONENT: Updated");
       }
 
       componentWillUnmount(): void {
-        // console.log("FUNCTIONAL COMPONENT: Will unmount");
+        // //console.log("FUNCTIONAL COMPONENT: Will unmount");
       }
     }
 
@@ -257,7 +257,7 @@ export class App {
 
 
     this.router.addRoute('/profile/:username', (params) => {
-      console.log("Routing to profile of:", params?.username);
+      //console.log("Routing to profile of:", params?.username);
       return this.createFunctionalComponent(ProfilePage, { username: params?.username });
     });
 
@@ -383,35 +383,35 @@ export class App {
         },
         triggerUpdate: () => {
           PerformanceOptimizer.scheduleUpdate(() => {
-            console.log("Manual update triggered");
+            //console.log("Manual update triggered");
           });
         },
         inspectComponent: (component: any) => {
-          console.log("Component inspection:", {
-            hooks: this.hooksManager.getCurrentComponentHooks(),
-            element: component.element,
-            state: component.state,
-            props: component.props,
-          });
+          //console.log("Component inspection:", {
+          //   hooks: this.hooksManager.getCurrentComponentHooks(),
+          //   element: component.element,
+          //   state: component.state,
+          //   props: component.props,
+          // });
         },
       },
     };
 
-    // console.log(
+    // //console.log(
     //   "Development tools available at window.__FRAMEWORK_DEVTOOLS__"
     // );
-    // console.log("Available commands:");
-    // console.log(
+    // //console.log("Available commands:");
+    // //console.log(
     //   "  - __FRAMEWORK_DEVTOOLS__.getMetrics() - Get performance metrics"
     // );
-    // console.log(
+    // //console.log(
     //   "  - __FRAMEWORK_DEVTOOLS__.clearCache() - Clear memoization cache"
     // );
-    // console.log("  - __FRAMEWORK_DEVTOOLS__.restart() - Restart application");
-    // console.log("  - __FRAMEWORK_DEVTOOLS__.debug.* - Debug utilities");
-    // console.log("     ---> enableVerboseLogging");
-    // console.log("     ---> triggerUpdate");
-    // console.log("     ---> inspectComponent(component: any)");
+    // //console.log("  - __FRAMEWORK_DEVTOOLS__.restart() - Restart application");
+    // //console.log("  - __FRAMEWORK_DEVTOOLS__.debug.* - Debug utilities");
+    // //console.log("     ---> enableVerboseLogging");
+    // //console.log("     ---> triggerUpdate");
+    // //console.log("     ---> inspectComponent(component: any)");
   }
 
   async restart(): Promise<void> {

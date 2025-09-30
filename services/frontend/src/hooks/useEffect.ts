@@ -16,19 +16,19 @@
 //     dependencies.length !== currentEffect.dependencies.length ||
 //     dependencies.some((dep, i) => !Object.is(dep, currentEffect.dependencies![i]));
 
-//   console.log("--------------------------");
-//   console.log("hasChanged: ", hasChanged);
-//   console.log("--------------------------");
+//   //console.log("--------------------------");
+//   //console.log("hasChanged: ", hasChanged);
+//   //console.log("--------------------------");
 //   if (hasChanged) {
-//       console.log("cleanup: ", currentEffect.cleanup);
+//       //console.log("cleanup: ", currentEffect.cleanup);
 //     if (currentEffect.cleanup) {
-//       console.log("Called it");
+//       //console.log("Called it");
 //       currentEffect.cleanup();
 //     }
 
 //     Promise.resolve().then(() => {
 //       const cleanup = effect();
-//       console.log("got cleanup: ", cleanup);
+//       //console.log("got cleanup: ", cleanup);
 //       currentEffect.cleanup = typeof cleanup === 'function' ? cleanup : undefined;
 //     });
     
@@ -58,21 +58,21 @@ export function useEffect(effect: () => void | (() => void), dependencies?: any[
 
   if (hasChanged) {
     if (currentEffect.cleanup) {
-    console.log("hasChanged:", hasChanged);
+    //console.log("hasChanged:", hasChanged);
       currentEffect.cleanup();
     }
 
     // Schedule effect to run after render
     Promise.resolve().then(() => {
-      // console.log("before call previous cleanup: ", currentEffect.cleanup);
+      // //console.log("before call previous cleanup: ", currentEffect.cleanup);
       try{
         const cleanup = effect();
-        // console.log("got cleanup: ", cleanup);
+        // //console.log("got cleanup: ", cleanup);
         currentEffect.cleanup = typeof cleanup === 'function' ? cleanup : undefined;
       }
       catch (e)
       {
-        // console.log("effect error: ", e);
+        // //console.log("effect error: ", e);
       }
     });
     

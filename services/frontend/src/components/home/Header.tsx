@@ -24,9 +24,9 @@ export const Header: ComponentFunction = () => {
         const user = await resUser.json();
         setUserId(user.id);
         localStorage.setItem('userId', user.id);
-        console.log("data user for notif is : ", user);
+        //console.log("data user for notif is : ", user);
       } catch (error) {
-        console.log("Fixi hadi namoussa had error is : ", error);
+        //console.log("Fixi hadi namoussa had error is : ", error);
       }
     };
     fetchUserId();
@@ -38,14 +38,14 @@ export const Header: ComponentFunction = () => {
     const notificationSocket = new WebSocket(`${import.meta.env.VITE_WS_CHAT_SERVICE_HOST}/ws/chat`);
 
     notificationSocket.onopen = () => {
-      console.log("Notification WebSocket connected");
+      //console.log("Notification WebSocket connected");
       notificationSocket.send(JSON.stringify({ type: 'notification', id: userId }));
     };
 
     notificationSocket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.notif === true) {
-        console.log("ja message jdid");
+        //console.log("ja message jdid");
         setHasNotif(true);
       }
     };

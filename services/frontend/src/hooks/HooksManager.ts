@@ -448,8 +448,8 @@ export class HooksManager {
    * ```typescript
    * // Debugging component hooks
    * const hooks = hooksManager.getComponentHooks(myComponent);
-   * console.log('Component has', hooks?.states.length, 'useState hooks');
-   * console.log('Component has', hooks?.effects.length, 'useEffect hooks');
+   * //console.log('Component has', hooks?.states.length, 'useState hooks');
+   * //console.log('Component has', hooks?.effects.length, 'useEffect hooks');
    * ```
    */
   getComponentHooks(component: any): ComponentHooks | undefined {
@@ -465,7 +465,7 @@ export class HooksManager {
    * ```typescript
    * // Check if updates are pending
    * if (hooksManager.getRenderQueueSize() > 0) {
-   *   console.log('Updates pending...');
+   *   //console.log('Updates pending...');
    * }
    * ```
    */
@@ -484,9 +484,9 @@ export class HooksManager {
    * expect(component.state).toBe(newValue);
    * 
    * // Or when debugging
-   * console.log('Before flush:', hooksManager.getRenderQueueSize());
+   * //console.log('Before flush:', hooksManager.getRenderQueueSize());
    * hooksManager.forceFlushUpdates();
-   * console.log('After flush:', hooksManager.getRenderQueueSize()); // Should be 0
+   * //console.log('After flush:', hooksManager.getRenderQueueSize()); // Should be 0
    * ```
    */
   forceFlushUpdates(): void {

@@ -55,7 +55,7 @@ export const Search: ComponentFunction<SearchProps> = ({ modalManager }) => {
 
       const usersArray = Array.isArray(allUsers) ? allUsers : [];
       const usersWithStatus = usersArray.map(u => ({ ...u, friendStatus: u.status ?? 'none' }));
-      console.log("all users", usersWithStatus);
+      //console.log("all users", usersWithStatus);
       setUsers(usersWithStatus);
       
     } catch (err) {

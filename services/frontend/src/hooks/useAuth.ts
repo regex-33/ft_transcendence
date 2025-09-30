@@ -34,7 +34,7 @@ export const useAuth = (): [boolean, boolean, User | null] => {
         const data = await response.json();
         setUser({ ...data });
       } catch (err) {
-        console.log(err);
+        //console.log(err);
         window.history.pushState({}, "", `/login`);
         window.dispatchEvent(new PopStateEvent("popstate"));
       } finally {

@@ -404,7 +404,7 @@ export class PerformanceOptimizer {
    * ```typescript
    * // Get stats for specific namespace
    * const userApiStats = PerformanceOptimizer.getCacheStats('user-api');
-   * console.log(`User API cache has ${userApiStats.size} entries`);
+   * //console.log(`User API cache has ${userApiStats.size} entries`);
    * 
    * // Get overall stats
    * const allStats = PerformanceOptimizer.getCacheStats();
@@ -450,7 +450,7 @@ export class PerformanceOptimizer {
    * ```typescript
    * // Debounce search input
    * const searchUsers = (query: string) => {
-   *   console.log('Searching for:', query);
+   *   //console.log('Searching for:', query);
    *   // API call here
    * };
    * 
@@ -497,7 +497,7 @@ export class PerformanceOptimizer {
    * ```typescript
    * // Throttle scroll handler
    * const handleScroll = () => {
-   *   console.log('Scroll position:', window.scrollY);
+   *   //console.log('Scroll position:', window.scrollY);
    *   // Update scroll-based animations
    * };
    * 
@@ -614,7 +614,7 @@ export class PerformanceOptimizer {
    * @example
    * ```typescript
    * const metrics = PerformanceOptimizer.getMetrics();
-   * console.log('Cache hit rate:', 
+   * //console.log('Cache hit rate:', 
    *   (metrics.cacheHits / (metrics.cacheHits + metrics.cacheMisses)) * 100
    * );
    * 
@@ -699,7 +699,7 @@ export class PerformanceOptimizer {
    * 
    * // Check metrics
    * const metrics = PerformanceOptimizer.getMetrics();
-   * console.log('Operation metrics:', metrics);
+   * //console.log('Operation metrics:', metrics);
    * ```
    */
   static resetMetrics(): void {
@@ -860,7 +860,7 @@ export class PerformanceOptimizer {
    */
   static monitorMemory(): void {
     if ('memory' in performance) {
-      console.log("i am in monitoryMemory");
+      //console.log("i am in monitoryMemory");
       // const memory: any = performance.memory;
       const memory = (performance as any).memory;
       const usedPercent = (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;

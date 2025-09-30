@@ -25,7 +25,7 @@ export class Connection {
   }
 
   connect(timeoutMs = 15000): Promise<void> {
-    console.log("connecting to websocket");
+    //console.log("connecting to websocket");
 
     if (this._socket && (this._socket.readyState === WebSocket.OPEN || this._socket.readyState === WebSocket.CONNECTING)) {
       return Promise.resolve();
@@ -44,7 +44,7 @@ export class Connection {
       }, timeoutMs);
 
       socket.onopen = () => {
-        console.log("connected!!");
+        //console.log("connected!!");
         if (this._onClose)
           socket.onclose = this._onClose;
         clearTimeout(timeout);
@@ -61,7 +61,7 @@ export class Connection {
         try {
           data = JSON.parse(ev.data);
         } catch (err) {
-          console.log("cannot parse data:", err);
+          //console.log("cannot parse data:", err);
           return;
         }
         const type = data.type;
@@ -105,12 +105,12 @@ export class Connection {
   close() {
     const socket = this._socket;
     if (!socket) {
-      console.log("socket is null");
+      //console.log("socket is null");
       return;
     }
     socket.close();
     this._socket = null;
-    console.log("socket closed");
+    //console.log("socket closed");
     socket.onmessage = null;
     socket.onerror = null;
     socket.onopen = null;

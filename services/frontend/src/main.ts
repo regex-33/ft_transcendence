@@ -15,7 +15,7 @@ if (!(window as any).__APP_INITIALIZED__) {
     }
 
     try {
-      console.log('Initializing application...');
+      //console.log('Initializing application...');
       
       // avoid initialization timing issues
       const { App } = await import('./core/App');
@@ -27,7 +27,7 @@ if (!(window as any).__APP_INITIALIZED__) {
       });
       
       await appInstance.start();
-      console.log('Application initialization complete');
+      //console.log('Application initialization complete');
       
     } catch (error) {
       console.error('Failed to start application:', error);
@@ -45,7 +45,7 @@ if (!(window as any).__APP_INITIALIZED__) {
   // Cleanup on page unload
   window.addEventListener('beforeunload', async () => {
     if (appInstance) {
-      console.log('Cleaning up application on page unload');
+      //console.log('Cleaning up application on page unload');
       await appInstance.stop();
       appInstance = null;
       (window as any).__APP_INITIALIZED__ = false;

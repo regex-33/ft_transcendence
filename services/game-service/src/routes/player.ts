@@ -107,17 +107,17 @@ async function playerRoutes(fastify: FastifyInstance) {
 
 	fastify.get('/stats', async (request, reply) => {
 		const user = (request as any).user;
-		console.log('userid', user.id);
+		//console.log('userid', user.id);
 		const playerGames = await getPlayerStats(fastify.prisma, user.id);
 		reply.code(200).send(playerGames);
 	});
 
 	fastify.get('/', async (request, reply) => {
 		const user = (request as any).user;
-		console.log('userid', user.id);
+		//console.log('userid', user.id);
 		const player = await getOrCreatePlayer(fastify.prisma, user);
 		if (!player) reply.code(404).send({ error: 'failed to fetch player' });
-		console.log(player);
+		//console.log(player);
 		reply.code(200).send(player);
 	});
 

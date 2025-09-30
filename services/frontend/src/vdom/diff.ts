@@ -34,15 +34,15 @@ export class VirtualDOM {
    */
   diff(oldVNode: VNode | null, newVNode: VNode | null): PatchOperation[] {
     this.patchQueue = [];
-    // console.log("+-------------------------");
-    // console.log("-- Diffing Virtual DOM --");
+    // //console.log("+-------------------------");
+    // //console.log("-- Diffing Virtual DOM --");
     // logDiffComparison(oldVNode, newVNode);
-    // console.log("Old VNode:", oldVNode);
-    // console.log("New VNode:", newVNode);
-    // console.log("+-------------------------");
+    // //console.log("Old VNode:", oldVNode);
+    // //console.log("New VNode:", newVNode);
+    // //console.log("+-------------------------");
     this.diffNodes(oldVNode, newVNode);
-    // console.log("Patch Queue Length:", this.patchQueue.length);
-    // console.log("Patch Queue:", this.patchQueue);
+    // //console.log("Patch Queue Length:", this.patchQueue.length);
+    // //console.log("Patch Queue:", this.patchQueue);
     return [...this.patchQueue];
   }
 
@@ -139,17 +139,17 @@ export class VirtualDOM {
    */
   private diffChildren(oldVNode: VNode, newVNode: VNode): void {
     const oldChildren = oldVNode.children || [];
-    // console.log('--- Old Children ---');
+    // //console.log('--- Old Children ---');
     // oldChildren.forEach((child, index) => {
-    //   console.log(`Child ${index}:`, child);
+    //   //console.log(`Child ${index}:`, child);
     // });
-    // console.log('---------------------');
+    // //console.log('---------------------');
     const newChildren = newVNode.children || [];
-    // console.log('--- New Children ---');
+    // //console.log('--- New Children ---');
     // newVNode.children?.forEach((child, index) => {
-    //   console.log(`Child ${index}:`, child);
+    //   //console.log(`Child ${index}:`, child);
     // });
-    // console.log('---------------------');
+    // //console.log('---------------------');
 
     const maxLength = Math.max(oldChildren.length, newChildren.length);
 
