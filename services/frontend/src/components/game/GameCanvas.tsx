@@ -206,9 +206,9 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 	const bgColor = props.game.mode === 'GOLD' || props.game.type === 'TEAM' ? 'bg-[#23444E]' : 'bg-[#91BFBF]';
 	const borderColor = props.game.mode === 'GOLD' || props.game.type === 'TEAM' ? 'bg-[#76A29B]' : 'bg-white';
 
-	const teamBadge = maxPlayers === 2 ? (
+	const Teams = ((maxPlayers === 2) ? (
 		<div className="flex justify-between items-center">
-			<TeamBadge reverse={false} player={players[0]} />
+			<TeamBadge team={false} reverse={false} player={players[0]} />
 			<div className="flex gap-2 items-center">
 				<span className="text-white text-lg font-luckiest">
 					{scores[0]}
@@ -218,7 +218,7 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 					{scores[1]}
 				</span>
 			</div>
-			<TeamBadge reverse={true} player={players[1]} />
+			<TeamBadge team={false} reverse={true} player={players[1]} />
 		</div>) :
 		(<div>
 			<TeamBadge team={true} reverse={false} player={players[0]} />
@@ -234,7 +234,7 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 			</div>
 			<TeamBadge team={true} reverse={true} player={players[2]} />
 			<TeamBadge team={true} reverse={true} player={players[3]} />
-		</div>);
+		</div>));
 
 	return (
 		<div>
@@ -242,7 +242,7 @@ export const GameCanvas = (props: { local: boolean; playerId: number; game: any 
 				{Toast}
 				{
 					players?.length === maxPlayers ? (
-						{ teamBadge }
+						Teams
 					) : <div className="m-auto text-center text-gray-800 text:sm md:text-xl font-luckiest">waiting for players</div>
 				}
 				<div className={"px-3 py-1 rounded-3xl " + bgColor}>
