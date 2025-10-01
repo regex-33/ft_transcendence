@@ -168,7 +168,7 @@ transcendence/
 │   ├── docker-compose.setup.yml
 │   ├── docker-compose.traefik.yml
 │   └── docker-compose.vault.yml
-├── Logs/                     # Generated application and service logs
+├── Logs/                     # Generated application and service logs for testing
 ├── docs/                     # Detailed documentation
 ├── debugging-scripts/        # Operational troubleshooting tools
 └── Makefile                  # Automation commands
