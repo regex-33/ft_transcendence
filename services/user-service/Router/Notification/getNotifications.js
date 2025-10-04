@@ -3,11 +3,11 @@ const checkAuthJWT = require('../../util/checkauthjwt');
 const getNotifications = async (req, reply) => {
     const { check, payload } = await checkAuthJWT(req);
     if (check) return;
-    const username = payload.username;
+    const id = payload.id;
     const { readed } = req.query;
     try {
         const user = await db.User.findOne({
-            where: { username }
+            where: { id }
         })
         if (!user) {
             return reply.status(404).send({ error: 'User not found' });
